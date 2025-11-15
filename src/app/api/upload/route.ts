@@ -33,7 +33,6 @@ export async function POST(req: NextRequest) {
     try {
       const { text: extractedText } = await extractText(uint8Array);
       text = String(extractedText || "");
-      console.log(text);
     } catch (extractionError: any) {
       console.error("PDF text extraction failed:", extractionError);
       return NextResponse.json(

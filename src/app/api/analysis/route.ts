@@ -12,7 +12,6 @@ export async function POST(req: Request) {
   if (!userId) return new Response("Unauthorized", { status: 401 });
 
   const body = await req.json();
-  console.log("Analysis POST body:", body);
 
   const insertBody = {
     user_id: userId,
