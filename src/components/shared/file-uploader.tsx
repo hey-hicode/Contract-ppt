@@ -2,10 +2,7 @@
 
 import { File, UploadCloud, X } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import {
-  useDropzone,
-  type FileRejection,
-} from "react-dropzone";
+import { useDropzone, type FileRejection } from "react-dropzone";
 import { Input } from "~/components/ui/input";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Progress } from "~/components/ui/progress";
@@ -92,27 +89,49 @@ export default function FileUpload({
   const uploadFileToApi = useCallback(
     async (file: File) => {
       const formData = new FormData();
-      formData.append("FILE", file);
+      formData.append("file", file);
 
       try {
+        // mark uploading
         updateFileState(file, { progress: 35, status: "uploading" });
-        const response = await fetch("/api/parse-data", {
+
+        const response = await fetch("/api/upload", {
           method: "POST",
           body: formData,
         });
 
-        if (!response.ok) {
-          throw new Error("Failed to upload file");
+        // Try to parse JSON once (works for both OK and error bodies)
+        let data: any = null;
+        try {
+          data = await response.json();
+        } catch (parseErr) {
+          // JSON parse failed — handle gracefully
+          throw new Error("Invalid response from server.");
         }
 
+        if (!response.ok) {
+          // If the server sent an error message, surface it
+          const serverMsg =
+            (data && (data.error || data.message || data.details)) ||
+            "Failed to upload file";
+          throw new Error(serverMsg);
+        }
+
+        // At this point data should contain the parsed result from server
+        const parsedText: string =
+          typeof data === "object" ? data.text ?? "" : "";
+
+        // mark processing
         updateFileState(file, { progress: 70, status: "processing" });
         onProcessing?.(file);
 
-        const parsedText = await response.text();
-
+        // final update
         updateFileState(file, { progress: 100, status: "completed" });
+
+        // Set parsed text correctly and call completion callback with the text
         setParsedText(parsedText);
         onUploadComplete?.(file, parsedText);
+
         toast.success(`${file.name} parsed successfully.`);
       } catch (error) {
         const message =
@@ -126,7 +145,13 @@ export default function FileUpload({
         onUploadError?.(file, message);
       }
     },
-    [onProcessing, onUploadComplete, onUploadError, setParsedText, updateFileState]
+    [
+      onProcessing,
+      onUploadComplete,
+      onUploadError,
+      setParsedText,
+      updateFileState,
+    ]
   );
 
   const onDrop = useCallback(
@@ -229,7 +254,9 @@ export default function FileUpload({
 
       {filesToUpload.length > 0 && (
         <div className="space-y-3">
-          <p className="text-sm font-medium text-slate-200/80">Upload progress</p>
+          <p className="text-sm font-medium text-slate-200/80">
+            Upload progress
+          </p>
           <ScrollArea className="h-44 pr-3">
             <div className="space-y-3">
               {filesToUpload.map((fileUploadProgress) => {

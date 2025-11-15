@@ -6,11 +6,11 @@ import { NextResponse } from "next/server";
 // Include Clerk auth pages so users can access sign-in/up when signed out.
 const isPublicRoute = createRouteMatcher([
   "/", // homepage stays public
-  "/analyze", // allow parsing workflow without auth
+  "/dashboard/analyze", // allow parsing workflow without auth
   "/sign-in(.*)", // Clerk sign-in pages
   "/sign-up(.*)", // Clerk sign-up pages
   "/api/parse-data(.*)", // parsing endpoint must be public for pre-auth uploads
-  // "/api/webhooks(.*)", // example: allow your webhooks
+  "/api/webhooks(.*)", // example: allow your webhooks
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
@@ -29,7 +29,7 @@ export default clerkMiddleware(async (auth, req) => {
     }
 
     // For page navigations: redirect to homepage
-    url.pathname = "/";
+    url.pathname = "/sign-in";
     // Optional: flag why we redirected (useful for a toast)
     url.searchParams.set("unauth", "1");
     return NextResponse.redirect(url);
