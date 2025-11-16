@@ -1,6 +1,6 @@
 "use client";
 
-import { File, UploadCloud, X } from "lucide-react";
+import { File, FileText, UploadCloud, X } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useDropzone, type FileRejection } from "react-dropzone";
 import { Input } from "~/components/ui/input";
@@ -229,15 +229,10 @@ export default function FileUpload({
             <UploadCloud className="size-7 text-primary" />
           </div>
           <div className="text-center text-sm text-slate-200/80">
-            <p className="text-base font-medium text-white">
+            <p className="text-primary underline underline-offset-4">
               {isDragActive ? "Drop to start parsing" : "Drag & drop your PDF"}
             </p>
-            <p>
-              or{" "}
-              <span className="text-primary underline underline-offset-4">
-                browse from your device
-              </span>
-            </p>
+
             <p className="mt-2 text-xs text-slate-400/80">
               Files should be under {maxSizeInMb} MB.
             </p>
@@ -252,9 +247,9 @@ export default function FileUpload({
         />
       </div>
 
-      {filesToUpload.length > 0 && (
+      {/* {filesToUpload.length > 0 && (
         <div className="space-y-3">
-          <p className="text-sm font-medium text-slate-200/80">
+          <p className="text-sm font-medium text-gray-400">
             Upload progress
           </p>
           <ScrollArea className="h-44 pr-3">
@@ -268,23 +263,23 @@ export default function FileUpload({
                 return (
                   <div
                     key={fileKey}
-                    className="flex items-start gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 shadow-sm shadow-sky-500/20 transition hover:border-sky-400/40 hover:shadow-sky-500/30"
+                    className="flex items-start gap-4 rounded-2xl border dark:border-white/10 bg-white/5 p-4 shadow-sm shadow-sky-500/20 transition "
                   >
-                    <div className="flex size-12 items-center justify-center rounded-xl border border-white/10 bg-white/10 text-sky-200">
-                      <File className="size-6" />
-                    </div>
+            <div className="flex size-10 items-center justify-center rounded-xl border border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/10 text-sky-600 dark:text-sky-200">
+                        <FileText className="size-5 text-primary" />
+                      </div>
                     <div className="flex-1 space-y-2">
                       <div className="flex flex-wrap items-center justify-between gap-2 text-slate-200/80">
-                        <p className="text-sm font-medium text-white">
+                        <p className="text-sm font-medium text-gray-500">
                           {fileUploadProgress.file.name}
                         </p>
-                        <span className="text-xs text-slate-400/80">
+                        <span className="text-xs text-white/10">
                           {formatBytes(fileUploadProgress.file.size)}
                         </span>
                       </div>
                       <Progress
                         value={fileUploadProgress.progress}
-                        className="bg-white/10 [&_[data-slot=progress-indicator]]:bg-sky-400"
+                        className="bg-white/10 [&_[data-slot=progress-indicator]]:bg-primary"
                       />
                       <p className="text-xs text-slate-400/80">
                         {statusCopy[fileUploadProgress.status]}
@@ -308,7 +303,7 @@ export default function FileUpload({
             </div>
           </ScrollArea>
         </div>
-      )}
+      )} */}
     </div>
   );
 }

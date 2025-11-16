@@ -33,7 +33,7 @@ export default function RootLayout({
             position="top-right"
             toastOptions={{
               className:
-                "border border-sky-200 bg-white text-sky-900 shadow-lg shadow-sky-100",
+                "border  bg-white text-sm t  ",
             }}
           />
           <AppChrome>{children}</AppChrome>

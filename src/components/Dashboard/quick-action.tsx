@@ -3,7 +3,7 @@ import { Card } from "../ui/card"
 
 const QuickAction = () => {
   return (
-   <div className="grid md:grid-cols-2 gap-6">
+   <div className="grid md:grid-cols-2 gap-6 pt-4">
         <Card className="p-6 !shadow-0  bg-gray-light rounded-md">
          <div>
              <h3 className="text-gray-900 mb-2">Need help understanding a clause?</h3>

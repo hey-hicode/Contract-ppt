@@ -344,7 +344,7 @@ export default function AnalyzePage() {
         </div>
       </header>
 
-      <div className="relative o flex r flex-col gap-10 px-5 py-12 md:gap-12 md:py-16">
+      <div className="relative o flex r flex-col gap-10 py-12 md:gap-12 md:py-16">
         <main className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <section className="space-y-6 rounded-3xl border h-fit border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 p-6  backdrop-blur">
             <div className="space-y-3">
@@ -371,7 +371,7 @@ export default function AnalyzePage() {
 
           <section className="space-y-6">
             <div className="rounded-3xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 ">
-              <div className="flex items-center justify-between gap-4 border-b border-gray-200 dark:border-white/10 pb-4">
+              <div className="flex items-center justify-between gap-4  border-gray-200 dark:border-white/10 pb-4">
                 <div>
                   <h3 className="text-2xl font-medium tracking-tight">
                     Upload status
@@ -396,7 +396,7 @@ export default function AnalyzePage() {
                   <div className="flex items-start justify-between gap-3 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 p-4">
                     <div className="flex items-start gap-3">
                       <div className="flex size-10 items-center justify-center rounded-xl border border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/10 text-sky-600 dark:text-sky-200">
-                        <FileText className="size-5" />
+                        <FileText className="size-5 text-primary" />
                       </div>
                       <div className="space-y-1">
                         <p className="text-sm font-medium text-gray-900 dark:text-white">
@@ -428,7 +428,7 @@ export default function AnalyzePage() {
             </div>
 
             <div className="rounded-3xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 ">
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 dark:border-white/10 pb-4">
+              <div className=" flex-wrap space-y-2 items-center justify-between gap-4 border-b border-gray-200 dark:border-white/10 pb-4">
                 <div>
                   <h3 className="text-2xl font-medium tracking-tight">
                     Extracted text
@@ -441,7 +441,7 @@ export default function AnalyzePage() {
                       : "The parsed result will be displayed here when ready."}
                   </p>
                 </div>
-                <div className="flex gap-2 items-center">
+                <div className="flex gap-2 justify-end items-center">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -457,16 +457,7 @@ export default function AnalyzePage() {
                     Copy text
                   </Button>
 
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="rounded-full border border-gray-200 dark:border-white/10 bg-white dark:bg-white/10 text-gray-700 dark:text-slate-100 transition hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-50 dark:hover:bg-white/20"
-                    onClick={handleReset}
-                    disabled={!parsedText && uploadPhase === "idle"}
-                  >
-                    <RefreshCw className="size-4" />
-                    Clear
-                  </Button>
+           
 
                   {/* ANALYZE BUTTON */}
                   <Button
@@ -478,7 +469,7 @@ export default function AnalyzePage() {
                       uploadPhase === "processing" ||
                       analysisPhase === "loading"
                     }
-                    className="ml-2 text-white"
+                    className="ml-2 text-white rounded-full"
                   >
                     {analysisPhase === "loading" ? (
                       <>
@@ -486,7 +477,7 @@ export default function AnalyzePage() {
                         Analyzing...
                       </>
                     ) : (
-                      "Analyze Contract"
+                      "Analyze "
                     )}
                   </Button>
                 </div>

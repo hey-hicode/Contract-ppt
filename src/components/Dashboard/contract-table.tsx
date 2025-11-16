@@ -16,6 +16,7 @@ import {
   TableBody,
   TableCell,
 } from "../ui/table";
+import NoContract from "../ui/icons/no-contract";
 
 type ContractTableItem = {
   id: string;
@@ -77,14 +78,14 @@ const ContractTable = ({ items }: ContractTableProps) => {
 
   if (items.length === 0) {
     return (
-      <Card className="border-none shadow-sm bg-white rounded-md p-12">
+      <Card className="border-none border border-gray-500 !shadow-none bg-white rounded-md p-12">
         <div className="text-center space-y-4">
-          <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto">
-            <FileText className="w-8 h-8 text-gray-400" />
+          <div className="  rounded-2xl flex items-center justify-center mx-auto">
+            <NoContract />
           </div>
-          <div>
-            <h3 className="text-gray-900 mb-2">No contracts yet</h3>
-            <p className="text-gray-600">
+          <div className="space-y-2">
+            <h3 className="text-base font-medium">No contracts yet</h3>
+            <p className="text-gray-600 ">
               Upload your first contract to get started
             </p>
           </div>

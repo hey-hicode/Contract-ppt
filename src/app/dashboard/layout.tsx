@@ -11,6 +11,7 @@ import {
   Settings,
 } from "lucide-react";
 import { Input } from "~/components/ui/input";
+import Image from "next/image";
 
 export default function DashboardLayout({
   children,
@@ -30,15 +31,10 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-[#F7F9FC] dark:bg-black text-black dark:text-white">
       <div className="flex">
         {/* Sidebar */}
-        <aside className="sticky top-0 w-[260px] shrink-0 h-screen overflow-y-auto border-r border-white/10 bg-white dark:bg-gray-dark pt-10 p-4">
-          <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="grid h-8 w-8 place-items-center rounded-md bg-primary text-white">
-                <LayoutGrid size={18} />
-              </div>
-              <span className="font-semibold">Counselr</span>
-            </div>
-          </div>
+        <aside className="sticky top-0 w-[260px] shrink-0 h-screen overflow-y-auto border-r border-white/10 bg-white dark:bg-gray-dark  px-4">
+    
+
+                <Image src="/images/Blue.png" alt="logo" width={100} height={100} />
 
           <Link
             href="/dashboard/analyze"
