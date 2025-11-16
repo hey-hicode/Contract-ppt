@@ -1,4 +1,5 @@
 // app/(dashboard)/page.tsx
+import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import ContractTable from "~/components/Dashboard/contract-table";
@@ -37,12 +38,16 @@ const supabase = createClient<Database>(
 );
 
 async function fetchDashboardData(limit = 6) {
+  const { userId, orgId } = await auth();
+  // if (!userId) return new Response("Unauthorized", { status: 401 });
+
   // Fetch recent analyses with explicit typing
   const { data: recent, error: recentErr } = await supabase
     .from("analyses")
     .select(
       "id, source_title, overall_risk, summary, red_flags, recommendations, created_at"
     )
+    .eq("user_id", userId || "")
     .order("created_at", { ascending: false })
     .limit(limit)
     .returns<RecentAnalysis[]>();
@@ -55,7 +60,8 @@ async function fetchDashboardData(limit = 6) {
   // Fetch counts and aggregated stats
   const { count: totalCount, error: countErr } = await supabase
     .from("analyses")
-    .select("*", { count: "exact", head: true });
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId || "");
 
   if (countErr) {
     console.error("Supabase count error:", countErr);
@@ -66,6 +72,7 @@ async function fetchDashboardData(limit = 6) {
   const { data: allRows, error: allErr } = await supabase
     .from("analyses")
     .select("red_flags, overall_risk")
+    .eq("user_id", userId || "")
     .returns<StatsRow[]>();
 
   if (allErr) {
