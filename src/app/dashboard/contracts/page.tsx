@@ -40,6 +40,7 @@ import {
   AlertDialogCancel,
 } from "~/components/ui/alert-dialog";
 import { downloadElementAsPdfSimple } from "~/helper/exportPdf";
+import NoContract from "~/components/ui/icons/no-contract";
 
 interface MyContractsProps {
   onNavigate: (page: string, contractId?: string) => void;
@@ -266,7 +267,7 @@ const Contracts = ({ onNavigate }: MyContractsProps) => {
       )}
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredContracts.map((contract) => (
+        {contracts.map((contract) => (
           <Card
             key={contract.id}
             className="p-6 border-none shadow-sm bg-white rounded-2xl hover:shadow-md transition-shadow"
@@ -338,19 +339,19 @@ const Contracts = ({ onNavigate }: MyContractsProps) => {
       </div>
 
       {filteredContracts.length === 0 && !loading && (
-        <Card className="p-12 border-2 border-dashed border-gray-300 rounded-3xl">
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto">
-              <FileText className="w-8 h-8 text-gray-400" />
-            </div>
-            <div>
-              <h3 className="text-gray-900 mb-2">No contracts found</h3>
-              <p className="text-gray-600">
+      <Card className="border-none border border-gray-500 !shadow-none bg-white rounded-md p-12">
+        <div className="text-center space-y-4">
+          <div className="  rounded-2xl flex items-center justify-center mx-auto">
+            <NoContract />
+          </div>
+            <div className="space-y-2">
+               <h3 className="text-base font-medium">No contracts found</h3>
+           <p className="text-gray-600 ">
                 Try adjusting your search or filter criteria
               </p>
             </div>
-          </div>
-        </Card>
+        </div>
+      </Card>
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
