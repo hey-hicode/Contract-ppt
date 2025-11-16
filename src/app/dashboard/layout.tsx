@@ -1,11 +1,22 @@
-'use client'
+"use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
-import { LayoutGrid, UploadCloud, FileText, MessageSquare, BookOpen, Settings } from "lucide-react";
+import {
+  LayoutGrid,
+  UploadCloud,
+  FileText,
+  MessageSquare,
+  BookOpen,
+  Settings,
+} from "lucide-react";
 import { Input } from "~/components/ui/input";
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const titleMap: Record<string, string> = {
     "/dashboard": "Dashboard",
@@ -37,19 +48,34 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Link>
 
           <nav className="space-y-2  text-body-color text-base leading-relaxed!">
-            <Link href="/dashboard" className="flex items-center gap-4 rounded-md px-3 py-3 hover:bg-black/5 dark:hover:bg-white/10">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-4 rounded-md px-3 py-3 hover:bg-black/5 dark:hover:bg-white/10"
+            >
               <LayoutGrid size={20} /> Dashboard
             </Link>
-            <Link href="/dashboard/contracts" className="flex items-center gap-4 rounded-md px-3 py-3 hover:bg-black/5 dark:hover:bg-white/10">
+            <Link
+              href="/dashboard/contracts"
+              className="flex items-center gap-4 rounded-md px-3 py-3 hover:bg-black/5 dark:hover:bg-white/10"
+            >
               <FileText size={20} /> My Contracts
             </Link>
-            <Link href="/dashboard/chat" className="flex items-center gap-4 rounded-md px-3 py-3 hover:bg-black/5 dark:hover:bg-white/10">  
-              <MessageSquare size={20} /> AI Chat   
+            <Link
+              href="/dashboard/chat"
+              className="flex items-center gap-4 rounded-md px-3 py-3 hover:bg-black/5 dark:hover:bg-white/10"
+            >
+              <MessageSquare size={20} /> AI Chat
             </Link>
-            <Link href="/dashboard/glossary" className="flex items-center gap-4 rounded-md px-3 py-3 hover:bg-black/5 dark:hover:bg-white/10">      
+            <Link
+              href="/dashboard/glossary"
+              className="flex items-center gap-4 rounded-md px-3 py-3 hover:bg-black/5 dark:hover:bg-white/10"
+            >
               <BookOpen size={20} /> Glossary
             </Link>
-            <Link href="/dashboard/settings" className="flex items-center gap-4 rounded-md px-3 py-3 hover:bg-black/5 dark:hover:bg-white/10">
+            <Link
+              href="/dashboard/settings"
+              className="flex items-center gap-4 rounded-md px-3 py-3 hover:bg-black/5 dark:hover:bg-white/10"
+            >
               <Settings size={20} /> Settings
             </Link>
           </nav>
@@ -60,10 +86,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Top Nav */}
           <header className="sticky top-0 z-20 flex h-[80px] items-center justify-between border-b border-white/10 bg-white dark:bg-gray-dark px-6 py-4 shadow-sm">
             <h2 className="text-2xl font-semibold">{currentTitle}</h2>
-  
+
             <div className="flex items-center gap-3">
               <Link
-                href="/analyze"
+                href="/dashboard/analyze"
                 className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white hover:bg-primary/90"
               >
                 <UploadCloud size={16} /> Upload Contract
