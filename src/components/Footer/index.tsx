@@ -13,24 +13,12 @@ const Footer = () => {
         <div className="container">
           <div className="-mx-4 flex items-center justify-between">
               <div className="  ">
-                <Link href="/" className=" inline-block">
-                  {/* <Image
-                    src="/images/logo/logo-2.svg"
-                    alt="logo"
-                    className="w-full dark:hidden"
-                    width={140}
-                    height={30}
-                  />
-                  <Image
-                    src="/images/logo/logo.svg"
-                    alt="logo"
-                    className="hidden w-full dark:block"
-                    width={140}
-                    height={30}
-                  /> */}
-
-                  <Logo />
-                </Link>
+               <Link
+                href="/"
+               
+              >
+                <Image src="/images/couns.jpeg" alt="logo" width={200} height={200} />
+              </Link>
           
              
               </div>
