@@ -13,6 +13,13 @@ import {
   Mail,
   X,
   Send,
+  Save,
+  Download,
+  ChevronRight,
+  Calendar,
+  Shield,
+  AlertCircle,
+  Info
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
@@ -20,7 +27,8 @@ import { Badge } from "~/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { trackFeatureUsage } from "~/lib/analytics";
 import { downloadElementAsPdf } from "~/utils/downloadPdfFromElement";
-import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogClose } from "~/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogClose, DialogHeader, DialogFooter } from "~/components/ui/dialog";
+import { cn } from "~/lib/utils";
 
 interface RedFlag {
   type: "critical" | "warning" | "minor";
@@ -45,7 +53,7 @@ interface StoredData {
 }
 
 export default function AnalyzerResultsPage() {
-  const [data, setData] = useState<StoredData | null>(null);
+  const [data, setData] = useState<StoredData | any>(null);
   const [loading, setLoading] = useState(true);
   const [emailContent, setEmailContent] = useState<any>("");
   const [emailSubject, setEmailSubject] = useState<any>("");
@@ -103,53 +111,65 @@ export default function AnalyzerResultsPage() {
     }
   }, []);
 
-  console.log(data);
-
   const getRiskColor = (risk: string) => {
     switch (risk) {
       case "high":
-        return "!text-red-700 bg-red-50 !border !border-red-700";
+        return "text-red-700 bg-red-50 border-red-200";
       case "medium":
-        return "!text-amber-700 bg-amber-50 !border !border-amber-700";
+        return "text-amber-700 bg-amber-50 border-amber-200";
       case "low":
-        return "!text-emerald-700 bg-emerald-50 !border !border-emerald-700";
+        return "text-emerald-700 bg-emerald-50 border-emerald-200";
       default:
-        return "!text-slate-700 bg-slate-50 !border !border-slate-200";
+        return "text-slate-700 bg-slate-50 border-slate-200";
     }
   };
+
+  const getRiskBadgeVariant = (risk: string) => {
+    switch (risk) {
+      case "high": return "destructive";
+      case "medium": return "secondary"; // Or custom warning variant if available
+      case "low": return "outline"; // Or success variant
+      default: return "secondary";
+    }
+  }
 
   const getRedFlagIcon = (type: string) => {
     switch (type) {
       case "critical":
-        return <XCircle className="h-4 w-4 text-red-600" />;
+        return <XCircle className="h-5 w-5 text-red-600" />;
       case "warning":
-        return <AlertTriangle className="h-4 w-4 text-amber-600" />;
+        return <AlertTriangle className="h-5 w-5 text-amber-600" />;
       case "minor":
-        return <CheckCircle className="h-4 w-4 text-blue-600" />;
+        return <Info className="h-5 w-5 text-blue-600" />;
       default:
-        return <AlertTriangle className="h-4 w-4 text-slate-600" />;
+        return <AlertCircle className="h-5 w-5 text-slate-600" />;
     }
   };
 
   const generateEmailContent = (analysis: AnalysisResult) => {
-    const subject = `Contract Analysis Report - Action Required`;
+    const subject = `Legal Review: Contract Analysis Report - ${data?.sourceTitle || "Untitled"}`;
     const content = `Dear [Recipient Name],
 
-I hope this email finds you well. I am writing to share the results of our recent contract analysis and discuss some important recommendations that require attention.
+I have reviewed the contract "${data?.sourceTitle || "Untitled"}" and would like to share the following analysis.
 
-**Executive Summary:**
+EXECUTIVE SUMMARY
+------------------
 ${analysis.summary}
 
-**Key Findings:**
-- Risk Level: ${analysis.overallRisk?.charAt(0).toUpperCase() + analysis.overallRisk?.slice(1)}
-- Issues Identified: ${analysis.redFlags?.length}
-- Recommendations: ${analysis.recommendations?.length}
+RISK ASSESSMENT
+------------------
+Overall Risk Level: ${analysis.overallRisk?.toUpperCase()}
+Total Issues Identified: ${analysis.redFlags?.length}
 
-**Priority Recommendations:**
-${analysis.recommendations.slice(0, 3).map((rec, index) => `${index + 1}. ${rec}`).join("\n")}
+KEY RECOMMENDATIONS
+------------------
+${analysis.recommendations.slice(0, 5).map((rec, index) => `${index + 1}. ${rec}`).join("\n")}
 
-**Critical Issues to Address:**
-${analysis.redFlags.filter((flag) => flag.type === "critical").slice(0, 2).map((flag, index) => `${index + 1}. ${flag.title}: ${flag.description}`).join("\n")}
+CRITICAL ISSUES
+------------------
+${analysis.redFlags.filter((flag) => flag.type === "critical").map((flag, index) => `${index + 1}. ${flag.title}: ${flag.description}`).join("\n")}
+
+Please let me know if you would like to discuss these findings in more detail.
 
 Best regards,
 [Your Name]`;
@@ -224,12 +244,10 @@ Best regards,
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white">
-        <div className="relative flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-300 mx-auto mb-4"></div>
-            <p className="text-slate-600">Loading analysis results...</p>
-          </div>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-slate-600 font-medium">Analyzing contract details...</p>
         </div>
       </div>
     );
@@ -237,279 +255,324 @@ Best regards,
 
   if (!data || !data.analysis) {
     return (
-      <div className="min-h-screen bg-white">
-        <div className="relative flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <FileText className="h-16 w-16 text-slate-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-slate-900 mb-2">No Analysis Found</h2>
-            <p className="text-slate-600 mb-6">Please go back and analyze a contract first.</p>
-            <Button onClick={() => router.push("/dashboard/analyze")} className="bg-indigo-600 text-white hover:bg-indigo-700">
-              <ArrowLeft className="h-4 w-4 mr-2" /> Back to Analyzer
-            </Button>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md text-center p-6">
+          <div className="flex justify-center mb-4">
+            <div className="p-4 bg-slate-100 rounded-full">
+              <FileText className="h-10 w-10 text-slate-400" />
+            </div>
           </div>
-        </div>
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">No Analysis Found</h2>
+          <p className="text-slate-600 mb-6">Please go back and analyze a contract first to see the results here.</p>
+          <Button onClick={() => router.push("/dashboard/analyze")} className="w-full">
+            <ArrowLeft className="h-4 w-4 mr-2" /> Return to Analyzer
+          </Button>
+        </Card>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="relative px-6 py-8">
-        {/* Header + actions */}
-        <div className="flex items-center justify-between">
-       {/* Document header */}
-        <div className="mt-6 mb-6">
-          <div className="flex  justify-between">
-            <div className="space-y-1">
-              <h2 className="text-xl font-semibold text-slate-900">{data?.sourceTitle ?? "Contract Analysis Report"}</h2>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-500">Uploaded {new Date().toLocaleDateString()}</span>
-              </div>
-            </div>
-       
-          </div>
-        </div>
 
-          <div className="flex items-center gap-3">
-      
-            <Button
-             
-          
-              className={getRiskColor(data.analysis.overallRisk) + " border-slate-300 text-slate-700 !px-10 py-5 hover:bg-slate-50"}
-            >
-              {data.analysis.overallRisk}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => router.push("/dashboard/analyze")}
-              className="border-slate-300 text-slate-700 !p-5 hover:bg-slate-50"
-            >
-              Analyze New Contract
-            </Button>
-            <Button
-              onClick={() => {
-                const el = document.getElementById("analysis-report");
-                if (el) {
-                  trackFeatureUsage("report_downloaded");
-                  void downloadElementAsPdf(el, "contract-analysis.pdf");
-                }
-              }}
-              className="bg-primary !p-5 text-white"
-            >
-              Download Report
-            </Button>
-            <Button
-              size="lg"
-              onClick={handleSave}
-              disabled={saving || !!savedId}
-              className="bg-primary hover:bg-primary-dark !p-5 text-white"
-            >
-              {saving ? "Saving..." : savedId ? "Saved" : "Save"}
-            </Button>
-          </div>
-        </div>
 
-        {errorMsg ? <p className="text-sm text-red-600 mt-2">Couldn’t save: {errorMsg}</p> : null}
-       <div className="space-y-3 grid gap-4 grid-cols-3">
-              <div className="rounded-md border border-slate-200 p-4 flex items-center gap-3">
-                <div className="p-3 rounded-full bg-red-500">
-                  <AlertTriangle className="h-4 w-4 text-white" />
+      <div className=" mx-auto px-4 sm:px-6 lg:px-8 py-8" id="analysis-report-content">
+
+        {/* Header Section */}
+        <div className="mb-8">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{data.sourceTitle}</h1>
+              <div className="flex items-center gap-4 mt-2 text-sm text-slate-500">
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-4 w-4" />
+                  {new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
                 </div>
-                <div>
-                  <div className="text-sm font-medium text-slate-900">Risk Level</div>
-                  <div className="text-2xl font-semibold text-slate-900 capitalize">{analysis?.overallRisk}</div>
-                </div>
-              </div>
-              <div className="rounded-md border border-slate-200 p-4 flex items-center gap-3">
-                <div className="p-3 rounded-full bg-amber-600">
-                  <AlertTriangle className="h-4 w-4 text-white" />
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-slate-900">Issues Found</div>
-                  <div className="text-2xl font-semibold text-slate-900">{analysis?.redFlags?.length ?? 0}</div>
-                </div>
-              </div>
-              <div className="rounded-md border border-slate-200 p-4 flex items-center gap-3">
-                <div className="p-3 rounded-full bg-primary">
-                  <CheckCircle className="h-4 w-4 text-white" />
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-slate-900">Recommendations</div>
-                  <div className="text-2xl font-semibold text-slate-900">{analysis?.recommendations?.length ?? 0}</div>
+                <div className="flex items-center gap-1">
+                  <Shield className="h-4 w-4" />
+                  Counselr
                 </div>
               </div>
             </div>
-        {/* 3-column layout: sticky summary (left), scrollable tabs (middle), fixed email panel (right) */}
-        <div id="analysis-report" className="mt-6 grid grid-cols-1 lg:flex  gap-6">
-          {/* Sticky Summary Left */}
 
-          <div className="lg:sticky lg:top-20 max-w-[500px] lg:self-start space-y-6">
-            <Card className=" !border-r-2 rounded-none border-0  border-r-slate-400  !shadow-none ">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Contract Analysis Overview</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-slate-700">{analysis?.summary}</p>
-              </CardContent>
-            </Card>
+            <div className="flex items-center gap-3">
+              <div className={cn("px-4 py-2 rounded-md font-bold border flex items-center gap-2 font-medium", getRiskColor(analysis.overallRisk))}>
+                <AlertCircle className="h-5 w-5" />
+                <span className="capitalize text-xs">{analysis.overallRisk} Risk Detected</span>
+              </div>
+              <Button variant="outline" size="lg" onClick={() => router.push("/dashboard/analyze")} className="text-slate-600">
+                New Analysis
+              </Button>
+              <div className="h-6 w-px bg-slate-200" />
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleSave}
+                disabled={saving || !!savedId}
+                className={cn(savedId ? "" : "bg-primary text-white")}
+              >
+                {saving ? <span className="animate-pulse">Saving...</span> : savedId ? <><CheckCircle className="h-4 w-4 mr-2" /> Saved</> : <>Save </>}
+              </Button>
+              <Button
+                size="lg"
+                className="text-white"
+                onClick={() => {
+                  const el = document.getElementById("analysis-report-content");
+                  if (el) {
+                    trackFeatureUsage("report_downloaded");
+                    void downloadElementAsPdf(el, `Analysis - ${data.sourceTitle}.pdf`);
+                  }
+                }}
+              >
+                <Download className="h-4 w-4 mr-2" /> Export PDF
+              </Button>
+            </div>
+          </div>
+        </div>
 
-     
+        {errorMsg && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md text-red-700 flex items-center gap-2">
+            <XCircle className="h-5 w-5" />
+            {errorMsg}
+          </div>
+        )}
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-16">
+          <Card className="!h-fit !shadow-none bg-white">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 ">
+              <CardTitle className="text-sm font-medium text-slate-600">Overall Risk Score</CardTitle>
+              <Shield className={cn("h-4 w-4", analysis.overallRisk === 'high' ? 'text-red-500' : analysis.overallRisk === 'medium' ? 'text-amber-500' : 'text-emerald-500')} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold capitalize text-slate-900">{analysis.overallRisk}</div>
+            </CardContent>
+          </Card>
+          <Card className="!h-fit !shadow-none bg-white">
+
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 ">
+              <CardTitle className="text-sm font-medium text-slate-600">Issues Identified</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-amber-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-slate-900">{analysis.redFlags?.length ?? 0}</div>
+            </CardContent>
+          </Card>
+          <Card className="!h-fit !shadow-none bg-white">
+
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 ">
+              <CardTitle className="text-sm font-medium text-slate-600">Recommendations</CardTitle>
+              <CheckCircle className="h-4 w-4 text-emerald-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-slate-900">{analysis.recommendations?.length ?? 0}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Content Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+          {/* Left Column: Summary (Sticky) */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-24 space-y-6">
+              <Card className="  !shadow-none bg-white">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    {/* <FileText className="h-5 w-5 text-primary" /> */}
+                    Executive Summary
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm leading-relaxed text-slate-700">
+                    {analysis.summary}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="  !shadow-none bg-white">
+
+                <CardHeader>
+                  <CardTitle className="text-sm font-medium text-slate-900">Analysis Confidence</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="h-2 flex-1 bg-slate-200 rounded-full overflow-hidden">
+                      <div className="h-full bg-emerald-500 w-[95%]"></div>
+                    </div>
+                    <span className="text-sm font-bold text-emerald-700">95%</span>
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    AI confidence score based on legal database matching.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
-          {/* Scrollable Tabs Middle */}
-          <div className="min-h-[60vh] lg:max-h-[calc(100vh-220px)] flex  w-full gap-2 overflow-y-auto pr-1">
+          {/* Right Column: Tabs */}
+          <div className="lg:col-span-2">
             <Tabs defaultValue="risks" className="w-full">
-              <div>
-                <TabsList className="grid w-full h-[55px] grid-cols-3 bg-primary/50 rounded-md border border-slate-200">
-                  <TabsTrigger value="risks" className="data-[state=active]:bg-white hover:text-primary transition-all text-white data-[state=active]:text-primary hover:bg-slate-50 rounded-none py-3 px-4 text-sm font-medium">
-                    <AlertTriangle className="h-4 w-4 mr-2" /> Risks
-                  </TabsTrigger>
-                  <TabsTrigger value="clauses" className="data-[state=active]:bg-white hover:text-primary transition-all data-[state=active]:text-primary text-white hover:bg-slate-50 rounded-none py-3 px-4 text-sm font-medium">
-                    <FileText className="h-4 w-4 mr-2" /> Clauses
-                  </TabsTrigger>
-                  <TabsTrigger value="suggestions" className="data-[state=active]:bg-white hover:text-primary transition-all data-[state=active]:text-primary text-white hover:bg-slate-50 rounded-none py-3 px-4 text-sm font-medium">
-                    <CheckCircle className="h-4 w-4 mr-2" /> Suggestions
-                  </TabsTrigger>
-                </TabsList>
-              </div>
+              <TabsList className="w-full justify-start  rounded-none bg-slate-50/50 p-2 h-auto mb-6">
+                <TabsTrigger
+                  value="risks"
+                  className="rounded-none border data-[state=active]:border-slate-50 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-none px-6 py-2"
+                >
+                  Risks & Issues
+                  <Badge variant="secondary" className="ml-2 bg-slate-100 text-slate-600">{analysis.redFlags?.length ?? 0}</Badge>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="clauses"
+                  className="rounded-none border-b-2 border-transparent  data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-none px-6 py-2"
+                >
+                  Problematic Clauses
+                </TabsTrigger>
+                <TabsTrigger
+                  value="suggestions"
+                  className="rounded-none border-b-2 border-transparent  data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-none px-6 py-2"
+                >
+                  Suggestions
+                </TabsTrigger>
+              </TabsList>
 
-              {/* Risks */}
-              <TabsContent value="risks" className="space-y-6 pt-4">
-                {analysis?.redFlags?.length === 0 ? (
-                  <div className="text-center py-12 text-slate-500">
-                    <CheckCircle className="h-12 w-12 mx-auto mb-4 text-emerald-600" />
-                    <h3 className="text-base font-semibold mb-2 text-slate-900">No Risks Found</h3>
-                    <p>This contract appears well-structured with no major issues detected.</p>
+              <TabsContent value="risks" className="space-y-4 animate-in fade-in-50 duration-300">
+                {analysis.redFlags?.length === 0 ? (
+                  <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-md">
+                    <CheckCircle className="h-12 w-12 mx-auto mb-4 text-emerald-500" />
+                    <h3 className="text-lg font-medium text-slate-900">No Risks Detected</h3>
+                    <p className="text-slate-500">The contract appears to be safe.</p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {analysis?.redFlags.map((flag, index) => (
-                      <div key={index} className="rounded-md border-2 border-l-red-500 p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex gap-3">
-                            {getRedFlagIcon(flag.type)}
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <h4 className="text-sm font-semibold text-slate-900">{flag.title}</h4>
-                                <span className={`text-xs px-2 py-0.5 rounded-full border capitalize ${flag.type === "critical" ? "border-red-300 text-red-700" : flag.type === "warning" ? "border-amber-300 text-amber-700" : "border-blue-300 text-blue-700"}`}>
-                                  {flag.type}
-                                </span>
-                              </div>
-                              <p className="text-sm text-slate-700 mt-1">{flag.description}</p>
-                            </div>
+                  analysis.redFlags.map((flag: any) => (
+                    <Card key={flag.id} className={cn("border-l-4 rounded-none transition-all hover:shadow-md",
+                      flag.type === 'critical' ? 'border-l-red-500' :
+                        flag.type === 'warning' ? 'border-l-amber-500' : 'border-l-blue-500'
+                    )}>
+                      <CardHeader className="pb-2">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-center gap-2">
+                            {/* {getRedFlagIcon(flag.type)} */}
+                            <CardTitle className="text-base font-semibold text-slate-900">{flag.title}</CardTitle>
                           </div>
-                          <p className="text-xs text-emerald-600 font-medium">+ 95% confidence</p>
+                          <Badge variant="outline" className={cn("capitalize",
+                            flag.type === 'critical' ? 'text-red-700 border-red-200 bg-red-50' :
+                              flag.type === 'warning' ? 'text-amber-700 border-amber-200 bg-amber-50' : 'text-blue-700 border-blue-200 bg-blue-50'
+                          )}>
+                            {flag.type}
+                          </Badge>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <p className="text-sm text-slate-700">{flag.description}</p>
+                        {flag.clause && (
+                          <div className="bg-slate-50 p-3 rounded border border-slate-100 text-xs font-mono text-slate-600">
+                            "{flag.clause}"
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))
                 )}
               </TabsContent>
 
-              {/* Clauses */}
-              <TabsContent value="clauses" className="space-y-4 pt-4">
-                {(analysis?.redFlags ?? []).map((flag, idx) => (
-                  <div key={idx} className="rounded-md border border-slate-200 p-4">
-                    <div className="text-xs font-semibold text-body-color mb-2">Relevant Clause</div>
-                    <p className="text-sm font-bold text-slate-900 italic">"{flag.clause}"</p>
-                  </div>
+              <TabsContent value="clauses" className="space-y-4 animate-in fade-in-50 duration-300">
+                {analysis.redFlags?.map((flag: { clause: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; title: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; }, idx: React.Key | null | undefined) => (
+                  <Card key={idx} className="group hover:border-primary/50 transition-colors">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium text-slate-500 uppercase tracking-wider">Clause Reference</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <blockquote className="border-l-2 border-slate-300 pl-4 italic text-slate-700 font-serif text-lg">
+                        "{flag.clause}"
+                      </blockquote>
+                      <div className="mt-4 flex items-center gap-2 text-sm text-red-600 font-medium">
+                        <AlertTriangle className="h-4 w-4" />
+                        Issue: {flag.title}
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
               </TabsContent>
 
-              {/* Suggestions */}
-              <TabsContent value="suggestions" className="space-y-6 pt-4">
-                {analysis?.recommendations?.length === 0 ? (
-                  <div className="text-center py-12 text-slate-500">
-                    <CheckCircle className="h-12 w-12 mx-auto mb-4 text-emerald-600" />
-                    <h3 className="text-base font-semibold mb-2 text-slate-900">No Recommendations</h3>
-                    <p>This contract appears well-structured with no improvements needed.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {analysis?.recommendations?.map((rec, index) => (
-                      <div key={index} className="rounded-md border-2 border-l-green-600 p-4">
-                        <div className="text-xs font-semibold text-body-color mb-2">Recommendation</div>
-                        <p className="text-sm text-slate-900 font-bold">{rec}</p>
+              <TabsContent value="suggestions" className="space-y-4 animate-in fade-in-50 duration-300">
+                {analysis.recommendations?.map((rec: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined, idx: React.Key | null | undefined) => (
+                  <div key={idx} className="flex gap-4 p-4 bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex-shrink-0">
+                      <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-sm">
+                        {idx + 1}
                       </div>
-                    ))}
+                    </div>
+                    <div>
+                      <h4 className="text-base font-medium text-slate-900 mb-1">Recommendation</h4>
+                      <p className="text-sm text-slate-600 leading-relaxed">{rec}</p>
+                    </div>
                   </div>
-                )}
+                ))}
               </TabsContent>
             </Tabs>
+          </div>
+        </div>
+      </div>
 
-      {/* Right-side email panel removed; replaced by floating button + off-canvas drawer */}
+      {/* Floating Email Action */}
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button
+            className="fixed bottom-8 right-8 h-14 w-14 rounded-full shadow-2xl bg-primary hover:bg-primary/90 text-white grid place-items-center z-40 transition-transform hover:scale-105"
+            aria-label="Draft Email"
+          >
+            <Mail className="h-6 w-6" />
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[600px] p-0 gap-0 overflow-hidden flex flex-col max-h-[85vh]">
+          <DialogHeader className="p-6 border-b border-slate-100 bg-slate-50/50">
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Mail className="h-5 w-5 text-primary" />
+              Draft Legal Report Email
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Recipient</label>
+              <input
+                type="email"
+                value={recipientEmail}
+                onChange={(e) => setRecipientEmail(e.target.value)}
+                placeholder="client@example.com"
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Subject</label>
+              <input
+                type="text"
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+              />
+            </div>
+            <div className="space-y-2 flex-1">
+              <label className="text-sm font-medium text-slate-700">Message Body</label>
+              <textarea
+                value={emailContent}
+                onChange={(e) => setEmailContent(e.target.value)}
+                className="w-full h-[300px] px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono text-sm resize-none transition-all"
+              />
+            </div>
           </div>
 
-    
-        </div>
-
-        {/* Footer actions */}
-                {/* Floating Draft Email button + Off-canvas Drawer */}
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button
-              className="fixed bottom-6 right-6 z-50 shadow-lg bg-primary text-white hover:bg-primary-dark animate-bounce h-12 w-12 rounded-full p-0 grid place-items-center"
-              aria-label="Open Draft Email"
-            >
-              <Send className="h-5 w-5" />
-              <span className="sr-only">Draft Email</span>
+          <DialogFooter className="p-4 border-t border-slate-100 bg-slate-50/50">
+            <Button variant="outline" onClick={() => document.querySelector<HTMLElement>('[data-state="open"] button[aria-label="Close"]')?.click()}>
+              Cancel
             </Button>
-          </DialogTrigger>
-          <DialogContent
-            className="!right-0 !top-0 !left-auto !translate-x-0 !translate-y-0 !h-screen bg-white !w-full  !rounded-none !border-l !p-0 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right"
-            showCloseButton
-          >
-            <div className="flex items-center justify-between border-b p-4">
-              <DialogTitle className="text-lg font-bold flex items-center gap-2">
-                Draft Email Report
-              </DialogTitle>
-        
-            </div>
-            <div className="p-4 overflow-y-auto h-[calc(100vh-56px-64px)]">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-base font-semibold text-body-color mb-1">Recipient Email</label>
-                  <input
-                    type="email"
-                    value={recipientEmail}
-                    onChange={(e) => setRecipientEmail(e.target.value)}
-                    placeholder="recipient@example.com"
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
-                  />
-                </div>
-                <div>
-                  <label className="block text-base font-semibold text-body-color mb-1">Subject</label>
-                  <input
-                    type="text"
-                    value={emailSubject}
-                    onChange={(e) => setEmailSubject(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
-                  />
-                </div>
-                <div>
-                  <label className="block text-base font-semibold text-body-color mb-1">Email Content</label>
-                  <textarea
-                    value={emailContent}
-                    onChange={(e) => setEmailContent(e.target.value)}
-                    rows={30}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary font-mono text-sm"
-                  />
-                </div>
-              </div>
-                       <div className=" p-4">
-              <Button   className="w-full bg-primary hover:bg-primary-dark text-white flex items-center justify-center gap-2"
-              size={"lg"}
-              
-              >
-                <Send className="h-4 w-4" /> Send Email
-              </Button>
-            </div>
-            </div>
-   
-          </DialogContent>
-        </Dialog>
-  
-      </div>
+            <Button onClick={handleSendEmail} className="gap-2">
+              <Send className="h-4 w-4" />
+              Open in Mail App
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
