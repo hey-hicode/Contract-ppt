@@ -140,13 +140,12 @@ export default async function DashboardPage() {
           <h2 className="text-2xl font-medium tracking-tight">
             Hi, Welcome back 👋
           </h2>
- 
         </div>
 
         <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card pt-4 !px-0 grid grid-cols-1 gap-4  *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 md:grid-cols-2 lg:grid-cols-4 pb-4">
           <Card className="@container/card ">
             <CardHeader>
-              <CardDescription>Contracts Analyzed</CardDescription>
+              <CardDescription>Contracts Analyzed </CardDescription>
               <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                 {data.totalCount}
               </CardTitle>
