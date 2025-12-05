@@ -1,3 +1,5 @@
+import { GeneralChat } from "~/components/Chat/GeneralChat";
+
 export default function ChatPage() {
   return (
     <div>
@@ -5,6 +7,7 @@ export default function ChatPage() {
       <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
         Converse with LexIQ about your contracts. Coming soon.
       </p>
+      <GeneralChat />
     </div>
   );
 }
