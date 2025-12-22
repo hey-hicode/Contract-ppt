@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import AppChrome from "~/components/layout/app-chrome";
 
 
 export const metadata: Metadata = {
-  title: "ContractPPT · AI contract review for creators",
+  title: "Counselr· AI contract review for creators",
   description:
     "Upload and analyze label, brand, and sponsorship contracts with creator-focused AI insights.",
 };

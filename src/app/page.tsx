@@ -12,8 +12,8 @@ import Testimonials from "~/components/Testimonials";
 import Video from "~/components/Video";
 
 export const metadata: Metadata = {
-  title: "Free Next.js Template for Startup and SaaS",
-  description: "This is Home for Startup Nextjs Template",
+  title: "Counselr",
+  description: "Counselr is a platform that helps creators, freelancers, and influencers analyze their contracts with AI.",
   // other metadata
 };
 

@@ -63,7 +63,7 @@ export function ContractChat({ analysisId, documentText }: Props) {
   }
 
   return (
-    <div className="flex h-full max-h-[500px] flex-col border rounded-xl p-3 gap-3">
+    <div className="flex h-full flex-col  rounded-xl p-3 gap-3">
       <div className="flex-1 overflow-y-auto space-y-2 text-sm pr-1">
         {messages.map((m) => (
           <div

@@ -3,14 +3,11 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 // Public routes (keep "/" and anything else you want unauthenticated)
-// Include Clerk auth pages so users can access sign-in/up when signed out.
 const isPublicRoute = createRouteMatcher([
   "/", // homepage stays public
-  "/dashboard/analyze", // allow parsing workflow without auth
-  "/sign-in(.*)", // Clerk sign-in pages
-  "/sign-up(.*)", // Clerk sign-up pages
+  "/analyze", // allow parsing workflow without auth
   "/api/parse-data(.*)", // parsing endpoint must be public for pre-auth uploads
-  "/api/webhooks(.*)", // example: allow your webhooks
+  // "/api/webhooks(.*)", // example: allow your webhooks
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
@@ -29,7 +26,7 @@ export default clerkMiddleware(async (auth, req) => {
     }
 
     // For page navigations: redirect to homepage
-    url.pathname = "/sign-in";
+    url.pathname = "/";
     // Optional: flag why we redirected (useful for a toast)
     url.searchParams.set("unauth", "1");
     return NextResponse.redirect(url);

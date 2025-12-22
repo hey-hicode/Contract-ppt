@@ -299,8 +299,9 @@ Rules:
 
         console.log("AI analysis successful");
         return NextResponse.json(analysisResult, { status: 200 });
-      } catch (aiError: any) {
-        console.error("AI analysis failed:", aiError.message);
+      } catch (aiError: unknown) {
+        const msg = aiError instanceof Error ? aiError.message : String(aiError);
+        console.error("AI analysis failed:", msg);
 
         // Fallback to basic analysis
         console.log("Using fallback basic analysis");
@@ -310,7 +311,7 @@ Rules:
     }
 
     return NextResponse.json({ error: "Invalid action." }, { status: 400 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Contract analysis error:", error);
 
     // Ultimate fallback

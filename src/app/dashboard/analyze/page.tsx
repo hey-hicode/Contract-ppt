@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+
+import { useCallback, useEffect, useState } from "react";
 import {
   CheckCircle2,
   ClipboardCopy,
@@ -15,18 +15,14 @@ import toast from "react-hot-toast";
 import { useAuth, useClerk } from "@clerk/nextjs";
 import { Button } from "~/components/ui/button";
 import FileUpload from "~/components/shared/file-uploader";
-import { ScrollArea } from "~/components/ui/scroll-area";
+
 import { cn } from "~/lib/utils";
 import { Textarea } from "~/components/ui/textarea";
 import { useRouter } from "next/navigation";
 
 type UploadPhase = "idle" | "uploading" | "processing" | "completed" | "error";
 
-const detailBullets = [
-  "Accepts PDF contracts up to 8 MB.",
-  "Keeps sections, exhibits, and attachments intact for review.",
-  "Outputs clean text for negotiation prep or legal briefs.",
-] as const;
+
 
 type ContractAnalysis = {
   summary: string;
@@ -119,8 +115,9 @@ export default function AnalyzePage() {
   );
   const [isCopying, setIsCopying] = useState(false);
   const [analysisPhase, setAnalysisPhase] = useState<AnalysisPhase>("idle");
-  const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [analysis, setAnalysis] = useState<ContractAnalysis | null>(null);
+  const [, setAnalysisError] = useState<string | null>(null);
+
+
   const [selectedModel, setSelectedModel] = useState(
     "anthropic/claude-3.5-sonnet:beta"
   );
@@ -146,8 +143,6 @@ export default function AnalyzePage() {
     setUploadPhase("uploading");
     setStatusMessage(`Uploading ${file.name}...`);
     setAnalysisPhase("idle");
-    setAnalysis(null);
-    setAnalysisError(null);
     setShouldAutoTriggerAnalysis(false);
   };
 
@@ -168,8 +163,6 @@ export default function AnalyzePage() {
         : `Finished parsing ${file.name}. Sign in to run an AI analysis.`
     );
     setAnalysisPhase("idle");
-    setAnalysis(null);
-    setAnalysisError(null);
     if (isSignedIn) {
       setShouldAutoTriggerAnalysis(false);
     } else {
@@ -183,8 +176,6 @@ export default function AnalyzePage() {
     setUploadPhase("error");
     setStatusMessage(message);
     setAnalysisPhase("error");
-    setAnalysis(null);
-    setAnalysisError(message);
     setShouldAutoTriggerAnalysis(false);
   };
 
@@ -198,8 +189,6 @@ export default function AnalyzePage() {
     setUploadPhase("idle");
     setStatusMessage("Upload a contract PDF to start parsing.");
     setAnalysisPhase("idle");
-    setAnalysis(null);
-    setAnalysisError(null);
     setShouldAutoTriggerAnalysis(false);
   };
 
@@ -257,7 +246,7 @@ export default function AnalyzePage() {
         title?: string;
       };
 
-      setAnalysis(data.analysis);
+
       setAnalysisPhase("ready");
       setSelectedModel(data.model);
       toast.success("Analysis complete.");
@@ -282,7 +271,6 @@ export default function AnalyzePage() {
     } catch (err) {
       console.error("performAnalysis error:", err);
       setAnalysisPhase("error");
-      setAnalysisError("Unexpected issue contacting the analysis service.");
       toast.error("Unexpected issue contacting the analysis service.");
     }
   }, [parsedText, selectedModel, uploadedFileInfo, router]);
@@ -325,7 +313,7 @@ export default function AnalyzePage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden  text-gray-900 dark:text-white">
-      <header className="flex flex-col justify-between gap-6 bg-gray-light rounded-md p-5 md:flex-row md:items-center">
+      <header className="flex justify-between gap-6 bg-gray-light rounded-md p-5 flex-row md:items-center">
         <div className="flex items-center gap-4">
           <div>
             <h1 className="text-2xl font-medium tracking-tight">
@@ -335,12 +323,13 @@ export default function AnalyzePage() {
         </div>
         <div
           className={cn(
-            "inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-medium tracking-wide shadow-sm backdrop-blur",
+            "inline-flex items-center w-fit gap-2 rounded-full border px-4 py-1.5 text-xs font-medium tracking-wide shadow-sm backdrop-blur",
             className
           )}
         >
           <StatusIcon className={cn("size-4", spin && "animate-spin")} />
-          {label}
+          <span className="hidden md:flex">{label}</span>
+
         </div>
       </header>
 
@@ -412,8 +401,8 @@ export default function AnalyzePage() {
                       {uploadPhase === "completed"
                         ? "Parsed"
                         : uploadPhase === "error"
-                        ? "Issue detected"
-                        : "Processing"}
+                          ? "Issue detected"
+                          : "Processing"}
                     </span>
                   </div>
                 </div>
@@ -427,7 +416,7 @@ export default function AnalyzePage() {
               )}
             </div>
 
-            <div className="rounded-3xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 ">
+            <div className="rounded-3xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 md:p-6 ">
               <div className=" flex-wrap space-y-2 items-center justify-between gap-4 border-b border-gray-200 dark:border-white/10 pb-4">
                 <div>
                   <h3 className="text-2xl font-medium tracking-tight">
@@ -437,11 +426,11 @@ export default function AnalyzePage() {
                     {parsedText
                       ? "Use this output in diligence checklists, summaries, and OpenRouter prompts."
                       : uploadPhase === "error"
-                      ? "We were unable to parse the file. Upload a new PDF and try again."
-                      : "The parsed result will be displayed here when ready."}
+                        ? "We were unable to parse the file. Upload a new PDF and try again."
+                        : "The parsed result will be displayed here when ready."}
                   </p>
                 </div>
-                <div className="flex gap-2 justify-end items-center">
+                <div className="flex gap-2 md:justify-end items-center">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -457,7 +446,7 @@ export default function AnalyzePage() {
                     Copy text
                   </Button>
 
-           
+
 
                   {/* ANALYZE BUTTON */}
                   <Button

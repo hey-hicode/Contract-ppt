@@ -1,63 +1,65 @@
 'use client'
-import { Heart, MessageCircle, Repeat2, Share, ThumbsUp, CheckCircle } from "lucide-react"
-import { useEffect, useState } from "react";
-const starIcon = (
-  <svg width="18" height="16" viewBox="0 0 18 16" className="fill-current">
-    <path d="M9.09815 0.361679L11.1054 6.06601H17.601L12.3459 9.59149L14.3532 15.2958L9.09815 11.7703L3.84309 15.2958L5.85035 9.59149L0.595291 6.06601H7.0909L9.09815 0.361679Z" />
-  </svg>
-);
+import { Heart, MessageCircle, Repeat2, Share } from "lucide-react"
 
-const SingleTestimonial = ({ testimonial,index }: { testimonial: any,index:number }) => {
-  const [isVisible, setIsVisible] = useState(false)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(true)
-    }, index * 200)
+type Testimonial = {
+  body: string;
+  name: string;
+  username?: string;
+  handle?: string;
+  likes: number;
+  retweets?: number;
+  replies?: number;
+  shares?: number;
+  comments?: number;
+  time: string;
+  verified?: boolean;
+  img?: string;
+  title?: string;
+};
 
-    return () => clearTimeout(timer)
-  }, [index])
-
+const SingleTestimonial = ({ testimonial }: { testimonial: Testimonial }) => {
   return (
     <div className="w-full md:w-[400px]    rounded-2xl">
       <div className="shadow-two hover:shadow-one h-[300px] dark:bg-dark dark:shadow-three dark:hover:shadow-gray-dark rounded-xs bg-white p-8 duration-300 lg:px-5 xl:px-8">
         <p className="border-body-color/10 text-body-color  pb-4 text-base leading-relaxed dark:border-white/10 dark:text-white">
-            {testimonial.body}
+          {testimonial.body}
         </p>
-              <div
-        className={(
-          "flex items-center mb-2 border-b pb-8 justify-between text-xs text-gray-500 transition-all duration-300 delay-700"
-        )}
-      >
-        <div className="flex items-center gap-1 hover:text-blue-500 cursor-pointer transition-colors">
-          <MessageCircle className="w-4 h-4" />
-          <span>{testimonial.replies}</span>
+        <div className="flex items-center mb-2 border-b pb-8 justify-between text-xs text-gray-500 transition-all duration-300 delay-700">
+          <div className="flex items-center gap-1 hover:text-blue-500 cursor-pointer transition-colors">
+            <MessageCircle className="w-4 h-4" />
+            <span>{testimonial.replies ?? testimonial.comments ?? 0}</span>
+          </div>
+          <div className="flex items-center gap-1 hover:text-green-500 cursor-pointer transition-colors">
+            <Repeat2 className="w-4 h-4" />
+            <span>{testimonial.retweets ?? testimonial.shares ?? 0}</span>
+          </div>
+          <div className="flex items-center gap-1 hover:text-red-500 cursor-pointer transition-colors">
+            <Heart className="w-4 h-4" />
+            <span>{testimonial.likes}</span>
+          </div>
+          <div className="flex items-center gap-1 hover:text-blue-500 cursor-pointer transition-colors">
+            <Share className="w-4 h-4" />
+          </div>
         </div>
-        <div className="flex items-center gap-1 hover:text-green-500 cursor-pointer transition-colors">
-          <Repeat2 className="w-4 h-4" />
-          <span>{testimonial.retweets}</span>
-        </div>
-        <div className="flex items-center gap-1 hover:text-red-500 cursor-pointer transition-colors">
-          <Heart className="w-4 h-4" />
-          <span>{testimonial.likes}</span>
-        </div>
-        <div className="flex items-center gap-1 hover:text-blue-500 cursor-pointer transition-colors">
-          <Share className="w-4 h-4" />
-        </div>
-      </div>
-      
+
         <div className="flex items-center">
-       
           <div className="w-full">
             <h3 className="text-dark mb-1 text-lg font-semibold lg:text-base xl:text-lg dark:text-white">
               {testimonial.name}
             </h3>
-                    <div
-            className={"flex items-center gap-2 text-xs text-gray-500 transition-all duration-300 delay-250"}
-          >
-            <span>{testimonial.handle ? testimonial.handle : testimonial.username}</span>
-            <span>·</span>
-            <span>{testimonial.time}</span>
-          </div>
+            <div
+              className={
+                "flex items-center gap-2 text-xs text-gray-500 transition-all duration-300 delay-250"
+              }
+            >
+              <span>
+                {testimonial.handle
+                  ? testimonial.handle
+                  : testimonial.username ?? ""}
+              </span>
+              <span>·</span>
+              <span>{testimonial.time}</span>
+            </div>
           </div>
           {testimonial.handle ? (
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">

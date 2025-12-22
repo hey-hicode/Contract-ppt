@@ -9,18 +9,11 @@ import {
   CheckCircle,
   XCircle,
   FileText,
-  BarChart3,
-  Mail,
-  X,
-  Send,
-  Save,
   Download,
-  ChevronRight,
   Calendar,
   Shield,
   AlertCircle,
-  Info,
-  MessageCircle,
+
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
@@ -28,17 +21,9 @@ import { Badge } from "~/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { trackFeatureUsage } from "~/lib/analytics";
 import { downloadElementAsPdf } from "~/utils/downloadPdfFromElement";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-  DialogTitle,
-  DialogClose,
-  DialogHeader,
-  DialogFooter,
-} from "~/components/ui/dialog";
 import { cn } from "~/lib/utils";
-import { ContractChat } from "~/components/Chat/ContractChat";
+
+import ActionSheets from "~/components/Dashboard/ActionSheets";
 
 interface RedFlag {
   type: "critical" | "warning" | "minor";
@@ -46,6 +31,7 @@ interface RedFlag {
   description: string;
   clause: string;
   recommendation: string;
+  id: string
 }
 
 interface AnalysisResult {
@@ -63,15 +49,11 @@ interface StoredData {
 }
 
 export default function AnalyzerResultsPage() {
-  const [data, setData] = useState<StoredData | any>(null);
+  const [data, setData] = useState<StoredData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [emailContent, setEmailContent] = useState<any>("");
-  const [emailSubject, setEmailSubject] = useState<any>("");
-  const [recipientEmail, setRecipientEmail] = useState<any>("");
   const [saving, setSaving] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [isChatOpen, setIsChatOpen] = useState(false);
   const router = useRouter();
   const analysis = data?.analysis ?? null;
 
@@ -99,20 +81,13 @@ export default function AnalyzerResultsPage() {
       const parsedData = {
         analysis: parsed.analysis,
         contractText: parsed.contractText ?? "",
-        // @ts-ignore
         sourceTitle: parsed.sourceTitle ?? "",
-        // @ts-ignore
-        model: parsed.model ?? null,
-      } as any;
+        model: parsed.model ?? undefined,
+      };
 
       setData(parsedData);
 
-      // Pre-generate email draft when data loads
-      if (parsedData?.analysis) {
-        const { subject, content } = generateEmailContent(parsedData.analysis);
-        setEmailSubject(subject);
-        setEmailContent(content);
-      }
+
 
       trackFeatureUsage("results_page_viewed");
     } catch (err) {
@@ -135,96 +110,11 @@ export default function AnalyzerResultsPage() {
     }
   };
 
-  const getRiskBadgeVariant = (risk: string) => {
-    switch (risk) {
-      case "high":
-        return "destructive";
-      case "medium":
-        return "secondary"; // Or custom warning variant if available
-      case "low":
-        return "outline"; // Or success variant
-      default:
-        return "secondary";
-    }
-  };
 
-  const getRedFlagIcon = (type: string) => {
-    switch (type) {
-      case "critical":
-        return <XCircle className="h-5 w-5 text-red-600" />;
-      case "warning":
-        return <AlertTriangle className="h-5 w-5 text-amber-600" />;
-      case "minor":
-        return <Info className="h-5 w-5 text-blue-600" />;
-      default:
-        return <AlertCircle className="h-5 w-5 text-slate-600" />;
-    }
-  };
 
-  const generateEmailContent = (analysis: AnalysisResult) => {
-    const subject = `Legal Review: Contract Analysis Report - ${
-      data?.sourceTitle || "Untitled"
-    }`;
-    const content = `Dear [Recipient Name],
 
-I have reviewed the contract "${
-      data?.sourceTitle || "Untitled"
-    }" and would like to share the following analysis.
 
-EXECUTIVE SUMMARY
-------------------
-${analysis.summary}
-
-RISK ASSESSMENT
-------------------
-Overall Risk Level: ${analysis.overallRisk?.toUpperCase()}
-Total Issues Identified: ${analysis.redFlags?.length}
-
-KEY RECOMMENDATIONS
-------------------
-${analysis.recommendations
-  .slice(0, 5)
-  .map((rec, index) => `${index + 1}. ${rec}`)
-  .join("\n")}
-
-CRITICAL ISSUES
-------------------
-${analysis.redFlags
-  .filter((flag) => flag.type === "critical")
-  .map((flag, index) => `${index + 1}. ${flag.title}: ${flag.description}`)
-  .join("\n")}
-
-Please let me know if you would like to discuss these findings in more detail.
-
-Best regards,
-[Your Name]`;
-    return { subject, content };
-  };
-
-  const handleSendEmail = () => {
-    trackFeatureUsage("email_sent");
-    openMailClient(recipientEmail, emailSubject, emailContent);
-  };
-
-  function openMailClient(to: string, subject: string, body: string) {
-    const maxLen = 10000;
-    if (body.length > maxLen) {
-      const blob = new Blob([body], { type: "text/plain;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "contract-analysis.txt";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      return;
-    }
-    const mailto = `mailto:${encodeURIComponent(
-      to
-    )}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.open(mailto, "_self");
-  }
+  // Email and chat handled by ActionSheets
 
   async function handleSave() {
     if (!data || !analysis) return;
@@ -261,9 +151,11 @@ Best regards,
       const json = await res.json();
       setSavedId(json.id);
       trackFeatureUsage("analysis_saved");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("save error:", err);
-      setErrorMsg(err.message ?? "Failed to save analysis");
+      setErrorMsg(
+        err instanceof Error ? err.message : "Failed to save analysis"
+      );
     } finally {
       setSaving(false);
     }
@@ -282,7 +174,7 @@ Best regards,
     );
   }
 
-  if (!data || !data.analysis) {
+  if (!data || !analysis) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-md text-center p-6">
@@ -338,7 +230,7 @@ Best regards,
             </div>
 
             <div className="flex items-center gap-3">
-              <div
+              <Button
                 className={cn(
                   "px-4 py-2 rounded-md font-bold border flex items-center gap-2 font-medium",
                   getRiskColor(analysis.overallRisk)
@@ -348,7 +240,7 @@ Best regards,
                 <span className="capitalize text-xs">
                   {analysis.overallRisk} Risk Detected
                 </span>
-              </div>
+              </Button>
               <Button
                 variant="outline"
                 size="lg"
@@ -415,8 +307,8 @@ Best regards,
                   analysis.overallRisk === "high"
                     ? "text-red-500"
                     : analysis.overallRisk === "medium"
-                    ? "text-amber-500"
-                    : "text-emerald-500"
+                      ? "text-amber-500"
+                      : "text-emerald-500"
                 )}
               />
             </CardHeader>
@@ -457,7 +349,7 @@ Best regards,
         {/* Main Content Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column: Summary (Sticky) */}
-          <div className="lg:col-span-1">
+          <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-24 space-y-6">
               <Card className="  !shadow-none bg-white">
                 <CardHeader>
@@ -499,7 +391,7 @@ Best regards,
           {/* Right Column: Tabs */}
           <div className="lg:col-span-2">
             <Tabs defaultValue="risks" className="w-full">
-              <TabsList className="w-full justify-start  rounded-none bg-slate-50/50 p-2 h-auto mb-6">
+              <TabsList className="w-full justify-start rounded-none bg-slate-50/50 p-2 h-auto mb-6 overflow-x-auto whitespace-nowrap">
                 <TabsTrigger
                   value="risks"
                   className="rounded-none border data-[state=active]:border-slate-50 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-none px-6 py-2"
@@ -541,7 +433,7 @@ Best regards,
                     </p>
                   </div>
                 ) : (
-                  analysis.redFlags.map((flag: any) => (
+                  analysis.redFlags.map((flag: RedFlag) => (
                     <Card
                       key={flag.id}
                       className={cn(
@@ -549,8 +441,8 @@ Best regards,
                         flag.type === "critical"
                           ? "border-l-red-500"
                           : flag.type === "warning"
-                          ? "border-l-amber-500"
-                          : "border-l-blue-500"
+                            ? "border-l-amber-500"
+                            : "border-l-blue-500"
                       )}
                     >
                       <CardHeader className="pb-2">
@@ -568,8 +460,8 @@ Best regards,
                               flag.type === "critical"
                                 ? "text-red-700 border-red-200 bg-red-50"
                                 : flag.type === "warning"
-                                ? "text-amber-700 border-amber-200 bg-amber-50"
-                                : "text-blue-700 border-blue-200 bg-blue-50"
+                                  ? "text-amber-700 border-amber-200 bg-amber-50"
+                                  : "text-blue-700 border-blue-200 bg-blue-50"
                             )}
                           >
                             {flag.type}
@@ -582,7 +474,7 @@ Best regards,
                         </p>
                         {flag.clause && (
                           <div className="bg-slate-50 p-3 rounded border border-slate-100 text-xs font-mono text-slate-600">
-                            "{flag.clause}"
+                            &quot;{flag.clause}&quot;
                           </div>
                         )}
                       </CardContent>
@@ -595,86 +487,27 @@ Best regards,
                 value="clauses"
                 className="space-y-4 animate-in fade-in-50 duration-300"
               >
-                {analysis.redFlags?.map(
-                  (
-                    flag: {
-                      clause:
-                        | string
-                        | number
-                        | bigint
-                        | boolean
-                        | React.ReactElement<
-                            unknown,
-                            string | React.JSXElementConstructor<any>
-                          >
-                        | Iterable<React.ReactNode>
-                        | React.ReactPortal
-                        | Promise<
-                            | string
-                            | number
-                            | bigint
-                            | boolean
-                            | React.ReactPortal
-                            | React.ReactElement<
-                                unknown,
-                                string | React.JSXElementConstructor<any>
-                              >
-                            | Iterable<React.ReactNode>
-                            | null
-                            | undefined
-                          >
-                        | null
-                        | undefined;
-                      title:
-                        | string
-                        | number
-                        | bigint
-                        | boolean
-                        | React.ReactElement<
-                            unknown,
-                            string | React.JSXElementConstructor<any>
-                          >
-                        | Iterable<React.ReactNode>
-                        | React.ReactPortal
-                        | Promise<
-                            | string
-                            | number
-                            | bigint
-                            | boolean
-                            | React.ReactPortal
-                            | React.ReactElement<
-                                unknown,
-                                string | React.JSXElementConstructor<any>
-                              >
-                            | Iterable<React.ReactNode>
-                            | null
-                            | undefined
-                          >
-                        | null
-                        | undefined;
-                    },
-                    idx: React.Key | null | undefined
-                  ) => (
-                    <Card
-                      key={idx}
-                      className="group hover:border-primary/50 transition-colors"
-                    >
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-slate-500 uppercase tracking-wider">
-                          Clause Reference
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <blockquote className="border-l-2 border-slate-300 pl-4 italic text-slate-700 font-serif text-lg">
-                          "{flag.clause}"
-                        </blockquote>
-                        <div className="mt-4 flex items-center gap-2 text-sm text-red-600 font-medium">
-                          <AlertTriangle className="h-4 w-4" />
-                          Issue: {flag.title}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )
+                {analysis.redFlags?.map((flag: RedFlag, idx: number) => (
+                  <Card
+                    key={idx}
+                    className="group hover:border-primary/50 transition-colors"
+                  >
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium text-slate-500 uppercase tracking-wider">
+                        Clause Reference
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <blockquote className="border-l-2 border-slate-300 pl-4 italic text-slate-700 font-serif text-lg">
+                        &quot;{flag.clause}&quot;
+                      </blockquote>
+                      <div className="mt-4 flex items-center gap-2 text-sm text-red-600 font-medium">
+                        <AlertTriangle className="h-4 w-4" />
+                        Issue: {flag.title}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
                 )}
               </TabsContent>
 
@@ -682,174 +515,45 @@ Best regards,
                 value="suggestions"
                 className="space-y-4 animate-in fade-in-50 duration-300"
               >
-                {analysis.recommendations?.map(
-                  (
-                    rec:
-                      | string
-                      | number
-                      | bigint
-                      | boolean
-                      | React.ReactElement<
-                          unknown,
-                          string | React.JSXElementConstructor<any>
-                        >
-                      | Iterable<React.ReactNode>
-                      | React.ReactPortal
-                      | Promise<
-                          | string
-                          | number
-                          | bigint
-                          | boolean
-                          | React.ReactPortal
-                          | React.ReactElement<
-                              unknown,
-                              string | React.JSXElementConstructor<any>
-                            >
-                          | Iterable<React.ReactNode>
-                          | null
-                          | undefined
-                        >
-                      | null
-                      | undefined,
-                    idx: React.Key | null | undefined
-                  ) => (
-                    <div
-                      key={idx}
-                      className="flex gap-4 p-4 bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex-shrink-0">
-                        <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-sm">
-                          {idx + 1}
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="text-base font-medium text-slate-900 mb-1">
-                          Recommendation
-                        </h4>
-                        <p className="text-sm text-slate-600 leading-relaxed">
-                          {rec}
-                        </p>
+                {analysis.recommendations?.map((rec: string, idx: number) => (
+                  <div
+                    key={idx}
+                    className="flex gap-4 p-4 bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex-shrink-0">
+                      <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-sm">
+                        {idx + 1}
                       </div>
                     </div>
-                  )
+                    <div>
+                      <h4 className="text-base font-medium text-slate-900 mb-1">
+                        Recommendation
+                      </h4>
+                      <p className="text-sm text-slate-600 leading-relaxed">
+                        {rec}
+                      </p>
+                    </div>
+                  </div>
+                )
                 )}
               </TabsContent>
             </Tabs>
           </div>
         </div>
       </div>
-      {/* Floating Actions: Chat + Email */}
-      <div className="fixed bottom-8 right-8 flex flex-col items-end gap-3 z-40">
-        {/* Chat about this contract */}
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button
-              className="h-14 w-14 rounded-full shadow-2xl bg-yellow hover:bg-yellow/90 text-white grid place-items-center transition-transform hover:scale-105"
-              aria-label="Chat about this contract"
-              disabled={!savedId}
-              title={
-                !savedId
-                  ? " Save this analysis first to start chatting with the AI."
-                  : "Chat"
-              }
-            >
-              <MessageCircle className="h-6 w-6" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[800px] max-h-[90vh] flex flex-col bg-white">
-            <DialogHeader>
-              <DialogTitle>Chat about this contract</DialogTitle>
-            </DialogHeader>
-            <div className="mt-4 flex-1">
-              {savedId ? (
-                <ContractChat
-                  analysisId={savedId}
-                  documentText={data.contractText}
-                />
-              ) : (
-                <p className="text-sm text-slate-500">
-                  Save this analysis first to start chatting with the AI.
-                </p>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Email draft FAB (existing behaviour) */}
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button
-              className="h-14 w-14 rounded-full shadow-2xl bg-primary hover:bg-primary/90 text-white grid place-items-center transition-transform hover:scale-105"
-              aria-label="Draft Email"
-            >
-              <Mail className="h-6 w-6" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] p-0 gap-0 overflow-hidden flex flex-col max-h-[85vh] bg-white">
-            <DialogHeader className="p-6 border-b border-slate-100 bg-slate-50/50">
-              <DialogTitle className="flex items-center gap-2 text-xl">
-                <Mail className="h-5 w-5 text-primary" />
-                Draft Legal Report Email
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">
-                  Recipient
-                </label>
-                <input
-                  type="email"
-                  value={recipientEmail}
-                  onChange={(e) => setRecipientEmail(e.target.value)}
-                  placeholder="client@example.com"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  value={emailSubject}
-                  onChange={(e) => setEmailSubject(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                />
-              </div>
-              <div className="space-y-2 flex-1">
-                <label className="text-sm font-medium text-slate-700">
-                  Message Body
-                </label>
-                <textarea
-                  value={emailContent}
-                  onChange={(e) => setEmailContent(e.target.value)}
-                  className="w-full h-[300px] px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono text-sm resize-none transition-all"
-                />
-              </div>
-            </div>
-
-            <DialogFooter className="p-4 border-t border-slate-100 bg-slate-50/50">
-              <Button
-                variant="outline"
-                onClick={() =>
-                  document
-                    .querySelector<HTMLElement>(
-                      '[data-state="open"] button[aria-label="Close"]'
-                    )
-                    ?.click()
-                }
-              >
-                Cancel
-              </Button>
-              <Button onClick={handleSendEmail} className="gap-2">
-                <Send className="h-4 w-4" />
-                Open in Mail App
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+      {/* Floating Actions: Chat + Email (reusable) */}
+      <ActionSheets
+        chatEnabled={!!savedId}
+        analysisId={savedId}
+        documentText={data.contractText}
+        emailData={{
+          title: data.sourceTitle,
+          summary: analysis.summary,
+          overallRisk: analysis.overallRisk,
+          redFlags: analysis.redFlags,
+          recommendations: analysis.recommendations,
+        }}
+      />
     </div>
   );
 }

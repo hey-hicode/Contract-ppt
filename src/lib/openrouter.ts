@@ -3,7 +3,12 @@ const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 export const DEFAULT_MODEL = "anthropic/claude-3.5-sonnet:beta";
 
-export function normalizeContentToText(content: any): string {
+type MaybeText = { text?: string; content?: string };
+function isMaybeText(obj: unknown): obj is MaybeText {
+  return !!obj && typeof obj === "object" && ("text" in (obj as MaybeText) || "content" in (obj as MaybeText));
+}
+
+export function normalizeContentToText(content: unknown): string {
   if (!content) return "";
   if (typeof content === "string") return content;
   if (Array.isArray(content)) {
@@ -11,13 +16,14 @@ export function normalizeContentToText(content: any): string {
       .map((item) => {
         if (typeof item === "string") return item;
         if (item === null || typeof item !== "object") return "";
-        return (item as any).text ?? (item as any).content ?? "";
+        return isMaybeText(item) ? item.text ?? item.content ?? "" : "";
       })
       .join("")
       .trim();
   }
-  if (typeof content === "object")
-    return (content as any).text ?? (content as any).content ?? "";
+  if (typeof content === "object" && isMaybeText(content)) {
+    return content.text ?? content.content ?? "";
+  }
   return "";
 }
 

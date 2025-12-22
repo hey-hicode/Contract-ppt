@@ -14,7 +14,10 @@ type Body = {
   extraInstructions?: string;
 };
 
-export async function POST(req: NextRequest, { params }: { params: Params }) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<Params> }
+) {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -28,7 +31,7 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
   }
 
   const { message, threadId, model, documentText, extraInstructions } = body;
-  const { analysisId } = params;
+  const { analysisId } = await params;
 
   if (!message || !message.trim()) {
     return NextResponse.json({ error: "Message is required" }, { status: 400 });
@@ -122,15 +125,15 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
   }
 
   // 4. Build system context using analysis + optional document text
+  type RedFlagLike = { type?: string; title?: string; description?: string };
   const redFlagsText = Array.isArray(analysis.red_flags)
-    ? analysis.red_flags
-        .map(
-          (rf: any, idx: number) =>
-            `${idx + 1}. [${rf.type ?? "issue"}] ${rf.title ?? ""} - ${
-              rf.description ?? ""
-            }`
-        )
-        .join("\n")
+    ? (analysis.red_flags as RedFlagLike[])
+      .map(
+        (rf: RedFlagLike, idx: number) =>
+          `${idx + 1}. [${rf.type ?? "issue"}] ${rf.title ?? ""} - ${rf.description ?? ""
+          }`
+      )
+      .join("\n")
     : JSON.stringify(analysis.red_flags ?? {}, null, 2);
 
   const recommendationsText = Array.isArray(analysis.recommendations)
@@ -162,11 +165,10 @@ ${redFlagsText || "None detected"}
 Recommendations:
 ${recommendationsText ? "- " + recommendationsText : "None"}
 
-${
-  documentText
-    ? `Full contract text (may be long, but use it if needed):\n${documentText}`
-    : ""
-}
+${documentText
+      ? `Full contract text (may be long, but use it if needed):\n${documentText}`
+      : ""
+    }
 
 ${extraInstructions ?? ""}
 `.trim();
@@ -175,13 +177,13 @@ ${extraInstructions ?? ""}
     role: "system" | "user" | "assistant";
     content: string;
   }> = [
-    { role: "system", content: systemPrompt },
-    ...(history ?? []).map((m) => ({
-      role: m.role as "user" | "assistant",
-      content: m.content,
-    })),
-    { role: "user", content: message },
-  ];
+      { role: "system", content: systemPrompt },
+      ...(history ?? []).map((m) => ({
+        role: m.role as "user" | "assistant",
+        content: m.content,
+      })),
+      { role: "user", content: message },
+    ];
 
   try {
     // 5. Store user message first

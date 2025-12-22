@@ -37,27 +37,12 @@ export async function downloadElementAsPdf(
   const pageWidthMm = 210;
   const pageHeightMm = 297;
 
-  const imgProps = (pdf as any).getImageProperties(imgData);
   const imgWidthPx = canvas.width;
   const imgHeightPx = canvas.height;
 
-  // calculate the ratio to fit A4 width
-  const pxToMm = (mmPerPx: number) => mmPerPx; // we'll compute below
-  const ratio =
-    pageWidthMm / ((imgWidthPx * (1 / scale) * (72 / 96) * 25.4) / 72); // fallback calculation not required
-  // simpler: fit width
-  const pdfWidth = pageWidthMm;
-  const pdfHeight = imgHeightPx * (pdfWidth / imgWidthPx) * (1 / scale);
+  // removed unused pdfWidth variable
 
   // Add image and split across pages if taller than A4
-  let remainingHeight = (imgHeightPx / scale) * (pdfWidth / imgWidthPx);
-  let position = 0;
-  const imgHeightMm = (imgHeightPx * pdfWidth) / imgWidthPx / scale;
-
-  // Actually a simpler, reliable approach: scale canvas image to page width and slice vertically
-  const pageCanvasHeight = Math.floor(
-    (canvas.width / pageWidthMm) * pageHeightMm
-  ); // not exact; we'll use iterative method below
 
   // Instead, push full image and add pages: use addImage with appropriate height and addPage for overflow
   const imgWidthMmFinal = pageWidthMm;
