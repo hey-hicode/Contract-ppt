@@ -1,19 +1,17 @@
 "use client";
-
 import * as React from "react";
 import { Send } from "lucide-react";
 
-type Message = {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-};
+type Message = { id: string; role: "user" | "assistant"; content: string };
 
 export function GeneralChat() {
-  const [threadId, setThreadId] = React.useState<string | null>(null);
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [input, setInput] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+<<<<<<< HEAD
+  const [threadId, setThreadId] = React.useState<string | null>(null);
+  const [saveChat, setSaveChat] = React.useState(true); // default: save
+=======
   const listRef = React.useRef<HTMLDivElement | null>(null);
 
   // Sidebar data
@@ -29,8 +27,9 @@ export function GeneralChat() {
     "What are the risks of unlimited liability?",
     "Explain intellectual property rights",
   ];
+>>>>>>> 0325e8eed8497c2a610164125b0422463d7e3d00
 
-  async function handleSend(e: React.FormEvent) {
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     const text = input.trim();
     if (!text || loading) return;
@@ -48,7 +47,7 @@ export function GeneralChat() {
       const res = await fetch("/api/chat/general", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, threadId }),
+        body: JSON.stringify({ message: text, threadId, saveChat }),
       });
 
       const data = await res.json();
@@ -64,11 +63,10 @@ export function GeneralChat() {
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (err) {
       console.error(err);
-      // optional: surface toast
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   const ThinkingDots = () => (
     <div className="flex justify-start">
@@ -164,6 +162,32 @@ export function GeneralChat() {
         </form>
       </div>
 
+<<<<<<< HEAD
+      <form onSubmit={handleSend} className="flex gap-2">
+        <input
+          className="flex-1 border rounded-lg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Ask anything about contracts…"
+        />
+        <button
+          type="submit"
+          disabled={loading || !input.trim()}
+          className="px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground disabled:opacity-50"
+        >
+          Send
+        </button>
+      </form>
+
+      <label className="text-xs mt-1 flex items-center gap-2">
+        <input
+          type="checkbox"
+          checked={saveChat}
+          onChange={() => setSaveChat(!saveChat)}
+        />
+        Save chat
+      </label>
+=======
       {/* Sidebar column */}
       <aside className="space-y-4">
         {/* Suggested Questions */}
@@ -229,6 +253,7 @@ export function GeneralChat() {
           </div>
         </div>
       </aside>
+>>>>>>> 0325e8eed8497c2a610164125b0422463d7e3d00
     </div>
   );
 }

@@ -1,21 +1,36 @@
-// app/api/chat/general/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { createClient } from "@supabase/supabase-js";
 import { callOpenRouterChat, DEFAULT_MODEL } from "~/lib/openrouter";
+import { supabase } from "~/lib/supabaseClient";
 
 type Body = {
   message: string;
   threadId?: string | null;
   model?: string;
+  saveChat?: boolean;
 };
 
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
-  if (!userId) {
+  if (!userId)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // 🔒 BLOCK FREE USERS
+  const { data: plan, error: planErr } = await supabase
+    .from("user_plans")
+    .select("plan")
+    .eq("clerk_user_id", userId)
+    .single();
+
+  if (planErr || !plan) {
+    return NextResponse.json({ error: "User plan not found" }, { status: 403 });
   }
 
+  if (plan.plan !== "premium") {
+    return NextResponse.json(
+      { error: "Upgrade to premium to use AI chat." },
+      { status: 403 }
+    );
+  }
   let body: Body;
   try {
     body = await req.json();
@@ -23,118 +38,74 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { message, threadId, model } = body;
-
-  if (!message || !message.trim()) {
+  const { message, threadId, model, saveChat } = body;
+  if (!message.trim())
     return NextResponse.json({ error: "Message is required" }, { status: 400 });
-  }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-
-  // 1. Ensure we have a thread
   let currentThreadId = threadId ?? null;
 
-  if (currentThreadId) {
-    const { data: thread, error } = await supabase
-      .from("chat_threads")
-      .select("id, user_id")
-      .eq("id", currentThreadId)
-      .single();
-
-    if (error || !thread || thread.user_id !== userId) {
-      return NextResponse.json(
-        { error: "Thread not found or not owned by user" },
-        { status: 404 }
-      );
-    }
-  } else {
+  // 1. Ensure thread exists
+  if (!currentThreadId) {
     const { data, error } = await supabase
       .from("chat_threads")
-      .insert({
-        user_id: userId,
-        analysis_id: null,
-        title: "General Chat",
-      })
+      .insert({ user_id: userId, title: "General Chat" })
       .select("id")
       .single();
 
-    if (error || !data) {
-      console.error("Failed to create thread", error);
+    if (error || !data)
       return NextResponse.json(
         { error: "Failed to create thread" },
         { status: 500 }
       );
-    }
-
     currentThreadId = data.id;
   }
 
-  // 2. Get history for this thread
-  const { data: history, error: historyError } = await supabase
+  // 2. Fetch last N messages only
+  const { data: history } = await supabase
     .from("chat_messages")
     .select("role, content")
     .eq("thread_id", currentThreadId)
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: false })
+    .limit(15);
 
-  if (historyError) {
-    console.error("Failed to fetch messages", historyError);
-  }
-
-  const systemPrompt = `
-You are an AI assistant for a contract analysis app for creators and influencers.
-- Be clear, concise, and helpful.
-- You can explain legal concepts in plain language but do NOT give formal legal advice.
-- If needed, suggest the user consult a qualified lawyer.
-  `.trim();
-
-  const messagesForModel: Array<{
-    role: "system" | "user" | "assistant";
+  const systemPrompt = `You are an AI assistant for a contract analysis app.
+- Explain clearly but don't give formal legal advice.
+- Suggest consulting a lawyer if necessary.`;
+  const messagesForModel: {
+    role: "user" | "assistant" | "system";
     content: string;
-  }> = [
+  }[] = [
     { role: "system", content: systemPrompt },
-    ...(history ?? []).map((m) => ({
-      role: m.role as "user" | "assistant",
+    ...(history ?? []).reverse().map((m) => ({
+      role: m.role as "user" | "assistant", // <-- type assertion here
       content: m.content,
     })),
     { role: "user", content: message },
   ];
 
   try {
-    // 3. Store the new user message
-    const { error: insertUserError } = await supabase
-      .from("chat_messages")
-      .insert({
-        thread_id: currentThreadId,
-        user_id: userId,
-        role: "user",
-        content: message,
-      });
-
-    if (insertUserError) {
-      console.error("Failed to store user message", insertUserError);
-    }
-
-    // 4. Call OpenRouter
+    // 3. Call AI
     const assistantReply = await callOpenRouterChat({
       model: model ?? DEFAULT_MODEL,
       messages: messagesForModel,
     });
 
-    // 5. Store assistant message
-    const { error: insertAssistantError } = await supabase
-      .from("chat_messages")
-      .insert({
-        thread_id: currentThreadId,
-        user_id: userId,
-        role: "assistant",
-        content: assistantReply,
-      });
-
-    if (insertAssistantError) {
-      console.error("Failed to store assistant message", insertAssistantError);
+    // 4. Optional batch save
+    if (saveChat) {
+      await supabase.from("chat_messages").insert([
+        {
+          thread_id: currentThreadId,
+          user_id: userId,
+          role: "user",
+          content: message,
+        },
+        {
+          thread_id: currentThreadId,
+          user_id: userId,
+          role: "assistant",
+          content: assistantReply,
+        },
+      ]);
     }
 
     return NextResponse.json({
@@ -142,7 +113,7 @@ You are an AI assistant for a contract analysis app for creators and influencers
       reply: assistantReply,
     });
   } catch (err) {
-    console.error("General chat error", err);
+    console.error("Chat error", err);
     return NextResponse.json(
       { error: "Chat failed. Please try again." },
       { status: 500 }

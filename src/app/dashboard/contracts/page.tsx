@@ -226,7 +226,9 @@ const Contracts = () => {
                 <h4 className="text-gray-900 mb-2 line-clamp-2">
                   {contract.name}
                 </h4>
-                <p className="text-sm text-gray-500">{contract.date}</p>
+                <p className="text-sm text-gray-500">
+                  {new Date(contract.date).toLocaleDateString()}
+                </p>
               </div>
 
               <div className="flex items-center gap-4 text-sm">

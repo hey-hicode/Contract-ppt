@@ -5,10 +5,21 @@ import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import ContractTable from "~/components/Dashboard/contract-table";
 import QuickAction from "~/components/Dashboard/quick-action";
-import { Card, CardHeader, CardDescription, CardTitle } from "~/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardDescription,
+  CardTitle,
+  CardFooter,
+} from "~/components/ui/card";
 import { Database } from "~/types/supabase";
 
-
+type AnalysisRow = Database["public"]["Tables"]["analyses"]["Row"];
+type UserPlanRow = {
+  plan: "free" | "premium";
+  free_quota: number;
+  used_quota: number;
+};
 
 type RecentAnalysis = {
   id: string;
@@ -31,10 +42,26 @@ const supabase = createClient<Database>(
 );
 
 async function fetchDashboardData(limit = 6) {
-  const { userId } = await auth();
-  // if (!userId) return new Response("Unauthorized", { status: 401 });
-
+  const { userId, orgId } = await auth();
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
   // Fetch recent analyses with explicit typing
+  const { data: plan, error: planErr } = await supabase
+    .from("user_plans")
+    .select("plan, free_quota, used_quota")
+    .eq("clerk_user_id", userId)
+    .single<UserPlanRow>();
+
+  if (planErr) {
+    console.error("Supabase plan error:", planErr);
+    throw new Error("Failed to load user plan");
+  }
+
+  const remainingCredits =
+    plan.plan === "premium"
+      ? Infinity
+      : Math.max(plan.free_quota - plan.used_quota, 0);
   const { data: recent, error: recentErr } = await supabase
     .from("analyses")
     .select(
@@ -108,6 +135,10 @@ async function fetchDashboardData(limit = 6) {
     redFlagsSum,
     safeCount,
     avgRiskPercent: avgRiskScore,
+    plan: plan.plan,
+    remainingCredits,
+    freeQuota: plan.free_quota,
+    usedQuota: plan.used_quota,
   };
 }
 
@@ -123,6 +154,10 @@ export default async function DashboardPage() {
       redFlagsSum: 0,
       safeCount: 0,
       avgRiskPercent: 0,
+      plan: "free",
+      remainingCredits: 0,
+      freeQuota: 5,
+      usedQuota: 0,
     };
   }
 
@@ -134,11 +169,34 @@ export default async function DashboardPage() {
             Hi, Welcome back 👋
           </h2>
         </div>
+        <Card className="@container/card">
+          <CardHeader>
+            <CardDescription>
+              {data.plan === "premium" ? "Plan" : "Remaining Credits"}
+            </CardDescription>
+
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+              {data.plan === "premium"
+                ? "Unlimited"
+                : `${data.remainingCredits} / ${data.freeQuota}`}
+            </CardTitle>
+          </CardHeader>
+
+          <CardFooter className="text-xs text-muted-foreground">
+            {data.plan === "free" ? (
+              <>{data.usedQuota} used · Free plan</>
+            ) : (
+              <>Premium plan</>
+            )}
+          </CardFooter>
+        </Card>
 
         <div className="pt-4 !px-0 grid grid-cols-2 gap-3 lg:px-6 md:grid-cols-2 lg:grid-cols-4 pb-4">
           <Card className="@container/card rounded-xl border bg-white shadow-sm">
             <CardHeader className="space-y-1">
-              <CardDescription className="text-sm text-muted-foreground">Contracts Analyzed</CardDescription>
+              <CardDescription className="text-sm text-muted-foreground">
+                Contracts Analyzed
+              </CardDescription>
               <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                 {data.totalCount}
               </CardTitle>
@@ -147,7 +205,9 @@ export default async function DashboardPage() {
 
           <Card className="@container/card rounded-xl border bg-white shadow-sm">
             <CardHeader className="space-y-1">
-              <CardDescription className="text-sm text-muted-foreground">Red Flags Found</CardDescription>
+              <CardDescription className="text-sm text-muted-foreground">
+                Red Flags Found
+              </CardDescription>
               <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                 {data.redFlagsSum}
               </CardTitle>
@@ -156,7 +216,9 @@ export default async function DashboardPage() {
 
           <Card className="@container/card rounded-xl border bg-white shadow-sm">
             <CardHeader className="space-y-1">
-              <CardDescription className="text-sm text-muted-foreground">Safe Contracts</CardDescription>
+              <CardDescription className="text-sm text-muted-foreground">
+                Safe Contracts
+              </CardDescription>
               <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                 {data.safeCount}
               </CardTitle>
@@ -165,7 +227,9 @@ export default async function DashboardPage() {
 
           <Card className="@container/card rounded-xl border bg-white shadow-sm">
             <CardHeader className="space-y-1">
-              <CardDescription className="text-sm text-muted-foreground">Average Risk Score</CardDescription>
+              <CardDescription className="text-sm text-muted-foreground">
+                Average Risk Score
+              </CardDescription>
               <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                 {data.avgRiskPercent}%
               </CardTitle>

@@ -1,6 +1,11 @@
 // app/api/analyze-contract/route.ts  (replace your current file)
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import {
+  assertQuota,
+  getOrCreateUserPlan,
+  incrementUsage,
+} from "~/lib/freemium";
 
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
@@ -301,6 +306,11 @@ export async function POST(req: NextRequest) {
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  // 1️⃣ Load or create plan
+  const plan = await getOrCreateUserPlan(userId);
+
+  // 2️⃣ Enforce quota
+  assertQuota(plan);
 
   if (!process.env.OPENROUTER_API_KEY) {
     return NextResponse.json(
@@ -421,7 +431,7 @@ ${text}
     if (!inferredTitle) {
       inferredTitle = extractTitleFromTextHeuristic(text);
     }
-
+    await incrementUsage(userId);
     // Return analysis + model + title
     return NextResponse.json({
       analysis,
