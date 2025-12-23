@@ -19,8 +19,8 @@ type Testimonial = {
 
 const SingleTestimonial = ({ testimonial }: { testimonial: Testimonial }) => {
   return (
-    <div className="w-full md:w-[400px]    rounded-2xl">
-      <div className="shadow-two hover:shadow-one h-[300px] dark:bg-dark dark:shadow-three dark:hover:shadow-gray-dark rounded-xs bg-white p-8 duration-300 lg:px-5 xl:px-8">
+    <div className="max-w-[250px] md:w-[400px]     rounded-2xl">
+      <div className="shadow-two hover:shadow-one md:h-[300px] dark:bg-dark dark:shadow-three dark:hover:shadow-gray-dark rounded-xs bg-white p-8 duration-300 lg:px-5 xl:px-8">
         <p className="border-body-color/10 text-body-color  pb-4 text-base leading-relaxed dark:border-white/10 dark:text-white">
           {testimonial.body}
         </p>

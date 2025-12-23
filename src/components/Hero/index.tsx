@@ -20,7 +20,7 @@ const Hero = () => {
                   into plain language so your team can negotiate with clarity
                   and confidence.
                 </p>
-                <div className="flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
+                <div className="flex  items-center justify-center  flex-row space-x-4 sm:space-y-0">
                   <Link
                     href="/dashboard/analyze"
                     className="rounded-md bg-primary px-8 py-4 text-base font-semibold text-white duration-300 ease-in-out hover:bg-primary/80"

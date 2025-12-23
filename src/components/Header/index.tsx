@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SignedIn, SignedOut, UserButton, SignUpButton } from "@clerk/nextjs";
+import { motion, AnimatePresence } from "framer-motion";
 import menuData from "./menuData";
 
 const Header = () => {
@@ -24,7 +25,8 @@ const Header = () => {
   };
   useEffect(() => {
     window.addEventListener("scroll", handleStickyNavbar);
-  });
+    return () => window.removeEventListener("scroll", handleStickyNavbar);
+  }, []);
 
   // submenu handler
   const [openIndex, setOpenIndex] = useState(-1);
@@ -41,7 +43,7 @@ const Header = () => {
   return (
     <>
       <header
-        className={`header top-0 left-0  backdrop-blur-sm z-40 flex w-full items-center ${sticky
+        className={`header top-0 left-0 backdrop-blur-sm z-40 flex w-full items-center ${sticky
             ? "dark:bg-gray-dark dark:shadow-sticky-dark shadow-sticky fixed z-9999 bg-white/80 border-0 backdrop-blur-xs transition"
             : "absolute bg-transparent"
           }`}
@@ -54,7 +56,12 @@ const Header = () => {
                 className={`header-logo block w-full ${sticky ? "py-5 lg:py-2" : "py-8"
                   } `}
               >
-                <Image src="/images/couns.jpeg" alt="logo" width={500} height={500} />
+                <Image
+                  src="/images/couns.jpeg"
+                  alt="logo"
+                  width={500}
+                  height={500}
+                />
               </Link>
             </div>
             <div className="flex w-full items-center justify-between px-4">
@@ -78,17 +85,11 @@ const Header = () => {
                       }`}
                   />
                 </button>
-
               </div>
               <div className="flex items-center gap-10 pr-16 lg:pr-0">
-                <nav
-                  id="navbarCollapse"
-                  className={`navbar border-body-color/50 dark:border-body-color/20 dark:bg-dark absolute right-0 z-30 w-[250px] rounded border-[.5px] bg-white px-6 py-4 duration-300 lg:visible lg:static lg:w-auto lg:border-none lg:!bg-transparent lg:p-0 lg:opacity-100 ${navbarOpen
-                      ? "visibility top-full opacity-100"
-                      : "invisible top-[120%] opacity-0"
-                    }`}
-                >
-                  <ul className="block lg:flex lg:space-x-12">
+                {/* Desktop Menu */}
+                <nav className="hidden lg:block">
+                  <ul className="flex space-x-12">
                     {menuData.map((menuItem, index) => (
                       <li key={index} className="group relative">
                         {menuItem.path ? (
@@ -109,7 +110,11 @@ const Header = () => {
                             >
                               {menuItem.title}
                               <span className="pl-3">
-                                <svg width="25" height="24" viewBox="0 0 25 24">
+                                <svg
+                                  width="25"
+                                  height="24"
+                                  viewBox="0 0 25 24"
+                                >
                                   <path
                                     fillRule="evenodd"
                                     clipRule="evenodd"
@@ -119,17 +124,15 @@ const Header = () => {
                                 </svg>
                               </span>
                             </p>
-
                           </>
                         )}
                       </li>
                     ))}
                   </ul>
                 </nav>
+
                 <SignedOut>
                   <div className="hidden md:flex items-center gap-3">
-
-
                     <SignUpButton
                       mode="modal"
                       forceRedirectUrl="/dashboard"
@@ -150,11 +153,86 @@ const Header = () => {
                     />
                   </div>
                 </SignedIn>
-
               </div>
             </div>
           </div>
         </div>
+
+        {/* Mobile Menu Overlay */}
+        <AnimatePresence>
+          {navbarOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "100vh" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="absolute top-full left-0 z-30 w-full overflow-hidden bg-white/95 backdrop-blur-md dark:bg-dark/95 lg:hidden border-t border-body-color/10"
+            >
+              <div className="container flex flex-col gap-6 p-8">
+                <nav>
+                  <ul className="flex flex-col gap-4">
+                    {menuData.map((menuItem, index) => (
+                      <motion.li
+                        key={index}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        {menuItem.path ? (
+                          <Link
+                            href={menuItem.path}
+                            onClick={() => setNavbarOpen(false)}
+                            className={`block text-lg font-medium ${usePathName === menuItem.path
+                                ? "text-primary"
+                                : "text-dark dark:text-white"
+                              }`}
+                          >
+                            {menuItem.title}
+                          </Link>
+                        ) : (
+                          <p className="text-lg font-medium text-dark dark:text-white">
+                            {menuItem.title}
+                          </p>
+                        )}
+                      </motion.li>
+                    ))}
+                  </ul>
+                </nav>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="flex flex-col gap-4 mt-4 border-t border-gray-200 dark:border-white/10 pt-6"
+                >
+                  <SignedOut>
+                    <SignUpButton
+                      mode="modal"
+                      forceRedirectUrl="/dashboard"
+                      signInForceRedirectUrl="/dashboard"
+                    >
+                      <button className="w-full rounded-md bg-primary px-6 py-3 text-base font-medium text-white shadow-btn transition hover:bg-primary/90">
+                        Sign Up
+                      </button>
+                    </SignUpButton>
+                  </SignedOut>
+                  <SignedIn>
+                    <div className="flex items-center gap-4">
+                      <UserButton
+                        appearance={{
+                          elements: { avatarBox: "w-10 h-10" },
+                        }}
+                      />
+                      <span className="text-base font-medium text-dark dark:text-white">
+                        My Account
+                      </span>
+                    </div>
+                  </SignedIn>
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
     </>
   );

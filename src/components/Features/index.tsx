@@ -11,7 +11,7 @@ const Features = () => {
             title="Everything you need for
 Contract Intelligence
 "
-            paragraph="We built Counselr to help teams decode, track, and negotiate contracts faster. By blending AI and design, we make legal work simple, smart, and human."
+            paragraph="We built Counselr blends AI and intuitive design to help teams decode, track, and negotiate contracts with speed and clarity."
             center
           />
 
