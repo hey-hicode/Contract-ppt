@@ -1,20 +1,16 @@
 "use client";
-
 import * as React from "react";
 
-type Message = {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-};
+type Message = { id: string; role: "user" | "assistant"; content: string };
 
 export function GeneralChat() {
-  const [threadId, setThreadId] = React.useState<string | null>(null);
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [input, setInput] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+  const [threadId, setThreadId] = React.useState<string | null>(null);
+  const [saveChat, setSaveChat] = React.useState(true); // default: save
 
-  async function handleSend(e: React.FormEvent) {
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     const text = input.trim();
     if (!text || loading) return;
@@ -32,7 +28,7 @@ export function GeneralChat() {
       const res = await fetch("/api/chat/general", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, threadId }),
+        body: JSON.stringify({ message: text, threadId, saveChat }),
       });
 
       const data = await res.json();
@@ -48,11 +44,10 @@ export function GeneralChat() {
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (err) {
       console.error(err);
-      // optional: surface toast
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex h-full max-h-[600px] flex-col border rounded-xl p-3 gap-3">
@@ -85,7 +80,7 @@ export function GeneralChat() {
           className="flex-1 border rounded-lg px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask anything about contracts, clauses, etc…"
+          placeholder="Ask anything about contracts…"
         />
         <button
           type="submit"
@@ -95,6 +90,15 @@ export function GeneralChat() {
           Send
         </button>
       </form>
+
+      <label className="text-xs mt-1 flex items-center gap-2">
+        <input
+          type="checkbox"
+          checked={saveChat}
+          onChange={() => setSaveChat(!saveChat)}
+        />
+        Save chat
+      </label>
     </div>
   );
 }

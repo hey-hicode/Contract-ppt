@@ -286,7 +286,9 @@ const Contracts = ({ onNavigate }: MyContractsProps) => {
                 <h4 className="text-gray-900 mb-2 line-clamp-2">
                   {contract.name}
                 </h4>
-                <p className="text-sm text-gray-500">{contract.date}</p>
+                <p className="text-sm text-gray-500">
+                  {new Date(contract.date).toLocaleDateString()}
+                </p>
               </div>
 
               <div className="flex items-center gap-4 text-sm">
@@ -339,19 +341,19 @@ const Contracts = ({ onNavigate }: MyContractsProps) => {
       </div>
 
       {filteredContracts.length === 0 && !loading && (
-      <Card className="border-none border border-gray-500 !shadow-none bg-white rounded-md p-12">
-        <div className="text-center space-y-4">
-          <div className="  rounded-2xl flex items-center justify-center mx-auto">
-            <NoContract />
-          </div>
+        <Card className="border-none border border-gray-500 !shadow-none bg-white rounded-md p-12">
+          <div className="text-center space-y-4">
+            <div className="  rounded-2xl flex items-center justify-center mx-auto">
+              <NoContract />
+            </div>
             <div className="space-y-2">
-               <h3 className="text-base font-medium">No contracts found</h3>
-           <p className="text-gray-600 ">
+              <h3 className="text-base font-medium">No contracts found</h3>
+              <p className="text-gray-600 ">
                 Try adjusting your search or filter criteria
               </p>
             </div>
-        </div>
-      </Card>
+          </div>
+        </Card>
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 // Include Clerk auth pages so users can access sign-in/up when signed out.
 const isPublicRoute = createRouteMatcher([
   "/", // homepage stays public
-  "/dashboard/analyze", // allow parsing workflow without auth
+  "/dashboard", // allow parsing workflow without auth
   "/sign-in(.*)", // Clerk sign-in pages
   "/sign-up(.*)", // Clerk sign-up pages
   "/api/parse-data(.*)", // parsing endpoint must be public for pre-auth uploads

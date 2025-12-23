@@ -719,7 +719,7 @@ Best regards,
                     >
                       <div className="flex-shrink-0">
                         <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-sm">
-                          {idx + 1}
+                          {idx}
                         </div>
                       </div>
                       <div>
@@ -741,39 +741,21 @@ Best regards,
       {/* Floating Actions: Chat + Email */}
       <div className="fixed bottom-8 right-8 flex flex-col items-end gap-3 z-40">
         {/* Chat about this contract */}
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button
-              className="h-14 w-14 rounded-full shadow-2xl bg-yellow hover:bg-yellow/90 text-white grid place-items-center transition-transform hover:scale-105"
-              aria-label="Chat about this contract"
-              disabled={!savedId}
-              title={
-                !savedId
-                  ? " Save this analysis first to start chatting with the AI."
-                  : "Chat"
-              }
-            >
-              <MessageCircle className="h-6 w-6" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[800px] max-h-[90vh] flex flex-col bg-white">
-            <DialogHeader>
-              <DialogTitle>Chat about this contract</DialogTitle>
-            </DialogHeader>
-            <div className="mt-4 flex-1">
-              {savedId ? (
-                <ContractChat
-                  analysisId={savedId}
-                  documentText={data.contractText}
-                />
-              ) : (
-                <p className="text-sm text-slate-500">
-                  Save this analysis first to start chatting with the AI.
-                </p>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+
+        <div className="mt-4 flex-1">
+          {savedId ? (
+            <ContractChat
+              analysisId={savedId}
+              documentText={data.contractText}
+              savedId={savedId}
+              contractTitle={data.sourceTitle}
+            />
+          ) : (
+            <p className="text-sm text-slate-500">
+              Save this analysis first to start chatting with the AI.
+            </p>
+          )}
+        </div>
 
         {/* Email draft FAB (existing behaviour) */}
         <Dialog>

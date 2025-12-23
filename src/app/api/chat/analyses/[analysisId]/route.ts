@@ -1,7 +1,6 @@
-// app/api/chat/analyses/[analysisId]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "~/lib/supabaseClient";
 import { callOpenRouterChat, DEFAULT_MODEL } from "~/lib/openrouter";
 
 type Params = { analysisId: string };
@@ -10,222 +9,154 @@ type Body = {
   message: string;
   threadId?: string | null;
   model?: string;
-  documentText?: string; // optional: full contract text if you have it on the client
   extraInstructions?: string;
 };
-
-export async function POST(req: NextRequest, { params }: { params: Params }) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ analysisId: Params }> }
+) {
   const { userId } = await auth();
-  if (!userId) {
+  if (!userId)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  let body: Body;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-  }
-
-  const { message, threadId, model, documentText, extraInstructions } = body;
-  const { analysisId } = params;
-
-  if (!message || !message.trim()) {
-    return NextResponse.json({ error: "Message is required" }, { status: 400 });
-  }
-
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-
-  // 1. Load analysis row to build context
-  const { data: analysis, error: analysisError } = await supabase
-    .from("analyses")
-    .select(
-      `
-      id,
-      user_id,
-      source_title,
-      overall_risk,
-      summary,
-      red_flags,
-      recommendations
-    `
-    )
-    .eq("id", analysisId)
+  // 🔒 PREMIUM CHECK (Document Chat)
+  const { data: plan, error: planErr } = await supabase
+    .from("user_plans")
+    .select("plan")
+    .eq("clerk_user_id", userId)
     .single();
 
-  if (analysisError || !analysis) {
-    console.error("Analysis not found", analysisError);
-    return NextResponse.json({ error: "Analysis not found" }, { status: 404 });
+  if (planErr || !plan) {
+    return NextResponse.json({ error: "User plan not found" }, { status: 403 });
   }
 
-  if (analysis.user_id !== userId) {
+  if (plan.plan !== "premium") {
     return NextResponse.json(
-      { error: "You do not have access to this analysis" },
+      { error: "Upgrade to premium to chat with contracts." },
       { status: 403 }
     );
   }
 
-  // 2. Ensure thread exists (one thread per user+analysis, or reuse provided one)
+  const { analysisId } = await params;
+  const body: Body = await req.json();
+  const { message, threadId, model, extraInstructions } = body;
+
+  if (!message?.trim()) {
+    return NextResponse.json({ error: "Message is required" }, { status: 400 });
+  }
+
+  /**
+   * 1. Load analysis (lightweight fields only)
+   */
+  const { data: analysis } = await supabase
+    .from("analyses")
+    .select(
+      "id,user_id,source_title,overall_risk,summary,red_flags,recommendations"
+    )
+    .eq("id", analysisId)
+    .single();
+
+  if (!analysis || analysis.user_id !== userId) {
+    return NextResponse.json({ error: "Analysis not found" }, { status: 404 });
+  }
+
+  /**
+   * 2. Ensure thread
+   */
   let currentThreadId = threadId ?? null;
 
-  if (currentThreadId) {
-    const { data: thread, error } = await supabase
-      .from("chat_threads")
-      .select("id, user_id, analysis_id")
-      .eq("id", currentThreadId)
-      .single();
-
-    if (
-      error ||
-      !thread ||
-      thread.user_id !== userId ||
-      thread.analysis_id !== analysisId
-    ) {
-      return NextResponse.json(
-        { error: "Thread not found or not linked to this analysis" },
-        { status: 404 }
-      );
-    }
-  } else {
-    const { data, error } = await supabase
+  if (!currentThreadId) {
+    const { data } = await supabase
       .from("chat_threads")
       .insert({
         user_id: userId,
         analysis_id: analysisId,
         title: analysis.source_title ?? "Contract Chat",
+        is_saved: false,
       })
       .select("id")
       .single();
 
-    if (error || !data) {
-      console.error("Failed to create analysis thread", error);
-      return NextResponse.json(
-        { error: "Failed to create chat thread" },
-        { status: 500 }
-      );
-    }
-    currentThreadId = data.id;
+    currentThreadId = data?.id;
   }
 
-  // 3. Fetch existing messages for this thread
-  const { data: history, error: historyError } = await supabase
+  /**
+   * 3. Fetch ONLY last 8 messages
+   */
+  const { data: history } = await supabase
     .from("chat_messages")
     .select("role, content")
     .eq("thread_id", currentThreadId)
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: false })
+    .limit(8);
 
-  if (historyError) {
-    console.error("Failed to fetch chat history", historyError);
-  }
-
-  // 4. Build system context using analysis + optional document text
-  const redFlagsText = Array.isArray(analysis.red_flags)
-    ? analysis.red_flags
-        .map(
-          (rf: any, idx: number) =>
-            `${idx + 1}. [${rf.type ?? "issue"}] ${rf.title ?? ""} - ${
-              rf.description ?? ""
-            }`
-        )
-        .join("\n")
-    : JSON.stringify(analysis.red_flags ?? {}, null, 2);
-
-  const recommendationsText = Array.isArray(analysis.recommendations)
-    ? analysis.recommendations.join("\n- ")
-    : String(analysis.recommendations ?? "");
-
+  /**
+   * 4. Compact system prompt (CRITICAL)
+   */
   const systemPrompt = `
-You are an AI contract assistant helping the user understand ONE specific contract.
+You are an AI assistant helping explain ONE specific contract.
+Use the analysis below. Be clear and practical.
+No legal advice.
 
-You are given:
-- A pre-computed analysis of the contract (summary, overall risk, red flags, recommendations).
-- Optionally, the full contract text.
-
-Your job:
-- Answer the user's questions based ONLY on this contract and its analysis.
-- Be concrete and practical. Explain in simple language.
-- If something is unclear or not present in the contract, say that explicitly. Do NOT invent terms or clauses.
-- You are NOT a lawyer and are NOT giving formal legal advice. Always frame answers as informational.
-
-Contract title: ${analysis.source_title ?? "Untitled"}
-Overall risk: ${analysis.overall_risk ?? "unknown"}
+Contract: ${analysis.source_title ?? "Untitled"}
+Risk: ${analysis.overall_risk ?? "Unknown"}
 
 Summary:
-${analysis.summary ?? ""}
+${analysis.summary ?? "N/A"}
 
-Key red flags:
-${redFlagsText || "None detected"}
+Red Flags:
+${
+  Array.isArray(analysis.red_flags)
+    ? analysis.red_flags.map((r) => `- ${r.title}: ${r.description}`).join("\n")
+    : "None"
+}
 
 Recommendations:
-${recommendationsText ? "- " + recommendationsText : "None"}
-
 ${
-  documentText
-    ? `Full contract text (may be long, but use it if needed):\n${documentText}`
-    : ""
+  Array.isArray(analysis.recommendations)
+    ? analysis.recommendations.join("\n- ")
+    : "None"
 }
 
 ${extraInstructions ?? ""}
 `.trim();
 
-  const messagesForModel: Array<{
-    role: "system" | "user" | "assistant";
+  const messagesForModel: {
+    role: "user" | "assistant" | "system";
     content: string;
-  }> = [
+  }[] = [
     { role: "system", content: systemPrompt },
-    ...(history ?? []).map((m) => ({
-      role: m.role as "user" | "assistant",
+    ...(history ?? []).reverse().map((m) => ({
+      role: m.role as "user" | "assistant", // <-- type assertion here
       content: m.content,
     })),
     { role: "user", content: message },
   ];
 
-  try {
-    // 5. Store user message first
-    const { error: userMsgError } = await supabase
-      .from("chat_messages")
-      .insert({
-        thread_id: currentThreadId,
-        user_id: userId,
-        role: "user",
-        content: message,
-      });
-    if (userMsgError) {
-      console.error("Failed to insert user message", userMsgError);
-    }
+  /**
+   * 5. Call model
+   */
+  const reply = await callOpenRouterChat({
+    model: model ?? DEFAULT_MODEL,
+    messages: messagesForModel,
+  });
 
-    // 6. Call model
-    const reply = await callOpenRouterChat({
-      model: model ?? DEFAULT_MODEL,
-      messages: messagesForModel,
-    });
+  /**
+   * 6. Store both messages in one go
+   */
+  await supabase.from("chat_messages").insert([
+    {
+      thread_id: currentThreadId,
+      user_id: userId,
+      role: "user",
+      content: message,
+    },
+    {
+      thread_id: currentThreadId,
+      user_id: userId,
+      role: "assistant",
+      content: reply,
+    },
+  ]);
 
-    // 7. Store assistant message
-    const { error: assistantMsgError } = await supabase
-      .from("chat_messages")
-      .insert({
-        thread_id: currentThreadId,
-        user_id: userId,
-        role: "assistant",
-        content: reply,
-      });
-
-    if (assistantMsgError) {
-      console.error("Failed to insert assistant message", assistantMsgError);
-    }
-
-    return NextResponse.json({
-      threadId: currentThreadId,
-      reply,
-    });
-  } catch (err) {
-    console.error("Chat-with-analysis error", err);
-    return NextResponse.json(
-      { error: "Chat with analysis failed" },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json({ threadId: currentThreadId, reply });
 }
