@@ -14,7 +14,7 @@ import {
 } from "~/components/ui/card";
 import { Database } from "~/types/supabase";
 
-type AnalysisRow = Database["public"]["Tables"]["analyses"]["Row"];
+// type AnalysisRow = Database["public"]["Tables"]["analyses"]["Row"];
 type UserPlanRow = {
   plan: "free" | "premium";
   free_quota: number;
@@ -42,7 +42,7 @@ const supabase = createClient<Database>(
 );
 
 async function fetchDashboardData(limit = 6) {
-  const { userId, orgId } = await auth();
+  const { userId } = await auth();
   if (!userId) {
     throw new Error("Unauthorized");
   }

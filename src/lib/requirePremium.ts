@@ -1,5 +1,4 @@
 import { auth } from "@clerk/nextjs/server";
-import { createClient } from "@supabase/supabase-js";
 import { supabase } from "./supabaseClient";
 
 export async function requirePremium() {
