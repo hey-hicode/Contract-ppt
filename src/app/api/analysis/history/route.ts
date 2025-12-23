@@ -13,6 +13,16 @@ const riskColorMap: Record<string, string> = {
   high: "bg-red-100 text-red-700 border-red-200",
 };
 
+type AnalysisRow = {
+  id: string;
+  source_title: string | null;
+  overall_risk: string | null;
+  summary: string | null;
+  red_flags: unknown[] | null;
+  recommendations: unknown[] | null;
+  created_at: string;
+};
+
 export async function GET(req: Request) {
   const { userId, orgId } = await auth();
   if (!userId) return new Response("Unauthorized", { status: 401 });
@@ -50,13 +60,16 @@ export async function GET(req: Request) {
     });
 
   // Map data for frontend
-  const formatted = data?.map((item: any) => ({
+  const formatted = (data ?? []).map((item: AnalysisRow) => ({
     id: item.id,
     name: item.source_title ?? "Untitled Contract",
     date: new Date(item.created_at).toLocaleDateString(),
-    riskLevel:
-      item.overall_risk?.charAt(0).toUpperCase() + item.overall_risk?.slice(1),
-    riskColor: riskColorMap[item.overall_risk?.toLowerCase() ?? "low"],
+    riskLevel: item.overall_risk
+      ? item.overall_risk.charAt(0).toUpperCase() + item.overall_risk.slice(1)
+      : "Unknown",
+    riskColor:
+      riskColorMap[item.overall_risk?.toLowerCase() ?? "low"] ??
+      riskColorMap.low,
     flags: item.red_flags?.length ?? 0,
     clauses: item.red_flags?.length ?? 0, // optionally track real clause count if available
     summary: item.summary,

@@ -3,10 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { SignedIn, SignedOut, UserButton, SignInButton, SignUpButton } from "@clerk/nextjs";
-import ThemeToggler from "./ThemeToggler";
+import { SignedIn, SignedOut, UserButton, SignUpButton } from "@clerk/nextjs";
 import menuData from "./menuData";
-import Logo from "../../../public/icons/logo";
 
 const Header = () => {
   // Navbar toggle

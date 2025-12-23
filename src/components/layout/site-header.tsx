@@ -1,7 +1,4 @@
-import MenuIcon from "../../../public/icons/menu.svg"
-import Logo from "../../../public/icons/logo";
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
 export const SiteHeader = () => {
   return (
 <header className="sticky top-0 backdrop-blur-sm bg-white/20  z-[9999]">

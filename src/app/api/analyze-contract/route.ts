@@ -21,7 +21,7 @@ type OpenRouterChoice = {
     role?: string;
     content?:
       | string
-      | Array<{ type: string; text?: string } | { content?: any }>;
+      | Array<{ type: string; text?: string } | { content?: string }>;
   };
 };
 
@@ -47,35 +47,63 @@ type OpenRouterResponse = {
 const DEFAULT_MODEL = "anthropic/claude-3.5-sonnet:beta";
 
 const SYSTEM_PROMPT = `
-You are a legal contract analyst for creator and influencer agreements.
-Analyze the contract text and return ONLY a JSON object in this exact format:
+You are a legal contract analyst, lawyer, and attorney representing creators, freelancers, and influencers.
+Analyze the contract text and return ONLY a JSON object in the exact format below:
 
 {
   "redFlags": [
     {
       "type": "critical|warning|minor",
       "title": "Title of issue",
-      "description": "Why this is problematic",
-      "clause": "Exact text from contract",
-      "recommendation": "How to address this"
+      "description": "Concise explanation of why this is problematic",
+      "clause": "Exact text from the contract",
+      "recommendation": "Clear guidance on how to address or mitigate this issue"
     }
   ],
   "overallRisk": "low|medium|high",
-  "summary": "3-4 sentence overview of the contract, highlighting key issues",
+  "summary": "3–4 sentence overview of the contract highlighting key risks and concerns",
   "recommendations": ["Recommendation 1", "Recommendation 2"]
 }
 
 Rules:
-- Include 2-5 redFlags maximum.
-- Keep descriptions concise.
-- No markdown, no explanations, only JSON.
-- Evaluate rights, compensation, deliverables, confidentiality, exclusivity, indemnification, termination, renewal, and FTC compliance.
+- Include a maximum of 10 redFlags.
+- Keep descriptions concise and explanatory.
+- Return ONLY valid JSON. No markdown, no extra text.
+
+Evaluate the contract for:
+- Rights and obligations balance
+- Compensation, payment timing, and deductions
+- Deliverables, scope, revisions, and acceptance criteria
+- Intellectual property ownership and assignment
+- Usage rights, sublicensing, and modification rights
+- Territory, platform, and audience scope
+- Duration, term, and post-termination rights
+- Confidentiality scope, exclusions, and duration
+- Exclusivity, non-compete, and conflict restrictions
+- Indemnification, liability allocation, and caps
+- Termination rights, notice, and consequences
+- Renewal and auto-renewal terms
+- FTC, advertising, and disclosure compliance
+- Moral rights and attribution/credit
+- Approval rights and content control
+- Data protection, privacy, and user data ownership
+- Warranties and representations
+- Dispute resolution, governing law, and jurisdiction
+- Force majeure and change-of-control clauses
+- Payment clawbacks, refunds, and chargebacks
+- Audit, reporting, and transparency obligations
 `;
+
 
 /* --------------------------
    Helper: resilient content normalizer
    -------------------------- */
-const normalizeContentToText = (content: any): string => {
+type MaybeText = { text?: string; content?: string };
+function isMaybeText(obj: unknown): obj is MaybeText {
+  return !!obj && typeof obj === "object" && ("text" in (obj as MaybeText) || "content" in (obj as MaybeText));
+}
+
+const normalizeContentToText = (content: unknown): string => {
   if (!content) return "";
   if (typeof content === "string") return content;
   if (Array.isArray(content)) {
@@ -83,13 +111,16 @@ const normalizeContentToText = (content: any): string => {
       .map((item) => {
         if (typeof item === "string") return item;
         if (item === null || typeof item !== "object") return "";
-        return (item as any).text ?? (item as any).content ?? "";
+        return isMaybeText(item)
+          ? item.text ?? item.content ?? ""
+          : "";
       })
       .join("")
       .trim();
   }
-  if (typeof content === "object")
-    return (content as any).text ?? (content as any).content ?? "";
+  if (typeof content === "object" && isMaybeText(content)) {
+    return content.text ?? content.content ?? "";
+  }
   return "";
 };
 

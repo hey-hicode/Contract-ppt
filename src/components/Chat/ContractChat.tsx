@@ -116,6 +116,7 @@ export function ContractChat({
   ];
 
   return (
+<<<<<<< HEAD
     <Dialog>
       <DialogTrigger asChild>
         <Button
@@ -248,6 +249,25 @@ export function ContractChat({
             <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg">
               <AlertCircle size={16} className="text-red-600 flex-shrink-0" />
               <p className="text-xs text-red-700">{error}</p>
+=======
+    <div className="flex h-full flex-col  rounded-xl p-3 gap-3">
+      <div className="flex-1 overflow-y-auto space-y-2 text-sm pr-1">
+        {messages.map((m) => (
+          <div
+            key={m.id}
+            className={`flex ${
+              m.role === "user" ? "justify-end" : "justify-start"
+            }`}
+          >
+            <div
+              className={`max-w-[80%] rounded-lg px-3 py-2 ${
+                m.role === "user"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted"
+              }`}
+            >
+              {m.content}
+>>>>>>> 0325e8eed8497c2a610164125b0422463d7e3d00
             </div>
           </div>
         )}

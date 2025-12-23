@@ -9,9 +9,8 @@ export async function downloadElementAsPdfSimple(
   const canvas = await html2canvas(el, { scale: 2 });
   const img = canvas.toDataURL("image/png");
   const pdf = new jsPDF("p", "mm", "a4");
-  const imgProps = (pdf as any).getImageProperties(img);
   const pdfWidth = 210;
-  const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+  const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
   pdf.addImage(img, "PNG", 0, 0, pdfWidth, pdfHeight);
   pdf.save(filename);
 }

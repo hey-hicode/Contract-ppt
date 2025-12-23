@@ -1,16 +1,15 @@
 // app/(dashboard)/page.tsx
+export const dynamic = "force-dynamic";
 import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import ContractTable from "~/components/Dashboard/contract-table";
 import QuickAction from "~/components/Dashboard/quick-action";
-import { Button } from "~/components/ui/button";
 import {
   Card,
   CardHeader,
   CardDescription,
   CardTitle,
-  CardAction,
   CardFooter,
 } from "~/components/ui/card";
 import { Database } from "~/types/supabase";
@@ -27,13 +26,13 @@ type RecentAnalysis = {
   source_title: string | null;
   overall_risk: "low" | "medium" | "high" | null;
   summary: string | null;
-  red_flags: any[] | null;
+  red_flags: unknown[] | null;
   recommendations: string[] | null;
   created_at: string;
 };
 
 type StatsRow = {
-  red_flags: any[] | null;
+  red_flags: unknown[] | null;
   overall_risk: "low" | "medium" | "high" | null;
 };
 
@@ -192,37 +191,45 @@ export default async function DashboardPage() {
           </CardFooter>
         </Card>
 
-        <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card pt-4 !px-0 grid grid-cols-1 gap-4  *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 md:grid-cols-2 lg:grid-cols-4 pb-4">
-          <Card className="@container/card ">
-            <CardHeader>
-              <CardDescription>Contracts Analyzed </CardDescription>
+        <div className="pt-4 !px-0 grid grid-cols-2 gap-3 lg:px-6 md:grid-cols-2 lg:grid-cols-4 pb-4">
+          <Card className="@container/card rounded-xl border bg-white shadow-sm">
+            <CardHeader className="space-y-1">
+              <CardDescription className="text-sm text-muted-foreground">
+                Contracts Analyzed
+              </CardDescription>
               <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                 {data.totalCount}
               </CardTitle>
             </CardHeader>
           </Card>
 
-          <Card className="@container/card">
-            <CardHeader>
-              <CardDescription>Red Flags Found</CardDescription>
+          <Card className="@container/card rounded-xl border bg-white shadow-sm">
+            <CardHeader className="space-y-1">
+              <CardDescription className="text-sm text-muted-foreground">
+                Red Flags Found
+              </CardDescription>
               <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                 {data.redFlagsSum}
               </CardTitle>
             </CardHeader>
           </Card>
 
-          <Card className="@container/card">
-            <CardHeader>
-              <CardDescription>Safe Contracts</CardDescription>
+          <Card className="@container/card rounded-xl border bg-white shadow-sm">
+            <CardHeader className="space-y-1">
+              <CardDescription className="text-sm text-muted-foreground">
+                Safe Contracts
+              </CardDescription>
               <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                 {data.safeCount}
               </CardTitle>
             </CardHeader>
           </Card>
 
-          <Card className="@container/card">
-            <CardHeader>
-              <CardDescription>Average Risk Score</CardDescription>
+          <Card className="@container/card rounded-xl border bg-white shadow-sm">
+            <CardHeader className="space-y-1">
+              <CardDescription className="text-sm text-muted-foreground">
+                Average Risk Score
+              </CardDescription>
               <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                 {data.avgRiskPercent}%
               </CardTitle>

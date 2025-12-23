@@ -1,14 +1,11 @@
 import type React from "react"
 import { cn } from "~/lib/utils"
 
-interface MarqueeProps {
-  className?: string
+type MarqueeProps = React.HTMLAttributes<HTMLDivElement> & {
   reverse?: boolean
   pauseOnHover?: boolean
-  children?: React.ReactNode
   vertical?: boolean
   repeat?: number
-  [key: string]: any
 }
 
 export default function Marquee({

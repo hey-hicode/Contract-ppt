@@ -1,20 +1,11 @@
 "use client";
 
-import { File, FileText, UploadCloud, X } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { UploadCloud } from "lucide-react";
+import { useCallback, useMemo } from "react";
 import { useDropzone, type FileRejection } from "react-dropzone";
 import { Input } from "~/components/ui/input";
-import { ScrollArea } from "~/components/ui/scroll-area";
-import { Progress } from "~/components/ui/progress";
 import toast from "react-hot-toast";
 import { cn } from "~/lib/utils";
-
-interface FileUploadProgress {
-  progress: number;
-  file: File;
-  status: "uploading" | "processing" | "completed" | "error";
-  message?: string;
-}
 
 interface FileUploadProps {
   onFileUpload: (file: File) => void;
@@ -24,24 +15,10 @@ interface FileUploadProps {
   onProcessing?: (file: File) => void;
   onUploadComplete?: (file: File, parsedText: string) => void;
   onUploadError?: (file: File | null, message: string) => void;
-  onFileRemoved?: (file: File) => void;
+  onFileRemoved?: (file: File | null, message: string) => void;
 }
 
-const statusCopy: Record<FileUploadProgress["status"], string> = {
-  uploading: "Uploading to parser...",
-  processing: "Extracting contract text...",
-  completed: "Ready to review the extracted text.",
-  error: "We could not process this file. Remove it and try again.",
-};
-
-const formatBytes = (bytes: number) => {
-  if (bytes === 0) return "0 B";
-  const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  const value = parseFloat((bytes / Math.pow(k, i)).toFixed(2));
-  return `${value} ${sizes[i]}`;
-};
+// Removed unused helpers related to the commented-out progress UI
 
 export default function FileUpload({
   onFileUpload,
@@ -51,40 +28,15 @@ export default function FileUpload({
   onProcessing,
   onUploadComplete,
   onUploadError,
-  onFileRemoved,
+  // onFileRemoved
 }: FileUploadProps) {
-  const [filesToUpload, setFilesToUpload] = useState<FileUploadProgress[]>([]);
 
   const maxSizeInMb = useMemo(
     () => Math.round((maxSize / (1024 * 1024)) * 10) / 10,
     [maxSize]
   );
 
-  const updateFileState = useCallback(
-    (file: File, patch: Partial<FileUploadProgress>) => {
-      setFilesToUpload((prev) =>
-        prev.map((item) =>
-          item.file === file
-            ? {
-                ...item,
-                ...patch,
-              }
-            : item
-        )
-      );
-    },
-    []
-  );
-
-  const removeFile = useCallback(
-    (file: File) => {
-      setFilesToUpload((prevUploadProgress) =>
-        prevUploadProgress.filter((item) => item.file !== file)
-      );
-      onFileRemoved?.(file);
-    },
-    [onFileRemoved]
-  );
+  // Removed progress tracking UI and state (not displayed)
 
   const uploadFileToApi = useCallback(
     async (file: File) => {
@@ -92,19 +44,16 @@ export default function FileUpload({
       formData.append("file", file);
 
       try {
-        // mark uploading
-        updateFileState(file, { progress: 35, status: "uploading" });
-
         const response = await fetch("/api/upload", {
           method: "POST",
           body: formData,
         });
 
         // Try to parse JSON once (works for both OK and error bodies)
-        let data: any = null;
+        let data: unknown = null;
         try {
           data = await response.json();
-        } catch (parseErr) {
+        } catch {
           // JSON parse failed — handle gracefully
           throw new Error("Invalid response from server.");
         }
@@ -112,21 +61,22 @@ export default function FileUpload({
         if (!response.ok) {
           // If the server sent an error message, surface it
           const serverMsg =
-            (data && (data.error || data.message || data.details)) ||
+            (data &&
+              typeof data === "object" &&
+              ((data as { error?: string }).error ||
+                (data as { message?: string }).message ||
+                (data as { details?: string }).details)) ||
             "Failed to upload file";
-          throw new Error(serverMsg);
+          throw new Error(serverMsg as string);
         }
 
         // At this point data should contain the parsed result from server
         const parsedText: string =
-          typeof data === "object" ? data.text ?? "" : "";
+          data && typeof data === "object" && "text" in data
+            ? (data as { text?: string }).text ?? ""
+            : "";
 
-        // mark processing
-        updateFileState(file, { progress: 70, status: "processing" });
         onProcessing?.(file);
-
-        // final update
-        updateFileState(file, { progress: 100, status: "completed" });
 
         // Set parsed text correctly and call completion callback with the text
         setParsedText(parsedText);
@@ -136,22 +86,11 @@ export default function FileUpload({
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Something went wrong.";
-        updateFileState(file, {
-          progress: 0,
-          status: "error",
-          message,
-        });
         toast.error(`Upload failed: ${message}`);
         onUploadError?.(file, message);
       }
     },
-    [
-      onProcessing,
-      onUploadComplete,
-      onUploadError,
-      setParsedText,
-      updateFileState,
-    ]
+    [onProcessing, onUploadComplete, onUploadError, setParsedText]
   );
 
   const onDrop = useCallback(
@@ -170,7 +109,6 @@ export default function FileUpload({
       const file = acceptedFiles[0];
 
       setParsedText("");
-      setFilesToUpload([{ file, progress: 15, status: "uploading" }]);
       onFileUpload(file);
       onUploadStart?.(file);
       await uploadFileToApi(file);

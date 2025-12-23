@@ -33,12 +33,15 @@ export async function POST(req: NextRequest) {
     try {
       const { text: extractedText } = await extractText(uint8Array);
       text = String(extractedText || "");
-    } catch (extractionError: any) {
+    } catch (extractionError: unknown) {
       console.error("PDF text extraction failed:", extractionError);
       return NextResponse.json(
         {
           error: "Failed to extract text from PDF.",
-          details: extractionError.message,
+          details:
+            extractionError instanceof Error
+              ? extractionError.message
+              : String(extractionError),
           code: "EXTRACTION_FAILED",
         },
         { status: 500 }
@@ -58,12 +61,14 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ text }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("File upload API error:", error);
     return NextResponse.json(
       {
         error:
-          error.message || "An unexpected error occurred during file upload.",
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred during file upload.",
       },
       { status: 500 }
     );

@@ -7,7 +7,7 @@ export type Database = {
           source_title: string | null;
           overall_risk: "low" | "medium" | "high" | null;
           summary: string | null;
-          red_flags: any[] | null;
+          red_flags: unknown[] | null;
           recommendations: string[] | null;
           created_at: string;
         };
@@ -16,14 +16,14 @@ export type Database = {
           source_title?: string | null;
           overall_risk?: "low" | "medium" | "high" | null;
           summary?: string | null;
-          red_flags?: any[] | null;
+          red_flags?: unknown[] | null;
           recommendations?: string[] | null;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["analyses"]["Insert"]>;
       };
     };
-    Views: {};
-    Functions: {};
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
   };
 };

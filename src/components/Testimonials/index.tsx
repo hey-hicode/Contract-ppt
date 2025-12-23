@@ -1,4 +1,3 @@
-import { Testimonial } from "~/types/testimonial";
 import SectionTitle from "../shared/SectionTitle";
 import SingleTestimonial from "./SingleTestimonial";
 import Marquee from "../shared/Marquee";
@@ -154,15 +153,15 @@ const Testimonials = () => {
         />
 
         <div className="relative">
-            <Marquee pauseOnHover className="[--duration:40s] [mask-image:linear-gradient(to_right,transparent,black,transparent)]">
-          {twitterTestimonials.map((testimonial,index) => (
-            <SingleTestimonial key={testimonial.handle} testimonial={testimonial} index={index} />
-          ))}
+          <Marquee pauseOnHover className="[--duration:40s] [mask-image:linear-gradient(to_right,transparent,black,transparent)]">
+            {twitterTestimonials.map((testimonial, index) => (
+              <SingleTestimonial key={testimonial.handle} testimonial={testimonial} />
+            ))}
           </Marquee>
-            <Marquee pauseOnHover reverse  className="[--duration:40s] [mask-image:linear-gradient(to_right,transparent,black,transparent)]">
-          {linkedinTestimonials.map((testimonial,index) => (
-            <SingleTestimonial key={testimonial.username} testimonial={testimonial} index={index} />
-          ))}
+          <Marquee pauseOnHover reverse className="[--duration:40s] [mask-image:linear-gradient(to_right,transparent,black,transparent)]">
+            {linkedinTestimonials.map((testimonial, index) => (
+              <SingleTestimonial key={testimonial.username} testimonial={testimonial} />
+            ))}
           </Marquee>
         </div>
       </div>

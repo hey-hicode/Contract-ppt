@@ -752,7 +752,7 @@ Best regards,
             />
           ) : (
             <p className="text-sm text-slate-500">
-              Save this analysis first to start chatting with the AI.
+              Save this analysis start chatting with the AI.
             </p>
           )}
         </div>

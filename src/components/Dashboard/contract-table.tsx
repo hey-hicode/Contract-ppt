@@ -1,11 +1,4 @@
-import {
-  FileText,
-  AlertTriangle,
-  CheckCircle2,
-  Eye,
-  Download,
-  MoreVertical,
-} from "lucide-react";
+import { FileText, AlertTriangle, CheckCircle2, MoreVertical } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import {
@@ -23,7 +16,7 @@ type ContractTableItem = {
   source_title: string | null;
   overall_risk: "low" | "medium" | "high" | null;
   summary: string | null;
-  red_flags: any[] | null;
+  red_flags: unknown[] | null;
   recommendations: string[] | null;
   created_at: string;
 };
@@ -71,7 +64,7 @@ const ContractTable = ({ items }: ContractTableProps) => {
     });
   };
 
-  const getRedFlagsCount = (redFlags: any[] | null) => {
+  const getRedFlagsCount = (redFlags: unknown[] | null) => {
     if (!redFlags || !Array.isArray(redFlags)) return 0;
     return redFlags.length;
   };
@@ -96,7 +89,8 @@ const ContractTable = ({ items }: ContractTableProps) => {
 
   return (
     <Card className="border-none shadow-sm bg-white rounded-md">
-      <div className="overflow-x-auto">
+      {/* Desktop / Tablet table view */}
+      <div className="hidden sm:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -115,16 +109,16 @@ const ContractTable = ({ items }: ContractTableProps) => {
               return (
                 <TableRow key={contract.id} className="hover:bg-gray-50">
                   <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-[#E3F2FD] rounded-lg flex items-center justify-center">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 bg-[#E3F2FD] rounded-lg flex items-center justify-center shrink-0">
                         <FileText className="w-5 h-5 text-blue-600" />
                       </div>
-                      <span className="text-gray-900">
+                      <span className="text-gray-900 truncate">
                         {contract.source_title || "Untitled Contract"}
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-gray-600">
+                  <TableCell className="text-gray-600 whitespace-nowrap">
                     {formatDate(contract.created_at)}
                   </TableCell>
                   <TableCell>
@@ -159,6 +153,49 @@ const ContractTable = ({ items }: ContractTableProps) => {
             })}
           </TableBody>
         </Table>
+      </div>
+      {/* Mobile card view */}
+      <div className="block sm:hidden">
+        <ul className="space-y-3 p-2">
+          {items.map((contract) => {
+            const riskDisplay = getRiskDisplay(contract.overall_risk);
+            const redFlagsCount = getRedFlagsCount(contract.red_flags);
+            const title = contract.source_title || "Untitled Contract";
+            const date = formatDate(contract.created_at);
+            const rightText = redFlagsCount > 0 ? `${redFlagsCount} flags` : "No issues";
+            const rightColor = redFlagsCount > 0 ? "text-orange-600" : "text-green-600";
+
+            return (
+              <li key={contract.id} className="rounded-lg border bg-white  p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 bg-[#E3F2FD] rounded-lg flex items-center justify-center shrink-0">
+                      <FileText className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                       <p className="text-gray-900 font-medium truncate max-w-[200px]">{title}</p>
+                    <p className="text-xs text-gray-600">{date}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                
+                         <div className="mt-2 flex space-y-2 items-center flex-col justify-between">
+                     <span
+                      className={`${riskDisplay.color} inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium`}
+                    >
+                      {riskDisplay.level}
+                    </span>
+                  <p className={`text-sm font-medium ${rightColor}`}>{rightText}</p>
+                   
+                </div>
+                  </div>
+                </div>
+
+       
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </Card>
   );

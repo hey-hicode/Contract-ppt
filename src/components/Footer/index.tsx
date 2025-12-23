@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import menuData from "../Header/menuData";
-import Logo from "../../../public/icons/logo";
 
 const Footer = () => {
   const usePathName = usePathname();

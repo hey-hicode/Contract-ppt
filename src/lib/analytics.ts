@@ -5,7 +5,7 @@ export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G
 
 // Initialize Google Analytics
 // Define gtag function outside of any block to avoid ES5 strict mode issues
-const gtag = (...args: any[]) => {
+const gtag = (...args: unknown[]) => {
   if (typeof window !== 'undefined' && window.dataLayer) {
     window.dataLayer.push(args)
   }
@@ -77,7 +77,7 @@ export const trackSubscription = (plan: string, value: number) => {
 // Declare global gtag type
 declare global {
   interface Window {
-    gtag: (...args: any[]) => void
-    dataLayer: any[]
+    gtag: (...args: unknown[]) => void
+    dataLayer: unknown[]
   }
 }
