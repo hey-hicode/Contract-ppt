@@ -1,4 +1,5 @@
 // app/(dashboard)/page.tsx
+export const dynamic = "force-dynamic";
 import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
