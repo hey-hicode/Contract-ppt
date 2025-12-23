@@ -1,6 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
 import ChatDashboard from "~/components/Chat/ChatDashBoard";
-import { GeneralChat } from "~/components/Chat/GeneralChat";
 import { Button } from "~/components/ui/button";
 import { supabase } from "~/lib/supabaseClient";
 
