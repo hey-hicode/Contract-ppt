@@ -6,29 +6,29 @@ const AboutSectionTwo = () => {
       <div className="container">
         <div className="-mx-4 flex flex-wrap ">
           <div className="w-full px-4 lg:w-1/2">
-                     <SectionTitle
-                     
-            title="From Upload To Counselr Without Leaving The Work 
+            <SectionTitle
+
+              title="Legal Counsel Without Leaving Your Work.
 "
-            paragraph="every Stage is Deterministic and auditable legal ops can review the parsing logs.counsel can enrich the analysis and stake holders can see  the same dashboard "
-          />
+              paragraph="Every stage is deterministic and auditable—from parsing logs to counsel-enriched analysis, all in one shared dashboard. "
+            />
           </div>
           <div className="w-full px-4 lg:w-1/2">
             <div className="max-w-[470px]">
               <div className="mb-6 border py-6 px-6 rounded-2xl">
                 <h3 className="mb-4 text-xl font-medium text-black dark:text-white sm:text-2xl lg:text-xl xl:text-2xl">
-                 Upload Your Contract
+                  Upload Your Contract
                 </h3>
                 <p className="text-base font-medium leading-relaxed text-body-color sm:text-lg sm:leading-relaxed">
-                 Securely upload your PDF, DOCX, or TXT legal document in seconds.
+                  Securely upload your PDF, DOCX, or TXT legal document in seconds.
                 </p>
               </div>
               <div className="mb-6 border py-6 px-6 rounded-2xl">
                 <h3 className="mb-4 text-xl font-medium text-black dark:text-white sm:text-2xl lg:text-xl xl:text-2xl">
-                Counselr Analysis
+                  Counselr Analysis
                 </h3>
                 <p className="text-base font-medium leading-relaxed text-body-color sm:text-lg sm:leading-relaxed">
-               Your Counselr scans every clause, identifying potential risks and key terms.
+                  Your Counselr scans every clause, identifying potential risks and key terms.
                 </p>
               </div>
               <div className="mb-6 border py-6 px-6 rounded-2xl">
@@ -41,10 +41,10 @@ const AboutSectionTwo = () => {
               </div>
               <div className="mb-6 border py-6 px-6 rounded-2xl">
                 <h3 className="mb-4 text-xl font-medium text-black dark:text-white sm:text-2xl lg:text-xl xl:text-2xl">
-                 Act with Confidence
+                  Act with Confidence
                 </h3>
                 <p className="text-base font-medium leading-relaxed text-body-color sm:text-lg sm:leading-relaxed">
-                Use our actionable advice to negotiate better terms and finalize agreements.
+                  Use our actionable advice to negotiate better terms and finalize agreements.
                 </p>
               </div>
             </div>

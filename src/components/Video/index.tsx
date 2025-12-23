@@ -13,12 +13,9 @@ export default function Video() {
       <section className="relative z-10 py-16 md:py-20 lg:py-28">
         <div className="container">
           <SectionTitle
-          width="700px"
+            width="700px"
             title="We are ready to help"
-            paragraph=" we make it easier for
-      businesses and teams to understand what’s inside their agreements. From brand deals to sponsorships,
-      your Counselr decodes legal text into clear rights, cash, and risk summaries helping you
-      negotiate smarter and faster."
+            paragraph=" Counselr decodes complex agreements into clear rights, financial obligations, and risk,helping businesses negotiate with confidence"
             center
             mb="80px"
           />
