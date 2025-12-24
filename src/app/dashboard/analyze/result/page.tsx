@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -15,7 +15,6 @@ import {
   Calendar,
   Shield,
   AlertCircle,
-  Info,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
@@ -28,7 +27,6 @@ import {
   DialogContent,
   DialogTrigger,
   DialogTitle,
-  DialogClose,
   DialogHeader,
   DialogFooter,
 } from "~/components/ui/dialog";
@@ -62,17 +60,54 @@ interface StoredData {
 }
 
 export default function AnalyzerResultsPage() {
-  const [data, setData] = useState<StoredData | any>(null);
+  const [data, setData] = useState<StoredData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [emailContent, setEmailContent] = useState<any>("");
-  const [emailSubject, setEmailSubject] = useState<any>("");
-  const [recipientEmail, setRecipientEmail] = useState<any>("");
+  const [emailContent, setEmailContent] = useState<string>("");
+  const [emailSubject, setEmailSubject] = useState<string>("");
+  const [recipientEmail, setRecipientEmail] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [isChatOpen, setIsChatOpen] = useState(false);
   const router = useRouter();
   const analysis = data?.analysis ?? null;
+
+  const generateEmailContent = useCallback((analysis: AnalysisResult) => {
+    const subject = `Legal Review: Contract Analysis Report - ${data?.sourceTitle || "Untitled"
+      }`;
+    const content = `Dear [Recipient Name],
+
+I have reviewed the contract "${data?.sourceTitle || "Untitled"
+      }" and would like to share the following analysis.
+
+EXECUTIVE SUMMARY
+------------------
+${analysis.summary}
+
+RISK ASSESSMENT
+------------------
+Overall Risk Level: ${analysis.overallRisk?.toUpperCase()}
+Total Issues Identified: ${analysis.redFlags?.length}
+
+KEY RECOMMENDATIONS
+------------------
+${analysis.recommendations
+        .slice(0, 5)
+        .map((rec, index) => `${index + 1}. ${rec}`)
+        .join("\n")}
+
+CRITICAL ISSUES
+------------------
+${analysis.redFlags
+        .filter((flag) => flag.type === "critical")
+        .map((flag, index) => `${index + 1}. ${flag.title}: ${flag.description}`)
+        .join("\n")}
+
+Please let me know if you would like to discuss these findings in more detail.
+
+Best regards,
+[Your Name]`;
+    return { subject, content };
+  }, [data?.sourceTitle]);
 
   useEffect(() => {
     try {
@@ -95,14 +130,12 @@ export default function AnalyzerResultsPage() {
         return;
       }
 
-      const parsedData = {
+      const parsedData: StoredData = {
         analysis: parsed.analysis,
         contractText: parsed.contractText ?? "",
-        // @ts-ignore
         sourceTitle: parsed.sourceTitle ?? "",
-        // @ts-ignore
-        model: parsed.model ?? null,
-      } as any;
+        model: parsed.model ?? undefined,
+      };
 
       setData(parsedData);
 
@@ -119,7 +152,7 @@ export default function AnalyzerResultsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [generateEmailContent]);
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
@@ -134,71 +167,7 @@ export default function AnalyzerResultsPage() {
     }
   };
 
-  const getRiskBadgeVariant = (risk: string) => {
-    switch (risk) {
-      case "high":
-        return "destructive";
-      case "medium":
-        return "secondary"; // Or custom warning variant if available
-      case "low":
-        return "outline"; // Or success variant
-      default:
-        return "secondary";
-    }
-  };
 
-  const getRedFlagIcon = (type: string) => {
-    switch (type) {
-      case "critical":
-        return <XCircle className="h-5 w-5 text-red-600" />;
-      case "warning":
-        return <AlertTriangle className="h-5 w-5 text-amber-600" />;
-      case "minor":
-        return <Info className="h-5 w-5 text-blue-600" />;
-      default:
-        return <AlertCircle className="h-5 w-5 text-slate-600" />;
-    }
-  };
-
-  const generateEmailContent = (analysis: AnalysisResult) => {
-    const subject = `Legal Review: Contract Analysis Report - ${
-      data?.sourceTitle || "Untitled"
-    }`;
-    const content = `Dear [Recipient Name],
-
-I have reviewed the contract "${
-      data?.sourceTitle || "Untitled"
-    }" and would like to share the following analysis.
-
-EXECUTIVE SUMMARY
-------------------
-${analysis.summary}
-
-RISK ASSESSMENT
-------------------
-Overall Risk Level: ${analysis.overallRisk?.toUpperCase()}
-Total Issues Identified: ${analysis.redFlags?.length}
-
-KEY RECOMMENDATIONS
-------------------
-${analysis.recommendations
-  .slice(0, 5)
-  .map((rec, index) => `${index + 1}. ${rec}`)
-  .join("\n")}
-
-CRITICAL ISSUES
-------------------
-${analysis.redFlags
-  .filter((flag) => flag.type === "critical")
-  .map((flag, index) => `${index + 1}. ${flag.title}: ${flag.description}`)
-  .join("\n")}
-
-Please let me know if you would like to discuss these findings in more detail.
-
-Best regards,
-[Your Name]`;
-    return { subject, content };
-  };
 
   const handleSendEmail = () => {
     trackFeatureUsage("email_sent");
@@ -231,7 +200,7 @@ Best regards,
     setErrorMsg(null);
     try {
       const payload = {
-        sourceTitle: data.sourceTitle ?? document?.title ?? "Untitled Contract",
+        sourceTitle: data.sourceTitle ?? "Untitled Contract",
         docFingerprint: null,
         model: data.model ?? null,
         promptVersion: null,
@@ -264,9 +233,9 @@ Best regards,
       const json = await res.json();
       setSavedId(json.id);
       trackFeatureUsage("analysis_saved");
-    } catch (err: any) {
+    } catch (err) {
       console.error("save error:", err);
-      setErrorMsg(err.message ?? "Failed to save analysis");
+      setErrorMsg(err instanceof Error ? err.message : "Failed to save analysis");
     } finally {
       setSaving(false);
     }
@@ -285,7 +254,7 @@ Best regards,
     );
   }
 
-  if (!data || !data.analysis) {
+  if (!data || !analysis) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-md text-center p-6">
@@ -344,12 +313,12 @@ Best regards,
               <div
                 className={cn(
                   "px-4 py-2 rounded-md font-bold border flex items-center gap-2 font-medium",
-                  getRiskColor(analysis.overallRisk)
+                  getRiskColor(analysis!.overallRisk)
                 )}
               >
                 <AlertCircle className="h-5 w-5" />
                 <span className="capitalize text-xs">
-                  {analysis.overallRisk} Risk Detected
+                  {analysis!.overallRisk} Risk Detected
                 </span>
               </div>
               <Button
@@ -415,17 +384,17 @@ Best regards,
               <Shield
                 className={cn(
                   "h-4 w-4",
-                  analysis.overallRisk === "high"
+                  analysis!.overallRisk === "high"
                     ? "text-red-500"
-                    : analysis.overallRisk === "medium"
-                    ? "text-amber-500"
-                    : "text-emerald-500"
+                    : analysis!.overallRisk === "medium"
+                      ? "text-amber-500"
+                      : "text-emerald-500"
                 )}
               />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold capitalize text-slate-900">
-                {analysis.overallRisk}
+                {analysis!.overallRisk}
               </div>
             </CardContent>
           </Card>
@@ -438,7 +407,7 @@ Best regards,
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-slate-900">
-                {analysis.redFlags?.length ?? 0}
+                {analysis!.redFlags?.length ?? 0}
               </div>
             </CardContent>
           </Card>
@@ -451,7 +420,7 @@ Best regards,
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-slate-900">
-                {analysis.recommendations?.length ?? 0}
+                {analysis!.recommendations?.length ?? 0}
               </div>
             </CardContent>
           </Card>
@@ -465,13 +434,12 @@ Best regards,
               <Card className="  !shadow-none bg-white">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    {/* <FileText className="h-5 w-5 text-primary" /> */}
                     Executive Summary
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm leading-relaxed text-slate-700">
-                    {analysis.summary}
+                    {analysis!.summary}
                   </p>
                 </CardContent>
               </Card>
@@ -512,7 +480,7 @@ Best regards,
                     variant="secondary"
                     className="ml-2 bg-slate-100 text-slate-600"
                   >
-                    {analysis.redFlags?.length ?? 0}
+                    {analysis!.redFlags?.length ?? 0}
                   </Badge>
                 </TabsTrigger>
                 <TabsTrigger
@@ -533,7 +501,7 @@ Best regards,
                 value="risks"
                 className="space-y-4 animate-in fade-in-50 duration-300"
               >
-                {analysis.redFlags?.length === 0 ? (
+                {analysis!.redFlags?.length === 0 ? (
                   <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-md">
                     <CheckCircle className="h-12 w-12 mx-auto mb-4 text-emerald-500" />
                     <h3 className="text-lg font-medium text-slate-900">
@@ -544,22 +512,21 @@ Best regards,
                     </p>
                   </div>
                 ) : (
-                  analysis.redFlags.map((flag: any) => (
+                  analysis!.redFlags.map((flag: RedFlag, idx: number) => (
                     <Card
-                      key={flag.id}
+                      key={idx}
                       className={cn(
                         "border-l-4 rounded-none transition-all hover:shadow-md",
                         flag.type === "critical"
                           ? "border-l-red-500"
                           : flag.type === "warning"
-                          ? "border-l-amber-500"
-                          : "border-l-blue-500"
+                            ? "border-l-amber-500"
+                            : "border-l-blue-500"
                       )}
                     >
                       <CardHeader className="pb-2">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex items-center gap-2">
-                            {/* {getRedFlagIcon(flag.type)} */}
                             <CardTitle className="text-base font-semibold text-slate-900">
                               {flag.title}
                             </CardTitle>
@@ -571,8 +538,8 @@ Best regards,
                               flag.type === "critical"
                                 ? "text-red-700 border-red-200 bg-red-50"
                                 : flag.type === "warning"
-                                ? "text-amber-700 border-amber-200 bg-amber-50"
-                                : "text-blue-700 border-blue-200 bg-blue-50"
+                                  ? "text-amber-700 border-amber-200 bg-amber-50"
+                                  : "text-blue-700 border-blue-200 bg-blue-50"
                             )}
                           >
                             {flag.type}
@@ -585,7 +552,7 @@ Best regards,
                         </p>
                         {flag.clause && (
                           <div className="bg-slate-50 p-3 rounded border border-slate-100 text-xs font-mono text-slate-600">
-                            "{flag.clause}"
+                            &quot;{flag.clause}&quot;
                           </div>
                         )}
                       </CardContent>
@@ -598,153 +565,61 @@ Best regards,
                 value="clauses"
                 className="space-y-4 animate-in fade-in-50 duration-300"
               >
-                {analysis.redFlags?.map(
-                  (
-                    flag: {
-                      clause:
-                        | string
-                        | number
-                        | bigint
-                        | boolean
-                        | React.ReactElement<
-                            unknown,
-                            string | React.JSXElementConstructor<any>
-                          >
-                        | Iterable<React.ReactNode>
-                        | React.ReactPortal
-                        | Promise<
-                            | string
-                            | number
-                            | bigint
-                            | boolean
-                            | React.ReactPortal
-                            | React.ReactElement<
-                                unknown,
-                                string | React.JSXElementConstructor<any>
-                              >
-                            | Iterable<React.ReactNode>
-                            | null
-                            | undefined
-                          >
-                        | null
-                        | undefined;
-                      title:
-                        | string
-                        | number
-                        | bigint
-                        | boolean
-                        | React.ReactElement<
-                            unknown,
-                            string | React.JSXElementConstructor<any>
-                          >
-                        | Iterable<React.ReactNode>
-                        | React.ReactPortal
-                        | Promise<
-                            | string
-                            | number
-                            | bigint
-                            | boolean
-                            | React.ReactPortal
-                            | React.ReactElement<
-                                unknown,
-                                string | React.JSXElementConstructor<any>
-                              >
-                            | Iterable<React.ReactNode>
-                            | null
-                            | undefined
-                          >
-                        | null
-                        | undefined;
-                    },
-                    idx: React.Key | null | undefined
-                  ) => (
-                    <Card
-                      key={idx}
-                      className="group hover:border-primary/50 transition-colors"
-                    >
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-slate-500 uppercase tracking-wider">
-                          Clause Reference
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <blockquote className="border-l-2 border-slate-300 pl-4 italic text-slate-700 font-serif text-lg">
-                          "{flag.clause}"
-                        </blockquote>
-                        <div className="mt-4 flex items-center gap-2 text-sm text-red-600 font-medium">
-                          <AlertTriangle className="h-4 w-4" />
-                          Issue: {flag.title}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )
-                )}
+                {analysis!.redFlags?.map((flag: RedFlag, idx: number) => (
+                  <Card
+                    key={idx}
+                    className="group hover:border-primary/50 transition-colors"
+                  >
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium text-slate-500 uppercase tracking-wider">
+                        Clause Reference
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <blockquote className="border-l-2 border-slate-300 pl-4 italic text-slate-700 font-serif text-lg">
+                        &quot;{flag.clause}&quot;
+                      </blockquote>
+                      <div className="mt-4 flex items-center gap-2 text-sm text-red-600 font-medium">
+                        <AlertTriangle className="h-4 w-4" />
+                        Issue: {flag.title}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </TabsContent>
 
               <TabsContent
                 value="suggestions"
                 className="space-y-4 animate-in fade-in-50 duration-300"
               >
-                {analysis.recommendations?.map(
-                  (
-                    rec:
-                      | string
-                      | number
-                      | bigint
-                      | boolean
-                      | React.ReactElement<
-                          unknown,
-                          string | React.JSXElementConstructor<any>
-                        >
-                      | Iterable<React.ReactNode>
-                      | React.ReactPortal
-                      | Promise<
-                          | string
-                          | number
-                          | bigint
-                          | boolean
-                          | React.ReactPortal
-                          | React.ReactElement<
-                              unknown,
-                              string | React.JSXElementConstructor<any>
-                            >
-                          | Iterable<React.ReactNode>
-                          | null
-                          | undefined
-                        >
-                      | null
-                      | undefined,
-                    idx: React.Key | null | undefined
-                  ) => (
-                    <div
-                      key={idx}
-                      className="flex gap-4 p-4 bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex-shrink-0">
-                        <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-sm">
-                          {idx}
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="text-base font-medium text-slate-900 mb-1">
-                          Recommendation
-                        </h4>
-                        <p className="text-sm text-slate-600 leading-relaxed">
-                          {rec}
-                        </p>
+                {analysis!.recommendations?.map((rec: string, idx: number) => (
+                  <div
+                    key={idx}
+                    className="flex gap-4 p-4 bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex-shrink-0">
+                      <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-sm">
+                        {idx}
                       </div>
                     </div>
-                  )
-                )}
+                    <div>
+                      <h4 className="text-base font-medium text-slate-900 mb-1">
+                        Recommendation
+                      </h4>
+                      <p className="text-sm text-slate-600 leading-relaxed">
+                        {rec}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </TabsContent>
             </Tabs>
           </div>
         </div>
       </div>
+
       {/* Floating Actions: Chat + Email */}
       <div className="fixed bottom-8 right-8 flex flex-col items-end gap-3 z-40">
-        {/* Chat about this contract */}
-
         <div className="mt-4 flex-1">
           {savedId ? (
             <ContractChat
@@ -760,7 +635,6 @@ Best regards,
           )}
         </div>
 
-        {/* Email draft FAB (existing behaviour) */}
         <Dialog>
           <DialogTrigger asChild>
             <Button

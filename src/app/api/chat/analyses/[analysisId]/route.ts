@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+export const dynamic = "force-dynamic";
 import { supabase } from "~/lib/supabaseClient";
 import { callOpenRouterChat, DEFAULT_MODEL } from "~/lib/openrouter";
 
-type Params = { analysisId: string };
+interface RedFlag {
+  type: "critical" | "warning" | "minor";
+  title: string;
+  description: string;
+  clause: string;
+  recommendation: string;
+}
 
 type Body = {
   message: string;
@@ -11,9 +18,10 @@ type Body = {
   model?: string;
   extraInstructions?: string;
 };
+
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ analysisId: Params }> }
+  { params }: { params: Promise<{ analysisId: string }> }
 ) {
   const { userId } = await auth();
   if (!userId)
@@ -70,7 +78,7 @@ export async function POST(
       .insert({
         user_id: userId,
         analysis_id: analysisId,
-        title: analysis.source_title ?? "Contract Chat",
+        title: (analysis.source_title as string) ?? "Contract Chat",
         is_saved: false,
       })
       .select("id")
@@ -104,18 +112,16 @@ Summary:
 ${analysis.summary ?? "N/A"}
 
 Red Flags:
-${
-  Array.isArray(analysis.red_flags)
-    ? analysis.red_flags.map((r) => `- ${r.title}: ${r.description}`).join("\n")
-    : "None"
-}
+${Array.isArray(analysis.red_flags)
+      ? (analysis.red_flags as unknown as RedFlag[]).map((r) => `- ${r.title}: ${r.description}`).join("\n")
+      : "None"
+    }
 
 Recommendations:
-${
-  Array.isArray(analysis.recommendations)
-    ? analysis.recommendations.join("\n- ")
-    : "None"
-}
+${Array.isArray(analysis.recommendations)
+      ? (analysis.recommendations as string[]).join("\n- ")
+      : "None"
+    }
 
 ${extraInstructions ?? ""}
 `.trim();
@@ -124,13 +130,13 @@ ${extraInstructions ?? ""}
     role: "user" | "assistant" | "system";
     content: string;
   }[] = [
-    { role: "system", content: systemPrompt },
-    ...(history ?? []).reverse().map((m) => ({
-      role: m.role as "user" | "assistant", // <-- type assertion here
-      content: m.content,
-    })),
-    { role: "user", content: message },
-  ];
+      { role: "system", content: systemPrompt },
+      ...(history ?? []).reverse().map((m) => ({
+        role: m.role as "user" | "assistant", // <-- type assertion here
+        content: m.content as string,
+      })),
+      { role: "user", content: message },
+    ];
 
   /**
    * 5. Call model

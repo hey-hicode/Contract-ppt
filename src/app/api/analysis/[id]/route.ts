@@ -1,6 +1,7 @@
 // app/api/analysis/[id]/route.ts
 import { NextRequest } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+export const dynamic = "force-dynamic";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(

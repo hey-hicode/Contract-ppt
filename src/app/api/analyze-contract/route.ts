@@ -1,6 +1,7 @@
 // app/api/analyze-contract/route.ts  (replace your current file)
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+export const dynamic = "force-dynamic";
 import {
   assertQuota,
   getOrCreateUserPlan,

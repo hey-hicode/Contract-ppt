@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+export const dynamic = "force-dynamic";
 import { callOpenRouterChat, DEFAULT_MODEL } from "~/lib/openrouter";
 import { supabase } from "~/lib/supabaseClient";
 
@@ -75,13 +76,13 @@ export async function POST(req: NextRequest) {
     role: "user" | "assistant" | "system";
     content: string;
   }[] = [
-    { role: "system", content: systemPrompt },
-    ...(history ?? []).reverse().map((m) => ({
-      role: m.role as "user" | "assistant", // <-- type assertion here
-      content: m.content,
-    })),
-    { role: "user", content: message },
-  ];
+      { role: "system", content: systemPrompt },
+      ...(history ?? []).reverse().map((m) => ({
+        role: m.role as "user" | "assistant", // <-- type assertion here
+        content: m.content,
+      })),
+      { role: "user", content: message },
+    ];
 
   try {
     // 3. Call AI

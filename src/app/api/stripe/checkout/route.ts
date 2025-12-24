@@ -1,5 +1,6 @@
 // app/api/stripe/checkout/route.ts
 import { NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
 import { auth } from "@clerk/nextjs/server";
 import { stripe } from "~/lib/stripe";
 import { supabase } from "~/lib/supabaseClient";

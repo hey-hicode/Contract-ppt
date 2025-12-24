@@ -61,7 +61,7 @@ export default function DashboardLayoutClient({
                     </p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">
                         {userPlan.plan === "premium"
-                            ? "Unlimited"
+                            ? ""
                             : `${userPlan.remainingCredits} / ${userPlan.free_quota}`}
                     </p>
                 </div>

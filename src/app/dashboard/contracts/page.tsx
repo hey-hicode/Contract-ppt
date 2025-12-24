@@ -5,14 +5,13 @@ import {
   Search,
   Filter,
   Loader2,
-  Plus,
   UploadCloud,
   LayoutGrid,
-  Columns,
   ArrowUpDown,
   X,
   MoreVertical,
-  Check
+  Check,
+  Table as TableIcon,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -34,6 +33,7 @@ import {
   AlertDialogCancel,
 } from "~/components/ui/alert-dialog";
 import ContractTable from "~/components/Dashboard/contract-table";
+import ContractKanban from "~/components/Dashboard/contract-kanban";
 
 interface RedFlag {
   type: "critical" | "warning" | "minor";
@@ -67,6 +67,7 @@ const Contracts = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterRisk, setFilterRisk] = useState("all");
   const [sortBy, setSortBy] = useState<"date" | "status">("date");
+  const [viewMode, setViewMode] = useState<"table" | "kanban">("kanban");
   const [grouping, setGrouping] = useState<"none" | "status">("none");
   const [showColumnMenu, setShowColumnMenu] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState({
@@ -140,11 +141,6 @@ const Contracts = () => {
     router.push(`/dashboard/contracts/${id}`);
   };
 
-  const handleDeleteClick = (id: string) => {
-    setContractToDelete(id);
-    setDeleteDialogOpen(true);
-  };
-
   const handleDeleteConfirm = async () => {
     if (!contractToDelete) return;
 
@@ -171,6 +167,11 @@ const Contracts = () => {
     }
   };
 
+  const handleDelete = (id: string) => {
+    setContractToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
   // Map ContractItem to ContractTableItem
   const tableItems = filteredContracts.map(c => ({
     id: c.id,
@@ -178,6 +179,8 @@ const Contracts = () => {
     overall_risk: c.riskLevel.toLowerCase() as "low" | "medium" | "high" | null,
     summary: c.summary || null,
     red_flags: c.redFlags || null,
+    clauses: c.clauses || null,
+    flags: c.flags || null,
     recommendations: c.recommendations || null,
     created_at: c.date,
     dealParties: c.dealParties || [],
@@ -191,9 +194,9 @@ const Contracts = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F9FC] p-6 space-y-6" onClick={() => setShowColumnMenu(false)}>
+    <div className="min-h-screen bg-[#F7F9FC]  space-y-6" onClick={() => setShowColumnMenu(false)}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center  p-4 justify-between">
         <p className="text-sm text-gray-500 font-medium">
           Showing {filteredContracts.length} of {contracts.length} Contracts
         </p>
@@ -204,18 +207,12 @@ const Contracts = () => {
           <Button variant="outline" size="icon" className="h-9 w-9 bg-white border-gray-200 text-gray-500 hover:text-gray-700">
             <UploadCloud className="h-4 w-4" />
           </Button>
-          <Button
-            className="bg-[#22C55E] hover:bg-[#16A34A] text-white font-medium px-4 h-9 gap-2"
-            onClick={() => router.push("/dashboard/analyze")}
-          >
-            <Plus className="h-4 w-4" />
-            New contract
-          </Button>
+
         </div>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 space-y-4">
+      <div className="bg-white rounded-md p-4 shadow-none border border-gray-100 space-y-4">
         <div className="flex flex-col md:flex-row gap-4 justify-between">
           <div className="flex items-center gap-3 flex-1">
             <div className="relative flex-1 max-w-md">
@@ -242,42 +239,28 @@ const Contracts = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              className={`h-10 px-3 gap-2 border-gray-200 hover:bg-gray-50 ${grouping !== 'none' ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-gray-600'}`}
-              onClick={() => setGrouping(prev => prev === "none" ? "status" : "none")}
-            >
-              <LayoutGrid className="w-4 h-4" />
-              Grouping
-            </Button>
-
-            <div className="relative" onClick={(e) => e.stopPropagation()}>
+            {/* View Toggle */}
+            <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-lg">
               <Button
-                variant="outline"
-                className="h-10 px-3 gap-2 text-gray-600 border-gray-200 bg-white hover:bg-gray-50"
-                onClick={() => setShowColumnMenu(!showColumnMenu)}
+                variant="ghost"
+                size="sm"
+                className={`h-8 px-3 gap-1.5 ${viewMode === 'table' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}
+                onClick={() => setViewMode('table')}
               >
-                <Columns className="w-4 h-4" />
-                Columns
+                <TableIcon className="w-3.5 h-3.5" />
+                Table
               </Button>
-              {showColumnMenu && (
-                <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 p-2 z-50">
-                  <div className="text-xs font-semibold text-gray-500 px-2 py-1 mb-1">Toggle Columns</div>
-                  {Object.keys(visibleColumns).map((key) => (
-                    <div
-                      key={key}
-                      className="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-50 rounded cursor-pointer text-sm text-gray-700 capitalize"
-                      onClick={() => toggleColumn(key as keyof typeof visibleColumns)}
-                    >
-                      <div className={`w-4 h-4 rounded border flex items-center justify-center ${visibleColumns[key as keyof typeof visibleColumns] ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300'}`}>
-                        {visibleColumns[key as keyof typeof visibleColumns] && <Check className="w-3 h-3" />}
-                      </div>
-                      {key}
-                    </div>
-                  ))}
-                </div>
-              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-8 px-3 gap-1.5 ${viewMode === 'kanban' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}
+                onClick={() => setViewMode('kanban')}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                Kanban
+              </Button>
             </div>
+
             <Button
               variant="outline"
               className="h-10 px-3 gap-2 text-gray-600 border-gray-200 bg-white hover:bg-gray-50"
@@ -330,12 +313,22 @@ const Contracts = () => {
       )}
 
       {!loading && !error && (
-        <ContractTable
-          items={tableItems}
-          onView={handleViewContract}
-          visibleColumns={visibleColumns}
-          grouping={grouping}
-        />
+        <>
+          {viewMode === 'kanban' ? (
+            <ContractKanban
+              items={tableItems}
+              onView={handleViewContract}
+              onDelete={handleDelete}
+            />
+          ) : (
+            <ContractTable
+              items={tableItems}
+              onView={handleViewContract}
+              visibleColumns={visibleColumns}
+              grouping={grouping}
+            />
+          )}
+        </>
       )}
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

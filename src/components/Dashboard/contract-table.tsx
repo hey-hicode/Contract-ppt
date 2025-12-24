@@ -1,5 +1,5 @@
 "use client";
-import { FileText, MoreVertical, Eye, Plus } from "lucide-react";
+import { FileText, MoreVertical, Eye } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
@@ -22,10 +22,12 @@ type ContractTableItem = {
   red_flags: unknown[] | null;
   recommendations: string[] | null;
   created_at: string;
-  dealParties?: string[];
-  companiesInvolved?: string[];
-  dealRoom?: string;
-  playbook?: string;
+  dealParties?: string[] | null;
+  companiesInvolved?: string[] | null;
+  dealRoom?: string | null;
+  playbook?: string | null;
+  clauses?: number | null;
+  flags?: number | null;
 };
 
 interface ContractTableProps {
@@ -39,6 +41,22 @@ interface ContractTableProps {
   };
   grouping?: "none" | "status";
 }
+
+// Random color palette for avatars
+const avatarColors = [
+  "bg-blue-200 text-blue-700",
+  "bg-purple-200 text-purple-700",
+  "bg-pink-200 text-pink-700",
+  "bg-green-200 text-green-700",
+  "bg-yellow-200 text-yellow-700",
+  "bg-indigo-200 text-indigo-700",
+  "bg-red-200 text-red-700",
+  "bg-teal-200 text-teal-700",
+];
+
+const getAvatarColor = (index: number) => {
+  return avatarColors[index % avatarColors.length];
+};
 
 const ContractTable = ({ items, onView, visibleColumns = { dealparties: true, companies: true, dealroom: true, playbook: true }, grouping = "none" }: ContractTableProps) => {
   const router = useRouter();
@@ -55,9 +73,9 @@ const ContractTable = ({ items, onView, visibleColumns = { dealparties: true, co
     if (!risk) return { label: "Drafting", className: "bg-blue-50 text-blue-700 border-blue-200" };
 
     const riskLower = risk.toLowerCase();
-    if (riskLower === "high") return { label: "Negotiating", className: "bg-amber-50 text-amber-700 border-amber-200" }; // Mapped High -> Negotiating
-    if (riskLower === "medium") return { label: "Reviewing", className: "bg-purple-50 text-purple-700 border-purple-200" }; // Mapped Medium -> Reviewing
-    if (riskLower === "low") return { label: "Signing", className: "bg-green-50 text-green-700 border-green-200" }; // Mapped Low -> Signing
+    if (riskLower === "high") return { label: "high", className: "bg-red-100 text-red-700 border-red-200" };
+    if (riskLower === "medium") return { label: "medium", className: "bg-orange-100 text-orange-700 border-orange-200" };
+    if (riskLower === "low") return { label: "low", className: "bg-green-100 text-green-700 border-green-200" };
 
     return { label: "Drafting", className: "bg-blue-50 text-blue-700 border-blue-200" };
   };
@@ -80,12 +98,12 @@ const ContractTable = ({ items, onView, visibleColumns = { dealparties: true, co
     return (
       <Card className="border-none border border-gray-500 !shadow-none bg-white rounded-md p-12">
         <div className="text-center space-y-4">
-          <div className="  rounded-2xl flex items-center justify-center mx-auto">
+          <div className="rounded-2xl flex items-center justify-center mx-auto">
             <NoContract />
           </div>
           <div className="space-y-2">
             <h3 className="text-base font-medium">No contracts yet</h3>
-            <p className="text-gray-600 ">
+            <p className="text-gray-600">
               Upload your first contract to get started
             </p>
           </div>
@@ -101,7 +119,9 @@ const ContractTable = ({ items, onView, visibleColumns = { dealparties: true, co
         <TableCell className="px-6 py-4">
           <div className="flex items-center justify-between gap-3 max-w-[300px]">
             <div className="flex items-center gap-3 overflow-hidden">
-              <Eye className="w-4 h-4 text-gray-400 shrink-0 group-hover:text-gray-600 cursor-pointer" onClick={() => handleView(contract.id)} />
+              <div className="w-10 h-10 rounded-md bg-blue-50 flex items-center justify-center shrink-0 cursor-pointer" onClick={() => handleView(contract.id)}>
+                <FileText className="w-6 h-6 text-blue-600" />
+              </div>
               <span className="text-gray-900 font-medium truncate underline decoration-gray-300 underline-offset-4 cursor-pointer hover:decoration-gray-900 transition-all" onClick={() => handleView(contract.id)}>
                 {contract.source_title || "Untitled Contract"}
               </span>
@@ -116,21 +136,29 @@ const ContractTable = ({ items, onView, visibleColumns = { dealparties: true, co
             {status.label}
           </Badge>
         </TableCell>
+        <TableCell className="px-6 py-4">
+          <span className="text-sm text-gray-600">{contract.clauses ?? 0}</span>
+        </TableCell>
+        <TableCell className="px-6 py-4">
+          <span className="text-sm text-gray-600">{contract.flags ?? 0}</span>
+        </TableCell>
         {visibleColumns.dealparties && (
           <TableCell className="px-6 py-4">
-            <div className="flex -space-x-2 overflow-hidden">
+            <div className="flex flex-wrap gap-1.5">
               {contract.dealParties && contract.dealParties.length > 0 ? (
                 <>
-                  {contract.dealParties.slice(0, 2).map((party, i) => (
-                    <div key={i} className="inline-block h-6 w-6 rounded-full ring-2 ring-white bg-gray-200 flex items-center justify-center text-[10px] font-medium text-gray-600" title={party}>
-                      {party.slice(0, 2).toUpperCase()}
+                  {contract.dealParties.map((party, i) => (
+                    <div
+                      key={i}
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium ${getAvatarColor(i)}`}
+                      title={party}
+                    >
+                      <div className="w-4 h-4 rounded-full bg-white/50 flex items-center justify-center text-[8px] font-bold">
+                        {party.slice(0, 2).toUpperCase()}
+                      </div>
+                      <span className="truncate max-w-[80px]">{party}</span>
                     </div>
                   ))}
-                  {contract.dealParties.length > 2 && (
-                    <div className="inline-block h-6 w-6 rounded-full ring-2 ring-white bg-gray-100 flex items-center justify-center text-[10px] text-gray-500">
-                      +{contract.dealParties.length - 2}
-                    </div>
-                  )}
                 </>
               ) : (
                 <span className="text-gray-400 text-xs">-</span>
@@ -163,36 +191,89 @@ const ContractTable = ({ items, onView, visibleColumns = { dealparties: true, co
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-      <Table>
-        <TableHeader className="bg-gray-50/50">
-          <TableRow className="hover:bg-transparent border-b border-gray-200">
-            <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">Contract Name</TableHead>
-            <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">Status</TableHead>
-            {visibleColumns.dealparties && <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">Dealparties</TableHead>}
-            {visibleColumns.companies && <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">Companies Involved</TableHead>}
-            {visibleColumns.dealroom && <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">Dealroom</TableHead>}
-            {visibleColumns.playbook && <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">Playbook</TableHead>}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {groupedItems ? (
-            Object.entries(groupedItems).map(([status, groupItems]) => (
-              <>
-                <TableRow key={`group-${status}`} className="bg-gray-50/80 hover:bg-gray-50/80">
-                  <TableCell colSpan={2 + Object.values(visibleColumns).filter(Boolean).length} className="px-6 py-2 font-medium text-sm text-gray-700">
-                    {status} ({groupItems.length})
-                  </TableCell>
-                </TableRow>
-                {groupItems.map(renderRow)}
-              </>
-            ))
-          ) : (
-            items.map(renderRow)
-          )}
-        </TableBody>
-      </Table>
-    </div>
+    <>
+      {/* Mobile Card View */}
+      <div className="md:hidden ">
+        {items.map((contract) => {
+          const status = getStatusDisplay(contract.overall_risk);
+          return (
+            <Card key={contract.id} className="border border-gray-200 shadow-none bg-white shadow-none p-4 cursor-pointer" onClick={() => handleView(contract.id)}>
+              <div className="flex items-start justify-between ">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-medium max-w-[150px] text-gray-900 truncate">
+                    {contract.source_title || "Untitled Contract"}
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {new Date(contract.created_at).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}
+                  </p>
+                </div>
+                <Badge variant="outline" className={`${status.className} rounded-full px-2 py-0.5 text-xs font-normal border ml-2`}>
+                  {status.label}
+                </Badge>
+              </div>
+              <div className="flex flex-wrap gap-x-1.5">
+                {contract.dealParties && contract.dealParties.length > 0 ? (
+                  <>
+                    {contract.dealParties.map((party, i) => (
+                      <div
+                        key={i}
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium ${getAvatarColor(i)}`}
+                        title={party}
+                      >
+                        <div className="w-4 h-4 rounded-full bg-white/50 flex items-center justify-center text-[8px] font-bold">
+                          {party.slice(0, 2).toUpperCase()}
+                        </div>
+                        <span className="truncate max-w-[80px]">{party}</span>
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <span className="text-gray-400 text-xs">-</span>
+                )}
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block bg-white rounded-lg border border-gray-200 shadow-none overflow-hidden">
+        <Table>
+          <TableHeader className="bg-gray-50/50">
+            <TableRow className="hover:bg-transparent border-b border-gray-200">
+              <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">Contract Name</TableHead>
+              <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">Status</TableHead>
+              <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">Clauses</TableHead>
+              <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">Flags</TableHead>
+              {visibleColumns.dealparties && <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">Dealparties</TableHead>}
+              {visibleColumns.companies && <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">Companies Involved</TableHead>}
+              {visibleColumns.dealroom && <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">Dealroom</TableHead>}
+              {visibleColumns.playbook && <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">Playbook</TableHead>}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {groupedItems ? (
+              Object.entries(groupedItems).map(([status, groupItems]) => (
+                <>
+                  <TableRow key={`group-${status}`} className="bg-gray-50/80 hover:bg-gray-50/80">
+                    <TableCell colSpan={4 + Object.values(visibleColumns).filter(Boolean).length} className="px-6 py-2 font-medium text-sm text-gray-700">
+                      {status} ({groupItems.length})
+                    </TableCell>
+                  </TableRow>
+                  {groupItems.map(renderRow)}
+                </>
+              ))
+            ) : (
+              items.map(renderRow)
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </>
   );
 };
 

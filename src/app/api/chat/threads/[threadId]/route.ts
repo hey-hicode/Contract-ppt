@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "~/lib/supabaseClient";
 
@@ -25,19 +26,19 @@ export async function GET(
 
 export async function DELETE(
   _: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ threadId: string }> }
 ) {
   const { userId } = await auth();
   if (!userId)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { id } = await params;
+  const { threadId } = await params;
 
-  await supabase.from("chat_messages").delete().eq("thread_id", id);
+  await supabase.from("chat_messages").delete().eq("thread_id", threadId);
   await supabase
     .from("chat_threads")
     .delete()
-    .eq("id", id)
+    .eq("id", threadId)
     .eq("user_id", userId);
 
   return NextResponse.json({ success: true });

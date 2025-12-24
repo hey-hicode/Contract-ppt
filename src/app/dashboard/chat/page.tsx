@@ -16,12 +16,7 @@ export default async function ChatPage() {
 
   return (
     <div className="space-y-4">
-      <div className="mb-4">
-        <h1 className="text-2xl font-semibold">AI Chat</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-          Converse with LexIQ about your contracts. Coming soon.
-        </p>
-      </div>
+
       {!isPremium ? (
         <div className="p-6 border rounded-xl bg-white text-center">
           <h3 className="text-lg font-semibold">Premium feature 🔒</h3>

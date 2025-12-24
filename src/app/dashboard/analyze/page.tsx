@@ -355,6 +355,7 @@ export default function AnalyzePage() {
               onUploadComplete={handleUploadComplete}
               onUploadError={handleUploadError}
               onFileRemoved={handleFileRemoved}
+
             />
           </section>
 

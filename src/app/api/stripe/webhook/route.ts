@@ -1,5 +1,6 @@
 // app/api/stripe/webhook/route.ts
 import { NextRequest, NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
 import { stripe } from "~/lib/stripe";
 import { supabase } from "~/lib/supabaseClient";
 import Stripe from "stripe";
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest) {
       sig,
       process.env.STRIPE_WEBHOOK_SECRET!
     );
-  } catch (err) {
+  } catch {
     return new NextResponse("Webhook error", { status: 400 });
   }
 

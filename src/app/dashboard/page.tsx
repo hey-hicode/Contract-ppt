@@ -29,6 +29,10 @@ type RecentAnalysis = {
   red_flags: unknown[] | null;
   recommendations: string[] | null;
   created_at: string;
+  deal_parties: string[] | null;
+  companies_involved: string[] | null;
+  deal_room: string | null;
+  playbook: string | null;
 };
 
 type StatsRow = {
@@ -65,7 +69,7 @@ async function fetchDashboardData(limit = 6) {
   const { data: recent, error: recentErr } = await supabase
     .from("analyses")
     .select(
-      "id, source_title, overall_risk, summary, red_flags, recommendations, created_at,deal_parties,companies_involved,deal_room,playbook,"
+      "id, source_title, overall_risk, summary, red_flags, recommendations, created_at, deal_parties, companies_involved, deal_room, playbook"
     )
     .eq("user_id", userId || "")
     .order("created_at", { ascending: false })
@@ -362,7 +366,13 @@ export default async function DashboardPage() {
             </Link>
           </div>
 
-          <ContractTable items={data.recent} />
+          <ContractTable items={data.recent.map(item => ({
+            ...item,
+            dealParties: item.deal_parties || undefined,
+            companiesInvolved: item.companies_involved || undefined,
+            dealRoom: item.deal_room || undefined,
+            playbook: item.playbook || undefined,
+          }))} />
         </div>
 
         <QuickAction />

@@ -118,7 +118,13 @@ export default function ActionSheets({ chatEnabled, analysisId, documentText, em
           </SheetHeader>
           <div className="mt-4 flex-1 overflow-y-auto">
             {chatEnabled && analysisId ? (
-              <ContractChat analysisId={String(analysisId)} documentText={documentText} />
+              <ContractChat
+                analysisId={String(analysisId)}
+                documentText={documentText}
+                savedId={analysisId ?? null}
+                contractTitle={emailData.title}
+                overallRisk={emailData.overallRisk}
+              />
             ) : (
               <div className="text-sm text-muted-foreground">
                 Save the analysis first to enable chat.

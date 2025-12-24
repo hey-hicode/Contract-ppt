@@ -15,6 +15,7 @@ interface FileUploadProps {
   onProcessing?: (file: File) => void;
   onUploadComplete?: (file: File, parsedText: string) => void;
   onUploadError?: (file: File | null, message: string) => void;
+  onFileRemoved?: () => void;
 }
 
 // Removed unused helpers related to the commented-out progress UI
@@ -65,12 +66,12 @@ export default function FileUpload({
                 (data as { message?: string }).message ||
                 (data as { details?: string }).details)) ||
             "Failed to upload file";
-          throw new Error(serverMsg);
+          throw new Error(serverMsg as string);
         }
 
         // At this point data should contain the parsed result from server
         const parsedText: string =
-          typeof data === "object" ? data.text ?? "" : "";
+          data && typeof data === "object" ? (data as { text?: string }).text ?? "" : "";
 
         onProcessing?.(file);
 

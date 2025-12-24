@@ -7,8 +7,8 @@ type TweetTestimonial = {
   username?: string
   handle?: string
   likes: number
-  retweets: number
-  replies: number
+  retweets?: number
+  replies?: number
   time: string
   verified?: boolean
   img?: string
@@ -20,43 +20,43 @@ const SingleTestimonial = ({ testimonial }: { testimonial: TweetTestimonial }) =
     <div className="w-full md:w-[400px]    rounded-2xl">
       <div className="shadow-two hover:shadow-one h-[300px] dark:bg-dark dark:shadow-three dark:hover:shadow-gray-dark rounded-xs bg-white p-8 duration-300 lg:px-5 xl:px-8">
         <p className="border-body-color/10 text-body-color  pb-4 text-base leading-relaxed dark:border-white/10 dark:text-white">
-            {testimonial.body}
+          {testimonial.body}
         </p>
-              <div
-        className={(
-          "flex items-center mb-2 border-b pb-8 justify-between text-xs text-gray-500 transition-all duration-300 delay-700"
-        )}
-      >
-        <div className="flex items-center gap-1 hover:text-blue-500 cursor-pointer transition-colors">
-          <MessageCircle className="w-4 h-4" />
-          <span>{testimonial.replies}</span>
+        <div
+          className={(
+            "flex items-center mb-2 border-b pb-8 justify-between text-xs text-gray-500 transition-all duration-300 delay-700"
+          )}
+        >
+          <div className="flex items-center gap-1 hover:text-blue-500 cursor-pointer transition-colors">
+            <MessageCircle className="w-4 h-4" />
+            <span>{testimonial.replies ?? 0}</span>
+          </div>
+          <div className="flex items-center gap-1 hover:text-green-500 cursor-pointer transition-colors">
+            <Repeat2 className="w-4 h-4" />
+            <span>{testimonial.retweets ?? 0}</span>
+          </div>
+          <div className="flex items-center gap-1 hover:text-red-500 cursor-pointer transition-colors">
+            <Heart className="w-4 h-4" />
+            <span>{testimonial.likes}</span>
+          </div>
+          <div className="flex items-center gap-1 hover:text-blue-500 cursor-pointer transition-colors">
+            <Share className="w-4 h-4" />
+          </div>
         </div>
-        <div className="flex items-center gap-1 hover:text-green-500 cursor-pointer transition-colors">
-          <Repeat2 className="w-4 h-4" />
-          <span>{testimonial.retweets}</span>
-        </div>
-        <div className="flex items-center gap-1 hover:text-red-500 cursor-pointer transition-colors">
-          <Heart className="w-4 h-4" />
-          <span>{testimonial.likes}</span>
-        </div>
-        <div className="flex items-center gap-1 hover:text-blue-500 cursor-pointer transition-colors">
-          <Share className="w-4 h-4" />
-        </div>
-      </div>
-      
+
         <div className="flex items-center">
-       
+
           <div className="w-full">
             <h3 className="text-dark mb-1 text-lg font-semibold lg:text-base xl:text-lg dark:text-white">
               {testimonial.name}
             </h3>
-                    <div
-            className={"flex items-center gap-2 text-xs text-gray-500 transition-all duration-300 delay-250"}
-          >
-            <span>{testimonial.handle ? testimonial.handle : (testimonial.username ?? "")}</span>
-            <span>·</span>
-            <span>{testimonial.time}</span>
-          </div>
+            <div
+              className={"flex items-center gap-2 text-xs text-gray-500 transition-all duration-300 delay-250"}
+            >
+              <span>{testimonial.handle ? testimonial.handle : (testimonial.username ?? "")}</span>
+              <span>·</span>
+              <span>{testimonial.time}</span>
+            </div>
           </div>
           {testimonial.handle ? (
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
