@@ -15,7 +15,6 @@ interface FileUploadProps {
   onProcessing?: (file: File) => void;
   onUploadComplete?: (file: File, parsedText: string) => void;
   onUploadError?: (file: File | null, message: string) => void;
-  onFileRemoved?: (file: File | null, message: string) => void;
 }
 
 // Removed unused helpers related to the commented-out progress UI
@@ -28,7 +27,6 @@ export default function FileUpload({
   onProcessing,
   onUploadComplete,
   onUploadError,
-  // onFileRemoved
 }: FileUploadProps) {
 
   const maxSizeInMb = useMemo(
@@ -67,14 +65,12 @@ export default function FileUpload({
                 (data as { message?: string }).message ||
                 (data as { details?: string }).details)) ||
             "Failed to upload file";
-          throw new Error(serverMsg as string);
+          throw new Error(serverMsg);
         }
 
         // At this point data should contain the parsed result from server
         const parsedText: string =
-          data && typeof data === "object" && "text" in data
-            ? (data as { text?: string }).text ?? ""
-            : "";
+          typeof data === "object" ? data.text ?? "" : "";
 
         onProcessing?.(file);
 

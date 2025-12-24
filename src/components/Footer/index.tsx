@@ -10,40 +10,41 @@ const Footer = () => {
     <>
       <footer className="relative z-10 bg-white p-4  dark:bg-gray-dark  ">
         <div className="container">
-          <div className="-mx-4 md:flex items-center justify-between">
-            <div className="  ">
-              <Link
+          <div className="-mx-4 flex items-center justify-between">
+              <div className="  ">
+               <Link
                 href="/"
-
+               
               >
                 <Image src="/images/couns.jpeg" alt="logo" width={200} height={200} />
               </Link>
-
-
-            </div>
-            <ul className="flex space-x-6 justify-center lg:space-x-12">
-              {menuData.map((menuItem, index) => (
-                <li key={index} className="group relative">
-
-                  <Link
-                    href={''}
-                    className={`flex py-2 text-base lg:mr-0 lg:inline-flex lg:px-0 lg:py-6 ${usePathName === menuItem.path
-                      ? "text-primary dark:text-white"
-                      : "text-dark hover:text-primary dark:text-white/70 dark:hover:text-white"
-                      }`}
-                  >
-                    {menuItem.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+          
+             
+              </div>
+ <ul className="block lg:flex lg:space-x-12">
+                    {menuData.map((menuItem, index) => (
+                      <li key={index} className="group relative">
+                        
+                          <Link
+                          href={''}
+                            className={`flex py-2 text-base lg:mr-0 lg:inline-flex lg:px-0 lg:py-6 ${
+                              usePathName === menuItem.path
+                                ? "text-primary dark:text-white"
+                                : "text-dark hover:text-primary dark:text-white/70 dark:hover:text-white"
+                            }`}
+                          >
+                            {menuItem.title}
+                          </Link>
+                      </li>
+                    ))}
+                  </ul>
 
           </div>
-        </div>
+          </div>
 
 
-
-
+      
+      
         <div className="absolute bottom-24 left-0 z-[-1]">
           <svg
             width="79"

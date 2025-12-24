@@ -157,13 +157,13 @@ const Contracts = () => {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6 bg-white h-screen">
       <div className="flex items-start justify-between">
         <div>
           <h1 className="md:text-2xl text-[20px] mb-2 font-medium tracking-tight">
-            My Contracts
+            Your Contract Listings
           </h1>
-          <p className="text-[#535354] text-base">{contracts.length} contracts analyzed</p>
+          <p className="text-[#535354] text-base">Manage active and archived contracts. Track hiring activity and stay updated.</p>
         </div>
       </div>
 
