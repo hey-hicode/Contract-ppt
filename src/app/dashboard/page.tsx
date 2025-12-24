@@ -65,7 +65,7 @@ async function fetchDashboardData(limit = 6) {
   const { data: recent, error: recentErr } = await supabase
     .from("analyses")
     .select(
-      "id, source_title, overall_risk, summary, red_flags, recommendations, created_at"
+      "id, source_title, overall_risk, summary, red_flags, recommendations, created_at,deal_parties,companies_involved,deal_room,playbook,"
     )
     .eq("user_id", userId || "")
     .order("created_at", { ascending: false })
@@ -190,7 +190,9 @@ export default async function DashboardPage() {
           <Card className="flex flex-col justify-between border shadow-none border-[#E5E5E5] bg-white rounded-lg p-6">
             <div>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-500">Total Contracts Analyzed</span>
+                <span className="text-sm font-medium text-gray-500">
+                  Total Contracts Analyzed
+                </span>
                 <div className="rounded-lg bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
                   All Time
                 </div>
@@ -206,7 +208,9 @@ export default async function DashboardPage() {
               <div className="rounded-2xl bg-[#FAFAFA] p-4">
                 <div className="text-base font-bold text-[#535354]">Safe</div>
                 <div className="mt-1 flex items-center gap-2">
-                  <span className="text-2xl font-bold text-emerald-700">{data.safeCount}</span>
+                  <span className="text-2xl font-bold text-emerald-700">
+                    {data.safeCount}
+                  </span>
                 </div>
               </div>
               <div className="rounded-2xl bg-[#FAFAFA] p-4">
@@ -242,7 +246,10 @@ export default async function DashboardPage() {
                 <div>
                   <div className="text-3xl font-bold text-gray-900">
                     {data.avgRiskPercent}
-                    <span className="text-sm text-[#B0B2B7] font-semibold"> out of 100</span>
+                    <span className="text-sm text-[#B0B2B7] font-semibold">
+                      {" "}
+                      out of 100
+                    </span>
                   </div>
                   <div className="mt-1 text-sm font-medium text-gray-500">
                     Average Risk Score
@@ -360,8 +367,6 @@ export default async function DashboardPage() {
 
         <QuickAction />
       </div>
-
-
     </div>
   );
 }
