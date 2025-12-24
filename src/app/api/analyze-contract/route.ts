@@ -20,8 +20,8 @@ type OpenRouterChoice = {
   message?: {
     role?: string;
     content?:
-      | string
-      | Array<{ type: string; text?: string } | { content?: string }>;
+    | string
+    | Array<{ type: string; text?: string } | { content?: string }>;
   };
 };
 
@@ -38,6 +38,10 @@ type ContractAnalysisV2 = {
   overallRisk: "low" | "medium" | "high";
   summary: string;
   recommendations: string[];
+  dealParties: string[];
+  companiesInvolved: string[];
+  dealRoom: string;
+  playbook: string;
 };
 
 type OpenRouterResponse = {
@@ -62,13 +66,21 @@ Analyze the contract text and return ONLY a JSON object in the exact format belo
   ],
   "overallRisk": "low|medium|high",
   "summary": "3–4 sentence overview of the contract highlighting key risks and concerns",
-  "recommendations": ["Recommendation 1", "Recommendation 2"]
+  "recommendations": ["Recommendation 1", "Recommendation 2"],
+  "dealParties": ["Party A", "Party B"],
+  "companiesInvolved": ["Company X", "Company Y"],
+  "dealRoom": "Inferred context (e.g., Sales, HR, M&A, Procurement, Legal)",
+  "playbook": "Inferred standard (e.g., Standard NDA, Vendor Agreement, Employment Contract, SaaS Agreement)"
 }
 
 Rules:
 - Include a maximum of 10 redFlags.
 - Keep descriptions concise and explanatory.
 - Return ONLY valid JSON. No markdown, no extra text.
+- Extract "dealParties" as the main signing entities.
+- Extract "companiesInvolved" as all corporate entities mentioned.
+- Infer "dealRoom" based on the department likely handling this (Sales, HR, etc.).
+- Infer "playbook" based on the contract type.
 
 Evaluate the contract for:
 - Rights and obligations balance
@@ -146,6 +158,10 @@ const parseContentV2 = (
       overallRisk: parsed.overallRisk ?? "low",
       summary: parsed.summary ?? "",
       recommendations: parsed.recommendations ?? [],
+      dealParties: parsed.dealParties ?? [],
+      companiesInvolved: parsed.companiesInvolved ?? [],
+      dealRoom: parsed.dealRoom ?? "Legal",
+      playbook: parsed.playbook ?? "General Contract",
     };
   } catch (err) {
     console.error("Failed to parse JSON:", err);

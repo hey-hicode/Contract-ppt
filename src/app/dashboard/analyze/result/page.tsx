@@ -53,6 +53,10 @@ interface AnalysisResult {
   overallRisk: "low" | "medium" | "high";
   summary: string;
   recommendations: string[];
+  dealParties?: string[];
+  companiesInvolved?: string[];
+  dealRoom?: string;
+  playbook?: string;
 }
 
 interface StoredData {
@@ -162,14 +166,12 @@ export default function AnalyzerResultsPage() {
   };
 
   const generateEmailContent = (analysis: AnalysisResult) => {
-    const subject = `Legal Review: Contract Analysis Report - ${
-      data?.sourceTitle || "Untitled"
-    }`;
+    const subject = `Legal Review: Contract Analysis Report - ${data?.sourceTitle || "Untitled"
+      }`;
     const content = `Dear [Recipient Name],
 
-I have reviewed the contract "${
-      data?.sourceTitle || "Untitled"
-    }" and would like to share the following analysis.
+I have reviewed the contract "${data?.sourceTitle || "Untitled"
+      }" and would like to share the following analysis.
 
 EXECUTIVE SUMMARY
 ------------------
@@ -183,16 +185,16 @@ Total Issues Identified: ${analysis.redFlags?.length}
 KEY RECOMMENDATIONS
 ------------------
 ${analysis.recommendations
-  .slice(0, 5)
-  .map((rec, index) => `${index + 1}. ${rec}`)
-  .join("\n")}
+        .slice(0, 5)
+        .map((rec, index) => `${index + 1}. ${rec}`)
+        .join("\n")}
 
 CRITICAL ISSUES
 ------------------
 ${analysis.redFlags
-  .filter((flag) => flag.type === "critical")
-  .map((flag, index) => `${index + 1}. ${flag.title}: ${flag.description}`)
-  .join("\n")}
+        .filter((flag) => flag.type === "critical")
+        .map((flag, index) => `${index + 1}. ${flag.title}: ${flag.description}`)
+        .join("\n")}
 
 Please let me know if you would like to discuss these findings in more detail.
 
@@ -415,8 +417,8 @@ Best regards,
                   analysis.overallRisk === "high"
                     ? "text-red-500"
                     : analysis.overallRisk === "medium"
-                    ? "text-amber-500"
-                    : "text-emerald-500"
+                      ? "text-amber-500"
+                      : "text-emerald-500"
                 )}
               />
             </CardHeader>
@@ -549,8 +551,8 @@ Best regards,
                         flag.type === "critical"
                           ? "border-l-red-500"
                           : flag.type === "warning"
-                          ? "border-l-amber-500"
-                          : "border-l-blue-500"
+                            ? "border-l-amber-500"
+                            : "border-l-blue-500"
                       )}
                     >
                       <CardHeader className="pb-2">
@@ -568,8 +570,8 @@ Best regards,
                               flag.type === "critical"
                                 ? "text-red-700 border-red-200 bg-red-50"
                                 : flag.type === "warning"
-                                ? "text-amber-700 border-amber-200 bg-amber-50"
-                                : "text-blue-700 border-blue-200 bg-blue-50"
+                                  ? "text-amber-700 border-amber-200 bg-amber-50"
+                                  : "text-blue-700 border-blue-200 bg-blue-50"
                             )}
                           >
                             {flag.type}
@@ -599,59 +601,59 @@ Best regards,
                   (
                     flag: {
                       clause:
+                      | string
+                      | number
+                      | bigint
+                      | boolean
+                      | React.ReactElement<
+                        unknown,
+                        string | React.JSXElementConstructor<any>
+                      >
+                      | Iterable<React.ReactNode>
+                      | React.ReactPortal
+                      | Promise<
                         | string
                         | number
                         | bigint
                         | boolean
-                        | React.ReactElement<
-                            unknown,
-                            string | React.JSXElementConstructor<any>
-                          >
-                        | Iterable<React.ReactNode>
                         | React.ReactPortal
-                        | Promise<
-                            | string
-                            | number
-                            | bigint
-                            | boolean
-                            | React.ReactPortal
-                            | React.ReactElement<
-                                unknown,
-                                string | React.JSXElementConstructor<any>
-                              >
-                            | Iterable<React.ReactNode>
-                            | null
-                            | undefined
-                          >
+                        | React.ReactElement<
+                          unknown,
+                          string | React.JSXElementConstructor<any>
+                        >
+                        | Iterable<React.ReactNode>
                         | null
-                        | undefined;
+                        | undefined
+                      >
+                      | null
+                      | undefined;
                       title:
+                      | string
+                      | number
+                      | bigint
+                      | boolean
+                      | React.ReactElement<
+                        unknown,
+                        string | React.JSXElementConstructor<any>
+                      >
+                      | Iterable<React.ReactNode>
+                      | React.ReactPortal
+                      | Promise<
                         | string
                         | number
                         | bigint
                         | boolean
-                        | React.ReactElement<
-                            unknown,
-                            string | React.JSXElementConstructor<any>
-                          >
-                        | Iterable<React.ReactNode>
                         | React.ReactPortal
-                        | Promise<
-                            | string
-                            | number
-                            | bigint
-                            | boolean
-                            | React.ReactPortal
-                            | React.ReactElement<
-                                unknown,
-                                string | React.JSXElementConstructor<any>
-                              >
-                            | Iterable<React.ReactNode>
-                            | null
-                            | undefined
-                          >
+                        | React.ReactElement<
+                          unknown,
+                          string | React.JSXElementConstructor<any>
+                        >
+                        | Iterable<React.ReactNode>
                         | null
-                        | undefined;
+                        | undefined
+                      >
+                      | null
+                      | undefined;
                     },
                     idx: React.Key | null | undefined
                   ) => (
@@ -690,25 +692,25 @@ Best regards,
                       | bigint
                       | boolean
                       | React.ReactElement<
-                          unknown,
-                          string | React.JSXElementConstructor<any>
-                        >
+                        unknown,
+                        string | React.JSXElementConstructor<any>
+                      >
                       | Iterable<React.ReactNode>
                       | React.ReactPortal
                       | Promise<
-                          | string
-                          | number
-                          | bigint
-                          | boolean
-                          | React.ReactPortal
-                          | React.ReactElement<
-                              unknown,
-                              string | React.JSXElementConstructor<any>
-                            >
-                          | Iterable<React.ReactNode>
-                          | null
-                          | undefined
+                        | string
+                        | number
+                        | bigint
+                        | boolean
+                        | React.ReactPortal
+                        | React.ReactElement<
+                          unknown,
+                          string | React.JSXElementConstructor<any>
                         >
+                        | Iterable<React.ReactNode>
+                        | null
+                        | undefined
+                      >
                       | null
                       | undefined,
                     idx: React.Key | null | undefined

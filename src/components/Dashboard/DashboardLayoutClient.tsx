@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { UserButton } from "@clerk/nextjs";
+import { UserButton, useUser } from "@clerk/nextjs";
 import {
     LayoutGrid,
     UploadCloud,
@@ -15,13 +15,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-    Card,
-    CardHeader,
-    CardDescription,
-    CardTitle,
-    CardFooter,
-} from "~/components/ui/card";
+
 
 type UserPlanData = {
     plan: "free" | "premium";
@@ -56,28 +50,41 @@ export default function DashboardLayoutClient({
         { href: "/dashboard/settings", label: "Settings", icon: Settings },
     ];
 
+    const { user } = useUser();
+
     const PlanCard = () => (
-        <Card className=" mt-auto mb-4 mx-2 p-0 bg-pink-300 shadow-none border-[#E5E5E5]">
-            <CardHeader className="p-0">
-                <CardDescription className="text-xs">
-                    {userPlan.plan === "premium" ? "Plan" : "Remaining Credits"}
-                </CardDescription>
+        <div className="mt-auto  mb-6">
+            <div className="rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 p-4">
+                <div className="mb-4">
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                        {userPlan.plan === "premium" ? "Current Plan" : "Remaining Credits"}
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">
+                        {userPlan.plan === "premium"
+                            ? "Unlimited"
+                            : `${userPlan.remainingCredits} / ${userPlan.free_quota}`}
+                    </p>
+                </div>
 
-                <CardTitle className="text-xl font-semibold tabular-nums">
-                    {userPlan.plan === "premium"
-                        ? "Unlimited"
-                        : `${userPlan.remainingCredits} / ${userPlan.free_quota}`}
-                </CardTitle>
-            </CardHeader>
-
-            <CardFooter className="p-4 pt-0 text-[10px] text-muted-foreground">
-                {userPlan.plan === "free" ? (
-                    <>{userPlan.used_quota} used · Free plan</>
-                ) : (
-                    <>Premium plan</>
-                )}
-            </CardFooter>
-        </Card>
+                <div className="flex items-center gap-3 pt-4 border-t border-gray-200 dark:border-white/10">
+                    <UserButton
+                        appearance={{
+                            elements: {
+                                avatarBox: "h-8 w-8",
+                            },
+                        }}
+                    />
+                    <div className="flex flex-col">
+                        <span className="text-xs font-semibold text-gray-900 dark:text-white line-clamp-1">
+                            {user?.fullName || "User"}
+                        </span>
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                            {userPlan.plan === "free" ? "Free plan" : "Premium plan"}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 
     return (
@@ -122,7 +129,7 @@ export default function DashboardLayoutClient({
                 {/* Main Content */}
                 <main className="flex-1">
                     {/* Top Nav */}
-                    <header className="sticky top-0 z-20 flex h-[80px] items-center justify-between border-b border-gray-200/50 dark:border-white/10 bg-white/80 dark:bg-gray-dark/80 backdrop-blur-md px-6 py-4 shadow-sm transition-all duration-300">
+                    <header className="sticky top-0 z-20 flex h-[80px] items-center justify-between border-b border-gray-200/50 dark:border-white/10 bg-white/80 dark:bg-gray-dark/80 backdrop-blur-md px-6 py-4 shadow-none transition-all duration-300">
                         <div className="flex items-center gap-4">
                             <button
                                 aria-label={
