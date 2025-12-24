@@ -28,6 +28,13 @@ type RecentAnalysis = {
   summary: string | null;
   red_flags: unknown[] | null;
   recommendations: string[] | null;
+
+  // ✅ NEW
+  deal_parties: string[] | null;
+  companies_involved: string[] | null;
+  deal_room: string | null;
+  playbook: string | null;
+
   created_at: string;
 };
 
@@ -47,25 +54,43 @@ async function fetchDashboardData(limit = 6) {
     throw new Error("Unauthorized");
   }
   // Fetch recent analyses with explicit typing
-  const { data: plan, error: planErr } = await supabase
+  const { data: planRows, error: planErr } = await supabase
     .from("user_plans")
     .select("plan, free_quota, used_quota")
     .eq("clerk_user_id", userId)
-    .single<UserPlanRow>();
+    .limit(1);
 
   if (planErr) {
     console.error("Supabase plan error:", planErr);
     throw new Error("Failed to load user plan");
   }
 
+  const planRow: UserPlanRow = planRows?.[0] ?? {
+    plan: "free",
+    free_quota: 5,
+    used_quota: 0,
+  };
+
   const remainingCredits =
-    plan.plan === "premium"
+    planRow.plan === "premium"
       ? Infinity
-      : Math.max(plan.free_quota - plan.used_quota, 0);
+      : Math.max(planRow.free_quota - planRow.used_quota, 0);
   const { data: recent, error: recentErr } = await supabase
     .from("analyses")
     .select(
-      "id, source_title, overall_risk, summary, red_flags, recommendations, created_at,deal_parties,companies_involved,deal_room,playbook,"
+      `
+  id,
+  source_title,
+  overall_risk,
+  summary,
+  red_flags,
+  recommendations,
+  deal_parties,
+  companies_involved,
+  deal_room,
+  playbook,
+  created_at
+`
     )
     .eq("user_id", userId || "")
     .order("created_at", { ascending: false })
@@ -135,10 +160,10 @@ async function fetchDashboardData(limit = 6) {
     redFlagsSum,
     safeCount,
     avgRiskPercent: avgRiskScore,
-    plan: plan.plan,
+    plan: planRow.plan,
     remainingCredits,
-    freeQuota: plan.free_quota,
-    usedQuota: plan.used_quota,
+    freeQuota: planRow.free_quota,
+    usedQuota: planRow.used_quota,
   };
 }
 
