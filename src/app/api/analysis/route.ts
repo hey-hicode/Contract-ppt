@@ -24,6 +24,10 @@ export async function POST(req: Request) {
     summary: body.summary ?? "",
     red_flags: body.redFlags ?? [],
     recommendations: body.recommendations ?? [],
+    deal_parties: body.dealParties,
+    companies_involved: body.companiesInvolved,
+    deal_room: body.dealRoom,
+    playbook: body.playbook,
     raw: body ?? {},
   };
 

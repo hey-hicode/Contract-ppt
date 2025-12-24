@@ -20,8 +20,11 @@ type AnalysisRow = {
   summary: string | null;
   red_flags: unknown[] | null;
   recommendations: unknown[] | null;
+  deal_parties: string[] | null;
+  companies_involved: string[] | null;
+  deal_room: string | null;
+  playbook: string | null;
   created_at: string;
-  raw: any;
 };
 
 export async function GET(req: Request) {
@@ -43,6 +46,10 @@ export async function GET(req: Request) {
       red_flags,
       recommendations,
       created_at,
+       deal_parties,
+    companies_involved,
+    deal_room,
+    playbook,
       raw
     `
     )
@@ -76,10 +83,10 @@ export async function GET(req: Request) {
     clauses: item.red_flags?.length ?? 0, // optionally track real clause count if available
     summary: item.summary,
     recommendations: item.recommendations ?? [],
-    dealParties: item.raw?.analysis?.dealParties ?? [],
-    companiesInvolved: item.raw?.analysis?.companiesInvolved ?? [],
-    dealRoom: item.raw?.analysis?.dealRoom ?? "Legal",
-    playbook: item.raw?.analysis?.playbook ?? "General",
+    dealParties: item.deal_parties ?? [],
+    companiesInvolved: item.companies_involved ?? [],
+    dealRoom: item.deal_room ?? "Legal",
+    playbook: item.playbook ?? "General Contract",
   }));
 
   return new Response(JSON.stringify(formatted), {
