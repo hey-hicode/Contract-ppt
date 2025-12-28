@@ -93,7 +93,7 @@ export default function DashboardLayoutClient({
                 {/* Desktop Sidebar */}
                 <aside className="hidden lg:sticky lg:top-0 lg:flex lg:flex-col lg:w-[260px] lg:shrink-0 lg:h-screen border-r border-white/10 bg-white dark:bg-gray-dark px-4">
                     <Image
-                        src="/images/couns.jpeg"
+                        src="/images/logo/Counselor.png"
                         alt="logo"
                         className="w-full h-auto rounded-full mt-1"
                         unoptimized

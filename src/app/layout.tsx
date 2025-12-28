@@ -9,6 +9,19 @@ export const metadata: Metadata = {
   title: "Counselr· AI contract review for creators",
   description:
     "Upload and analyze label, brand, and sponsorship contracts with creator-focused AI insights.",
+  icons: {
+    icon: "/icons/counselr/favicon.ico",
+    shortcut: "/icons/counselr/favicon-16x16.png",
+    apple: "/icons/counselr/apple-touch-icon.png",
+  },
+  manifest: "/icons/counselr/site.webmanifest",
+  openGraph: {
+    images: "/icons/counselr/android-chrome-512x512.png",
+  },
+  twitter: {
+    card: "summary",
+    images: "/icons/counselr/android-chrome-512x512.png",
+  },
 };
 
 export default function RootLayout({
@@ -27,7 +40,7 @@ export default function RootLayout({
     >
       <html lang="en" suppressHydrationWarning>
 
-      <body className={`bg-[#FCFCFC] dark:bg-black`}>
+        <body className={`bg-[#FCFCFC] dark:bg-black`}>
           <Toaster
             position="top-right"
             toastOptions={{
