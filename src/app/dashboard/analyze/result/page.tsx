@@ -9,8 +9,6 @@ import {
   CheckCircle,
   XCircle,
   FileText,
-  Mail,
-  Send,
   Download,
   Calendar,
   Shield,
@@ -22,16 +20,8 @@ import { Badge } from "~/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { trackFeatureUsage } from "~/lib/analytics";
 import { downloadElementAsPdf } from "~/utils/downloadPdfFromElement";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-  DialogTitle,
-  DialogHeader,
-  DialogFooter,
-} from "~/components/ui/dialog";
 import { cn } from "~/lib/utils";
-import { ContractChat } from "~/components/Chat/ContractChat";
+import ActionSheets from "~/components/Dashboard/ActionSheets";
 
 interface RedFlag {
   type: "critical" | "warning" | "minor";
@@ -283,86 +273,108 @@ Best regards,
   return (
     <div className="min-h-screen bg-white">
       <div
-        className=" mx-auto px-4 sm:px-6 lg:px-8 py-8"
+        className=" px-4 sm:px-6 lg:px-8 border py-4 sm:py-6 lg:py-8"
         id="analysis-report-content"
       >
         {/* Header Section */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+        <div className="mb-6 sm:mb-8  w-full">
+          <div className="flex flex-col gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">
                 {data.sourceTitle}
               </h1>
-              <div className="flex items-center gap-4 mt-2 text-sm text-slate-500">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2 text-xs sm:text-sm text-slate-500">
                 <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  {new Date().toLocaleDateString(undefined, {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
+                  <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">
+                    {new Date().toLocaleDateString(undefined, {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </span>
+                  <span className="sm:hidden">
+                    {new Date().toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Shield className="h-4 w-4" />
+                  <Shield className="h-3 w-3 sm:h-4 sm:w-4" />
                   Counselr
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div
-                className={cn(
-                  "px-4 py-2 rounded-md font-bold border flex items-center gap-2 font-medium",
-                  getRiskColor(analysis!.overallRisk)
-                )}
-              >
-                <AlertCircle className="h-5 w-5" />
-                <span className="capitalize text-xs">
-                  {analysis!.overallRisk} Risk Detected
-                </span>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full">
+              {/* Risk Badge & New Analysis */}
+              <div className="flex flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                <div
+                  className={cn(
+                    "px-3 sm:px-4 py-2 rounded-md font-bold border flex items-center justify-center gap-2 font-medium text-center",
+                    getRiskColor(analysis!.overallRisk)
+                  )}
+                >
+                  <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <span className="capitalize text-xs sm:text-sm">
+                    {analysis!.overallRisk} Risk Detected
+                  </span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => router.push("/dashboard/analyze")}
+                  className="text-slate-600  sm:w-auto"
+                >
+                  New Analysis
+                </Button>
               </div>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => router.push("/dashboard/analyze")}
-                className="text-slate-600"
-              >
-                New Analysis
-              </Button>
-              <div className="h-6 w-px bg-slate-200" />
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={handleSave}
-                disabled={saving || !!savedId}
-                className={cn(savedId ? "" : "bg-primary text-white")}
-              >
-                {saving ? (
-                  <span className="animate-pulse">Saving...</span>
-                ) : savedId ? (
-                  <>
-                    <CheckCircle className="h-4 w-4 mr-2" /> Saved
-                  </>
-                ) : (
-                  <>Save </>
-                )}
-              </Button>
-              <Button
-                size="lg"
-                className="text-white"
-                onClick={() => {
-                  const el = document.getElementById("analysis-report-content");
-                  if (el) {
-                    trackFeatureUsage("report_downloaded");
-                    void downloadElementAsPdf(
-                      el,
-                      `Analysis - ${data.sourceTitle}.pdf`
-                    );
-                  }
-                }}
-              >
-                <Download className="h-4 w-4 mr-2" /> Export PDF
-              </Button>
+
+              {/* Divider - hidden on mobile */}
+              <div className="hidden sm:block h-6 w-px bg-slate-200" />
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={handleSave}
+                  disabled={saving || !!savedId}
+                  className={cn(
+                    "w-full sm:w-auto",
+                    savedId ? "" : "bg-primary animate-pulse text-white"
+                  )}
+                >
+                  {saving ? (
+                    <span className="animate-pulse">Saving...</span>
+                  ) : savedId ? (
+                    <>
+                      Saved
+                    </>
+                  ) : (
+                    <>Save</>
+                  )}
+                </Button>
+                <Button
+                  size="lg"
+                  className="text-white w-full sm:w-auto"
+                  onClick={() => {
+                    const el = document.getElementById("analysis-report-content");
+                    if (el) {
+                      trackFeatureUsage("report_downloaded");
+                      void downloadElementAsPdf(
+                        el,
+                        `Analysis - ${data.sourceTitle}.pdf`
+                      );
+                    }
+                  }}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Export PDF</span>
+                  <span className="sm:hidden">PDF</span>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -375,7 +387,7 @@ Best regards,
         )}
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-16">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 my-8 sm:my-12 lg:my-16">
           <Card className="!h-fit !shadow-none bg-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 ">
               <CardTitle className="text-sm font-medium text-slate-600">
@@ -427,10 +439,10 @@ Best regards,
         </div>
 
         {/* Main Content Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column: Summary (Sticky) */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          {/* Left Column: Summary (Sticky on desktop) */}
           <div className="lg:col-span-1">
-            <div className="sticky top-24 space-y-6">
+            <div className="lg:sticky lg:top-24 space-y-4 sm:space-y-6">
               <Card className="  !shadow-none bg-white">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -470,28 +482,30 @@ Best regards,
           {/* Right Column: Tabs */}
           <div className="lg:col-span-2">
             <Tabs defaultValue="risks" className="w-full">
-              <TabsList className="w-full justify-start  rounded-none bg-slate-50/50 p-2 h-auto mb-6">
+              <TabsList className="w-full justify-start overflow-x-auto rounded-none bg-slate-50/50 p-2 h-auto mb-4 sm:mb-6 flex-nowrap">
                 <TabsTrigger
                   value="risks"
-                  className="rounded-none border data-[state=active]:border-slate-50 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-none px-6 py-2"
+                  className="rounded-none border data-[state=active]:border-slate-50 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-none px-3 sm:px-6 py-2 text-xs sm:text-sm whitespace-nowrap"
                 >
-                  Risks & Issues
+                  <span className="hidden sm:inline">Risks & Issues</span>
+                  <span className="sm:hidden">Risks</span>
                   <Badge
                     variant="secondary"
-                    className="ml-2 bg-slate-100 text-slate-600"
+                    className="ml-1 sm:ml-2 bg-slate-100 text-slate-600 text-xs"
                   >
                     {analysis!.redFlags?.length ?? 0}
                   </Badge>
                 </TabsTrigger>
                 <TabsTrigger
                   value="clauses"
-                  className="rounded-none border-b-2 border-transparent  data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-none px-6 py-2"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-none px-3 sm:px-6 py-2 text-xs sm:text-sm whitespace-nowrap"
                 >
-                  Problematic Clauses
+                  <span className="hidden sm:inline">Problematic Clauses</span>
+                  <span className="sm:hidden">Clauses</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="suggestions"
-                  className="rounded-none border-b-2 border-transparent  data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-none px-6 py-2"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-none px-3 sm:px-6 py-2 text-xs sm:text-sm whitespace-nowrap"
                 >
                   Suggestions
                 </TabsTrigger>
@@ -619,96 +633,20 @@ Best regards,
       </div>
 
       {/* Floating Actions: Chat + Email */}
-      <div className="fixed bottom-8 right-8 flex flex-col items-end gap-3 z-40">
-        <div className="mt-4 flex-1">
-          {savedId ? (
-            <ContractChat
-              analysisId={savedId}
-              documentText={data.contractText}
-              savedId={savedId}
-              contractTitle={data.sourceTitle}
-            />
-          ) : (
-            <p className="text-sm text-slate-500">
-              Save this analysis start chatting with the AI.
-            </p>
-          )}
-        </div>
-
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button
-              className="h-14 w-14 rounded-full shadow-2xl bg-primary hover:bg-primary/90 text-white grid place-items-center transition-transform hover:scale-105"
-              aria-label="Draft Email"
-            >
-              <Mail className="h-6 w-6" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] p-0 gap-0 overflow-hidden flex flex-col max-h-[85vh] bg-white">
-            <DialogHeader className="p-6 border-b border-slate-100 bg-slate-50/50">
-              <DialogTitle className="flex items-center gap-2 text-xl">
-                <Mail className="h-5 w-5 text-primary" />
-                Draft Legal Report Email
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">
-                  Recipient
-                </label>
-                <input
-                  type="email"
-                  value={recipientEmail}
-                  onChange={(e) => setRecipientEmail(e.target.value)}
-                  placeholder="client@example.com"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  value={emailSubject}
-                  onChange={(e) => setEmailSubject(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                />
-              </div>
-              <div className="space-y-2 flex-1">
-                <label className="text-sm font-medium text-slate-700">
-                  Message Body
-                </label>
-                <textarea
-                  value={emailContent}
-                  onChange={(e) => setEmailContent(e.target.value)}
-                  className="w-full h-[300px] px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono text-sm resize-none transition-all"
-                />
-              </div>
-            </div>
-
-            <DialogFooter className="p-4 border-t border-slate-100 bg-slate-50/50">
-              <Button
-                variant="outline"
-                onClick={() =>
-                  document
-                    .querySelector<HTMLElement>(
-                      '[data-state="open"] button[aria-label="Close"]'
-                    )
-                    ?.click()
-                }
-              >
-                Cancel
-              </Button>
-              <Button onClick={handleSendEmail} className="gap-2">
-                <Send className="h-4 w-4" />
-                Open in Mail App
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+      <ActionSheets
+        chatEnabled={!!savedId}
+        analysisId={savedId}
+        documentText={data.contractText ?? ""}
+        emailData={{
+          title: data.sourceTitle,
+          summary: analysis?.summary ?? undefined,
+          overallRisk: analysis?.overallRisk ?? undefined,
+          redFlags: analysis?.redFlags ?? [],
+          recommendations: analysis?.recommendations ?? [],
+        }}
+        onSave={handleSave}
+        saving={saving}
+      />
     </div>
   );
 }
