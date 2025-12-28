@@ -11,11 +11,11 @@ import ScrollUp from "~/components/shared/ScrollUp";
 import Testimonials from "~/components/Testimonials";
 import Video from "~/components/Video";
 
-export const metadata: Metadata = {
-  title: "Counselr",
-  description: "Counselr is a platform that helps creators, freelancers, and influencers analyze their contracts with AI.",
-  // other metadata
-};
+// export const metadata: Metadata = {
+//   title: "Counselr",
+//   description: "Counselr is a platform that helps creators, freelancers, and influencers analyze their contracts with AI.",
+//   // other metadata
+// };
 
 export default function Home() {
   return (
