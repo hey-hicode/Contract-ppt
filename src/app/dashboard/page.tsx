@@ -5,13 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import ContractTable from "~/components/Dashboard/contract-table";
 import QuickAction from "~/components/Dashboard/quick-action";
-import {
-  Card,
-  CardHeader,
-  CardDescription,
-  CardTitle,
-  CardFooter,
-} from "~/components/ui/card";
+import { Card } from "~/components/ui/card";
 import { Database } from "~/types/supabase";
 
 // type AnalysisRow = Database["public"]["Tables"]["analyses"]["Row"];
@@ -178,7 +172,7 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       {/* Welcome Banner */}
       <div
-        className="w-full flex flex-col mb-4 md:flex-row justify-between items-start items-center px-4 sm:px-5 py-6 sm:py-8 lg:px-12 lg:py-9 bg-no-repeat lg:h-[200px] bg-cover bg-center "
+        className="w-full flex flex-col mb-4 md:flex-row justify-between items-center px-4 sm:px-5 py-6 sm:py-8 lg:px-12 lg:py-9 bg-no-repeat lg:h-[200px] bg-cover bg-center "
         style={{ backgroundImage: "url('/icons/background.svg')" }}
       >
         <div className="mb-4 sm:mb-0">
@@ -375,13 +369,15 @@ export default async function DashboardPage() {
             </Link>
           </div>
 
-          <ContractTable items={data.recent.map(item => ({
-            ...item,
-            dealParties: item.deal_parties || undefined,
-            companiesInvolved: item.companies_involved || undefined,
-            dealRoom: item.deal_room || undefined,
-            playbook: item.playbook || undefined,
-          }))} />
+          <ContractTable
+            items={data.recent.map((item) => ({
+              ...item,
+              dealParties: item.deal_parties || undefined,
+              companiesInvolved: item.companies_involved || undefined,
+              dealRoom: item.deal_room || undefined,
+              playbook: item.playbook || undefined,
+            }))}
+          />
         </div>
 
         <QuickAction />
