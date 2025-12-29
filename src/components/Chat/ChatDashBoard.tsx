@@ -8,9 +8,7 @@ import {
   Edit2,
   Send,
   Save,
-  Sparkles,
   Clock,
-  ChevronRight,
   User,
   Bot,
 } from "lucide-react";

@@ -4,12 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "~/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import {
   Loader2,
   ArrowLeft,
@@ -19,7 +14,6 @@ import {
   Download,
   CheckCircle,
   AlertTriangle,
-  Info,
 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { downloadElementAsPdf } from "~/utils/downloadPdfFromElement";
@@ -67,7 +61,8 @@ export default function ContractDetailPage() {
     setError(null);
     fetch(`/api/analysis/${id}`)
       .then(async (res) => {
-        if (!res.ok) throw new Error((await res.text()) || "Failed to fetch analysis");
+        if (!res.ok)
+          throw new Error((await res.text()) || "Failed to fetch analysis");
         return res.json();
       })
       .then((json) => setData(json))
@@ -78,10 +73,10 @@ export default function ContractDetailPage() {
   const title = data?.sourceTitle ?? "Contract";
   const dateStr = data?.createdAt
     ? new Date(data.createdAt).toLocaleDateString(undefined, {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
     : undefined;
 
   // Email and chat handled by reusable ActionSheets
@@ -105,7 +100,6 @@ export default function ContractDetailPage() {
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
               <div>
                 <div className="flex items-center gap-3">
-
                   <h1 className="text-lg md:text-2xl font-medium text-slate-900 tracking-tight">
                     {title}
                   </h1>
@@ -127,7 +121,7 @@ export default function ContractDetailPage() {
               <div className="flex items-center gap-3">
                 <div
                   className={cn(
-                    "px-4 py-2 rounded-md font-bold border flex items-center gap-2 font-medium",
+                    "px-4 py-2 rounded-md border flex items-center gap-2 font-medium",
                     riskBadgeClasses(data?.overallRisk)
                   )}
                 >
@@ -140,9 +134,14 @@ export default function ContractDetailPage() {
                   size="lg"
                   className="text-white"
                   onClick={() => {
-                    const el = document.getElementById("analysis-report-content");
+                    const el = document.getElementById(
+                      "analysis-report-content"
+                    );
                     if (el) {
-                      void downloadElementAsPdf(el as HTMLElement, `Analysis - ${title}.pdf`);
+                      void downloadElementAsPdf(
+                        el as HTMLElement,
+                        `Analysis - ${title}.pdf`
+                      );
                     }
                   }}
                 >
@@ -179,8 +178,8 @@ export default function ContractDetailPage() {
                         (data.overallRisk ?? "low") === "high"
                           ? "text-red-500"
                           : (data.overallRisk ?? "low") === "medium"
-                            ? "text-amber-500"
-                            : "text-emerald-500"
+                          ? "text-amber-500"
+                          : "text-emerald-500"
                       )}
                     />
                   </CardHeader>
@@ -312,8 +311,8 @@ export default function ContractDetailPage() {
                               flag.type === "critical"
                                 ? "border-l-red-500"
                                 : flag.type === "warning"
-                                  ? "border-l-amber-500"
-                                  : "border-l-blue-500"
+                                ? "border-l-amber-500"
+                                : "border-l-blue-500"
                             )}
                           >
                             <CardHeader className="pb-2">
@@ -330,8 +329,8 @@ export default function ContractDetailPage() {
                                     flag.type === "critical"
                                       ? "text-red-700 border-red-200 bg-red-50"
                                       : flag.type === "warning"
-                                        ? "text-amber-700 border-amber-200 bg-amber-50"
-                                        : "text-blue-700 border-blue-200 bg-blue-50"
+                                      ? "text-amber-700 border-amber-200 bg-amber-50"
+                                      : "text-blue-700 border-blue-200 bg-blue-50"
                                   )}
                                 >
                                   {flag.type}
@@ -360,7 +359,10 @@ export default function ContractDetailPage() {
                       className="space-y-4 animate-in fade-in-50 duration-300"
                     >
                       {(data.redFlags ?? []).map((flag, idx) => (
-                        <Card key={idx} className="group hover:border-primary/50 transition-colors">
+                        <Card
+                          key={idx}
+                          className="group hover:border-primary/50 transition-colors"
+                        >
                           <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium text-slate-500 uppercase tracking-wider">
                               Clause Reference
@@ -414,7 +416,9 @@ export default function ContractDetailPage() {
               <ActionSheets
                 chatEnabled={true}
                 analysisId={params.id}
-                documentText={(data.raw as { contractText?: string })?.contractText ?? ""}
+                documentText={
+                  (data.raw as { contractText?: string })?.contractText ?? ""
+                }
                 emailData={{
                   title,
                   summary: data.summary ?? undefined,
