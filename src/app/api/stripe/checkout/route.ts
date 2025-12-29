@@ -12,11 +12,33 @@ export async function POST() {
   }
 
   // Fetch or create Stripe customer
-  const { data: plan } = await supabase
+  // const { data: plan } = await supabase
+  //   .from("user_plans")
+  //   .select("stripe_customer_id")
+  //   .eq("clerk_user_id", userId)
+  //   .single();
+  const { data: planRows } = await supabase
     .from("user_plans")
     .select("stripe_customer_id")
     .eq("clerk_user_id", userId)
-    .single();
+    .limit(1);
+
+  let plan = planRows?.[0];
+
+  if (!plan) {
+    const { data: inserted } = await supabase
+      .from("user_plans")
+      .insert({
+        clerk_user_id: userId,
+        plan: "free",
+        free_quota: 5,
+        used_quota: 0,
+      })
+      .select()
+      .single();
+
+    plan = inserted;
+  }
 
   let customerId = plan?.stripe_customer_id;
 
@@ -42,6 +64,9 @@ export async function POST() {
         quantity: 1,
       },
     ],
+    metadata: {
+      clerk_user_id: userId,
+    },
     success_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing/success`,
     cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing`,
   });

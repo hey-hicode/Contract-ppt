@@ -23,15 +23,17 @@ type Message = {
 };
 
 export default function ChatDashboard() {
-  const [newChatMessages, setNewChatMessages] = React.useState<Message[]>([]);
-  const [input, setInput] = React.useState("");
-  const [loading, setLoading] = React.useState(false);
-  const [threadId, setThreadId] = React.useState<string | null>(null);
-  const [threads, setThreads] = React.useState<Thread[]>([]);
+  const [draftMessages, setDraftMessages] = React.useState<Message[]>([]);
+  const [savedMessages, setSavedMessages] = React.useState<Message[]>([]);
   const [selectedThread, setSelectedThread] = React.useState<string | null>(
     null
   );
-  const [savedMessages, setSavedMessages] = React.useState<Message[]>([]);
+
+  const [newChatMessages, setNewChatMessages] = React.useState<Message[]>([]);
+  const [input, setInput] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+  const [threads, setThreads] = React.useState<Thread[]>([]);
+
   const [saving, setSaving] = React.useState(false);
   const [titleInput, setTitleInput] = React.useState("Contract Chat");
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -63,34 +65,33 @@ export default function ChatDashboard() {
     const text = input.trim();
     if (!text || loading) return;
 
-    const userMessage: Message = { role: "user", content: text };
-    setNewChatMessages((prev) => [...prev, userMessage]);
-    setInput("");
     setLoading(true);
+    setInput("");
 
     try {
-      const res = await fetch("/api/chat/general", {
+      const res = await fetch("/api/chat/respond", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, threadId }),
+        body: JSON.stringify({
+          message: text,
+          history: draftMessages,
+        }),
       });
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed");
 
-      if (data.threadId && !threadId) setThreadId(data.threadId);
-
-      const assistantMessage: Message = {
-        role: "assistant",
-        content: data.reply,
-      };
-      setNewChatMessages((prev) => [...prev, assistantMessage]);
-    } catch (err) {
-      console.error(err);
-      setNewChatMessages((prev) => [
+      setDraftMessages((prev) => [
+        ...prev,
+        { role: "user", content: text },
+        { role: "assistant", content: data.reply },
+      ]);
+    } catch {
+      setDraftMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: "Sorry, something went wrong. Please try again.",
+          content: "Sorry, something went wrong.",
         },
       ]);
     } finally {
@@ -100,34 +101,26 @@ export default function ChatDashboard() {
   };
 
   const handleSaveChat = async () => {
-    if (!newChatMessages.length) return;
+    if (!draftMessages.length) return;
+
     setSaving(true);
     try {
       const res = await fetch("/api/chat/save-thread", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          threadId,
-          messages: newChatMessages,
-          title: titleInput,
-        }),
+        body: JSON.stringify({ messages: draftMessages }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to save chat");
 
-      setThreadId(data.threadId);
-      setThreads((prev) => [
-        {
-          id: data.threadId,
-          title: titleInput,
-          created_at: new Date().toISOString(),
-        },
-        ...prev.filter((t) => t.id !== data.threadId),
-      ]);
-      setEditingTitle(false);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to save chat.");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      setDraftMessages([]);
+      setSelectedThread(data.threadId);
+
+      // refresh threads
+      const threadsRes = await fetch("/api/chat/threads");
+      const threadsData = await threadsRes.json();
+      setThreads(threadsData.threads || []);
     } finally {
       setSaving(false);
     }
@@ -135,10 +128,8 @@ export default function ChatDashboard() {
 
   const handleNewChat = () => {
     setSelectedThread(null);
-    setThreadId(null);
-    setNewChatMessages([]);
-    setTitleInput("New Chat");
-    setEditingTitle(false);
+    setDraftMessages([]);
+    setSavedMessages([]);
     inputRef.current?.focus();
   };
 
@@ -199,7 +190,9 @@ export default function ChatDashboard() {
         {/* Thread List */}
         <div className="flex-1 overflow-y-auto px-3 pb-4">
           <div className="px-3 mb-2">
-            <h2 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Recent Chats</h2>
+            <h2 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Recent Chats
+            </h2>
           </div>
           {filteredThreads.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
@@ -207,9 +200,7 @@ export default function ChatDashboard() {
                 <MessageSquare size={20} className="text-slate-400" />
               </div>
               <p className="text-xs text-slate-500 font-medium">
-                {searchQuery
-                  ? "No matches found"
-                  : "Start your first chat"}
+                {searchQuery ? "No matches found" : "Start your first chat"}
               </p>
             </div>
           )}
@@ -218,20 +209,32 @@ export default function ChatDashboard() {
               key={t.id}
               onClick={() => {
                 setSelectedThread(t.id);
-                setThreadId(null);
                 setNewChatMessages([]);
               }}
-              className={`group relative cursor-pointer p-3 mb-1 rounded-xl transition-all ${selectedThread === t.id
-                ? "bg-white shadow-sm border border-slate-200"
-                : "hover:bg-slate-100/80 border border-transparent"
-                }`}
+              className={`group relative cursor-pointer p-3 mb-1 rounded-xl transition-all ${
+                selectedThread === t.id
+                  ? "bg-white shadow-sm border border-slate-200"
+                  : "hover:bg-slate-100/80 border border-transparent"
+              }`}
             >
               <div className="flex items-start gap-3">
-                <div className={`mt-1 p-1.5 rounded-lg ${selectedThread === t.id ? 'bg-blue-50 text-blue-600' : 'bg-slate-200 text-slate-500'}`}>
+                <div
+                  className={`mt-1 p-1.5 rounded-lg ${
+                    selectedThread === t.id
+                      ? "bg-blue-50 text-blue-600"
+                      : "bg-slate-200 text-slate-500"
+                  }`}
+                >
                   <MessageSquare size={14} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className={`font-semibold text-sm truncate ${selectedThread === t.id ? 'text-blue-600' : 'text-slate-700'}`}>
+                  <div
+                    className={`font-semibold text-sm truncate ${
+                      selectedThread === t.id
+                        ? "text-blue-600"
+                        : "text-slate-700"
+                    }`}
+                  >
                     {t.title}
                   </div>
                   <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-1 font-medium">
@@ -246,7 +249,10 @@ export default function ChatDashboard() {
                   onClick={(e) => handleDeleteThread(t.id, e)}
                   className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-50 rounded-lg transition-all"
                 >
-                  <Trash2 size={14} className="text-red-400 hover:text-red-500" />
+                  <Trash2
+                    size={14}
+                    className="text-red-400 hover:text-red-500"
+                  />
                 </button>
               </div>
               {selectedThread === t.id && (
@@ -317,12 +323,12 @@ export default function ChatDashboard() {
         <div className="flex-1 overflow-y-auto px-8 py-8 space-y-8">
           {!hasMessages ? (
             <div className="flex flex-col items-center justify-center h-full text-center max-w-2xl mx-auto">
-
               <h2 className="text-3xl font-semibold text-slate-900 mb-3 tracking-tight">
                 How can I help with your contracts today?
               </h2>
               <p className="text-slate-500 text-base mb-10 leading-relaxed">
-                Ask me to analyze clauses, identify risks, or summarize complex legal terms in plain English.
+                Ask me to analyze clauses, identify risks, or summarize complex
+                legal terms in plain English.
               </p>
 
               <div className="grid grid-cols-2 gap-3 w-full">
@@ -330,7 +336,7 @@ export default function ChatDashboard() {
                   "Analyze this NDA for risks",
                   "Summarize the termination clause",
                   "What are the payment terms?",
-                  "Identify any hidden liabilities"
+                  "Identify any hidden liabilities",
                 ].map((prompt) => (
                   <button
                     key={prompt}
@@ -347,18 +353,25 @@ export default function ChatDashboard() {
               {currentMessages.map((m, i) => (
                 <div
                   key={i}
-                  className={`flex gap-4 ${m.role === "user" ? "flex-row-reverse" : "flex-row"
-                    }`}
+                  className={`flex gap-4 ${
+                    m.role === "user" ? "flex-row-reverse" : "flex-row"
+                  }`}
                 >
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${m.role === "user" ? "bg-blue-600 text-white" : "bg-white border border-slate-200 text-slate-600"
-                    }`}>
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${
+                      m.role === "user"
+                        ? "bg-blue-600 text-white"
+                        : "bg-white border border-slate-200 text-slate-600"
+                    }`}
+                  >
                     {m.role === "user" ? <User size={20} /> : <Bot size={20} />}
                   </div>
                   <div
-                    className={`max-w-[80%] px-6 py-4 rounded-2xl shadow-sm ${m.role === "user"
-                      ? "bg-blue-600 text-white rounded-tr-none"
-                      : "bg-slate-50 text-slate-800 border border-slate-200 rounded-tl-none"
-                      }`}
+                    className={`max-w-[80%] px-6 py-4 rounded-2xl shadow-sm ${
+                      m.role === "user"
+                        ? "bg-blue-600 text-white rounded-tr-none"
+                        : "bg-slate-50 text-slate-800 border border-slate-200 rounded-tl-none"
+                    }`}
                   >
                     <div className="text-[15px] leading-relaxed whitespace-pre-wrap font-medium">
                       {m.content}
@@ -413,7 +426,6 @@ export default function ChatDashboard() {
                   <span className="text-sm">Send</span>
                 </button>
               </div>
-
             </div>
           </div>
         )}

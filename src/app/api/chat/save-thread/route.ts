@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-export const dynamic = "force-dynamic";
-import { supabase } from "~/lib/supabaseClient";
+// import { NextRequest, NextResponse } from "next/server";
+// import { auth } from "@clerk/nextjs/server";
+// export const dynamic = "force-dynamic";
+// import { supabase } from "~/lib/supabaseClient";
 
 type Body = {
   threadId?: string;
@@ -9,57 +9,138 @@ type Body = {
   title?: string;
 };
 
+// export async function POST(req: NextRequest) {
+//   const { userId } = await auth();
+//   if (!userId)
+//     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+//   let body: Body;
+//   try {
+//     body = await req.json();
+//   } catch {
+//     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+//   }
+
+//   const { threadId, messages, title } = body;
+//   let currentThreadId = threadId ?? null;
+
+//   // 1. Create thread if it doesn't exist
+//   if (!currentThreadId) {
+//     const { data, error } = await supabase
+//       .from("chat_threads")
+//       .insert({ user_id: userId, title: title || "New Chat", is_saved: true })
+//       .select("id")
+//       .single();
+
+//     if (error || !data)
+//       return NextResponse.json(
+//         { error: "Failed to create thread" },
+//         { status: 500 }
+//       );
+
+//     currentThreadId = data.id;
+//   } else {
+//     // Update title and ensure thread is marked saved
+//     await supabase
+//       .from("chat_threads")
+//       .update({ title: title || "Saved Chat", is_saved: true })
+//       .eq("id", currentThreadId);
+//   }
+
+//   // 2. Batch insert messages
+//   if (messages.length > 0) {
+//     const insertData = messages.map((m) => ({
+//       thread_id: currentThreadId,
+//       user_id: userId,
+//       role: m.role,
+//       content: m.content,
+//     }));
+
+//     const { error } = await supabase.from("chat_messages").insert(insertData);
+//     if (error)
+//       return NextResponse.json({ error: error.message }, { status: 500 });
+//   }
+
+//   return NextResponse.json({ threadId: currentThreadId });
+// }
+
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import { supabase } from "~/lib/supabaseClient";
+import { callOpenRouterChat, DEFAULT_MODEL } from "~/lib/openrouter";
+
+export const dynamic = "force-dynamic";
+
+type Message = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+async function generateTitle(messages: Message[]) {
+  const firstUser = messages.find((m) => m.role === "user")?.content;
+
+  if (!firstUser) return "Contract Chat";
+
+  const title = await callOpenRouterChat({
+    model: DEFAULT_MODEL,
+    messages: [
+      {
+        role: "system",
+        content:
+          "Generate a concise 3–6 word title for this conversation. No punctuation.",
+      },
+      { role: "user", content: firstUser },
+    ],
+  });
+
+  return title.slice(0, 60);
+}
+
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
-  if (!userId)
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
+  }
   let body: Body;
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
+  const { messages } = body;
+  // const { messages } = await req.json();
 
-  const { threadId, messages, title } = body;
-  let currentThreadId = threadId ?? null;
-
-  // 1. Create thread if it doesn't exist
-  if (!currentThreadId) {
-    const { data, error } = await supabase
-      .from("chat_threads")
-      .insert({ user_id: userId, title: title || "New Chat", is_saved: true })
-      .select("id")
-      .single();
-
-    if (error || !data)
-      return NextResponse.json(
-        { error: "Failed to create thread" },
-        { status: 500 }
-      );
-
-    currentThreadId = data.id;
-  } else {
-    // Update title and ensure thread is marked saved
-    await supabase
-      .from("chat_threads")
-      .update({ title: title || "Saved Chat", is_saved: true })
-      .eq("id", currentThreadId);
+  if (!messages || messages.length === 0) {
+    return NextResponse.json({ error: "Nothing to save" }, { status: 400 });
   }
 
-  // 2. Batch insert messages
-  if (messages.length > 0) {
-    const insertData = messages.map((m) => ({
-      thread_id: currentThreadId,
+  const title = await generateTitle(messages);
+
+  const { data: thread, error: threadErr } = await supabase
+    .from("chat_threads")
+    .insert({
       user_id: userId,
-      role: m.role,
-      content: m.content,
-    }));
+      title,
+      is_saved: true,
+    })
+    .select("id")
+    .single();
 
-    const { error } = await supabase.from("chat_messages").insert(insertData);
-    if (error)
-      return NextResponse.json({ error: error.message }, { status: 500 });
+  if (threadErr || !thread) {
+    return NextResponse.json(
+      { error: "Failed to create thread" },
+      { status: 500 }
+    );
   }
 
-  return NextResponse.json({ threadId: currentThreadId });
+  const rows = messages.map((m) => ({
+    thread_id: thread.id,
+    user_id: userId,
+    role: m.role,
+    content: m.content,
+  }));
+
+  await supabase.from("chat_messages").insert(rows);
+
+  return NextResponse.json({ threadId: thread.id });
 }
