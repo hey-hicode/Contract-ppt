@@ -66,10 +66,12 @@ const Pricing = () => {
           <PricingBox
             packageName="Free"
             price={isMonthly ? "0" : "0"}
-            duration={isMonthly ? "mo" : "yr"}
-            subtitle="Perfect for trying out our AI contract analysis"
+            duration={isMonthly ? "month" : "year"}
+            subtitle="Perfect for understanding what’s inside your contract before you sign.
+            
+            "
           >
-            <OfferList text="1 contract analyses per month" status="active" />
+            <OfferList text="3 contract analyses per month" status="active" />
             <OfferList text="Basic risk detection" status="active" />
             <OfferList text="PDF upload support" status="active" />
             <OfferList text="Email Support" status="active" />
@@ -77,23 +79,24 @@ const Pricing = () => {
           </PricingBox>
           <PricingBox
             packageName="Plus"
-            price={isMonthly ? "3" : "30"}
-            duration={isMonthly ? "mo" : "yr"}
-            subtitle="Ideal for legal professionals and small teams"
+            price={isMonthly ? "20" : "200"}
+            duration={isMonthly ? "month" : "yearr"}
+            subtitle="Ideal for Creative professionals including models, influencers/content creators, and performers."
           >
-            <OfferList text="5 contract analyses per month" status="active" />
+            <OfferList text="Unlimited contract analyses" status="active" />
             <OfferList text="Advanced risk detection" status="active" />
-            <OfferList text="Multiple file format support" status="active" />
+            <OfferList text="Counselr Chat" status="active" />
             <OfferList text="Priority email support" status="active" />
             <OfferList text="Fast processing speed" status="active" />
+            <OfferList text="PDF & Docx upload support" status="active" />
           </PricingBox>
           <PricingBox
             packageName="Enterprise"
             custom
-            subtitle="For large organizations with advanced needs"
+            subtitle="If this Plans don't fit.Lets create one that suits your needs."
           >
             <OfferList text="Unlimited contract analyses" status="active" />
-            <OfferList text="White-labeled solution" status="active" />
+            <OfferList text="Custom AI model training" status="active" />
             <OfferList text="24/7 phone & email support" status="active" />
             <OfferList text="Lightning-fast processing" status="active" />
             <OfferList text="Custom AI model training" status="active" />

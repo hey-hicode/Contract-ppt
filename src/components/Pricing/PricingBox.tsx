@@ -19,7 +19,7 @@ const PricingBox = (props: {
           ) : (
             <h3 className="price mb-2 text-[32px] font-bold text-black dark:text-white">
               $<span className="amount">{price}</span>
-              <span className="time text-body-color text-lg font-medium">
+              <span className="time text-black/50 text-sm font-bold">
                 /{duration}
               </span>
             </h3>

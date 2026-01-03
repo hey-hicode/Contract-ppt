@@ -91,7 +91,7 @@ export default function DashboardLayoutClient({
         <div className="min-h-screen bg-[#F7F9FC] dark:bg-black text-black dark:text-white">
             <div className="flex">
                 {/* Desktop Sidebar */}
-                <aside className="hidden lg:sticky lg:top-0 lg:flex lg:flex-col lg:w-[260px] lg:shrink-0 lg:h-screen border-r border-white/10 bg-white dark:bg-gray-dark px-4">
+                <aside className="hidden lg:sticky lg:top-0 lg:flex lg:flex-col lg:w-[15%] lg:shrink-0 lg:h-screen border-r border-white/10 bg-white dark:bg-gray-dark px-4">
                     <Image
                         src="/images/logo/Counselor.png"
                         alt="logo"
@@ -127,7 +127,7 @@ export default function DashboardLayoutClient({
                 </aside>
 
                 {/* Main Content */}
-                <main className="flex-1">
+                <main className="flex-1 min-w-0">
                     {/* Top Nav */}
                     <header className="sticky top-0 z-20 flex h-[80px] items-center justify-between border-b border-gray-200/50 dark:border-white/10 bg-white/80 dark:bg-gray-dark/80 backdrop-blur-md px-6 py-4 shadow-none transition-all duration-300">
                         <div className="flex items-center gap-4">
@@ -254,7 +254,7 @@ export default function DashboardLayoutClient({
                         )}
                     </AnimatePresence>
 
-                    <div className={pathname === "/dashboard" || pathname === "/dashboard/contracts" ? "" : "px-3 sm:px-6 py-6 sm:py-8"}>{children}</div>
+                    <div className={`${pathname === "/dashboard" || pathname === "/dashboard/contracts" ? "" : "px-3 sm:px-6 py-6 sm:py-8"} w-full max-w-full overflow-hidden`}>{children}</div>
                 </main>
             </div>
         </div>

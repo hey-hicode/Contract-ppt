@@ -13,6 +13,7 @@ import {
 } from "../ui/table";
 import NoContract from "../ui/icons/no-contract";
 import { Badge } from "../ui/badge";
+import React from "react";
 
 type ContractTableItem = {
   id: string;
@@ -70,6 +71,12 @@ const ContractTable = ({
   grouping = "none",
 }: ContractTableProps) => {
   const router = useRouter();
+  const totalColumns = 4 +
+    (visibleColumns.dealparties ? 1 : 0) +
+    (visibleColumns.companies ? 1 : 0) +
+    (visibleColumns.dealroom ? 1 : 0) +
+    (visibleColumns.playbook ? 1 : 0);
+
 
   const handleView = (id: string) => {
     if (onView) {
@@ -144,10 +151,7 @@ const ContractTable = ({
   const renderRow = (contract: ContractTableItem) => {
     const status = getStatusDisplay(contract.overall_risk);
     return (
-      <TableRow
-        key={contract.id}
-        className="hover:bg-gray-50/50 border-b border-gray-100 last:border-0 group transition-colors"
-      >
+      <TableRow key={contract.id} className="hover:bg-gray-50/50  border-b border-gray-100 last:border-0 group transition-colors">
         <TableCell className="px-6 py-4">
           <div className="flex items-center justify-between gap-3 max-w-[300px]">
             <div className="flex items-center gap-3 overflow-hidden">
@@ -157,20 +161,11 @@ const ContractTable = ({
               >
                 <FileText className="w-6 h-6 text-blue-600" />
               </div>
-              <span
-                className="text-gray-900 font-medium truncate underline decoration-gray-300 underline-offset-4 cursor-pointer hover:decoration-gray-900 transition-all"
-                onClick={() => handleView(contract.id)}
-              >
+              <span className="text-gray-900 font-medium truncate underline decoration-gray-300 underline-offset-4 cursor-pointer inline-block max-w-[150px] hover:decoration-gray-900 transition-all" onClick={() => handleView(contract.id)}>
                 {contract.source_title || "Untitled Contract"}
               </span>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <MoreVertical className="w-4 h-4 text-gray-400" />
-            </Button>
+
           </div>
         </TableCell>
         <TableCell className="px-6 py-4">
@@ -215,10 +210,7 @@ const ContractTable = ({
         )}
         {visibleColumns.companies && (
           <TableCell className="px-6 py-4">
-            <span
-              className="text-sm text-gray-600 truncate max-w-[150px] block"
-              title={contract.companiesInvolved?.join(", ")}
-            >
+            <span className="text-sm text-gray-600 truncate max-w-[120px] inline-block" title={contract.companiesInvolved?.join(", ")}>
               {contract.companiesInvolved?.[0] || "-"}
               {contract.companiesInvolved &&
                 contract.companiesInvolved.length > 1 &&
@@ -247,15 +239,11 @@ const ContractTable = ({
   return (
     <>
       {/* Mobile Card View */}
-      <div className="md:hidden ">
+      <div className="md:hidden space-y-3 ">
         {items.map((contract) => {
           const status = getStatusDisplay(contract.overall_risk);
           return (
-            <Card
-              key={contract.id}
-              className="border border-gray-200 shadow-none bg-white shadow-none p-4 cursor-pointer"
-              onClick={() => handleView(contract.id)}
-            >
+            <Card key={contract.id} className="border border-gray-200 shadow-none mb-2 bg-white shadow-none p-4 cursor-pointer" onClick={() => handleView(contract.id)}>
               <div className="flex items-start justify-between ">
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-medium max-w-[150px] text-gray-900 truncate">
@@ -304,69 +292,74 @@ const ContractTable = ({
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block bg-white rounded-lg border border-gray-200 shadow-none overflow-hidden">
-        <Table>
+      <div className="hidden md:block w-full max-w-full overflow-x-auto rounded-lg border border-gray-200 bg-white">
+        <Table className="w-full table-fixed min-w-[1000px]">
+          <colgroup>
+            <col className="w-[14%]" />
+            <col className="w-[6%]" />
+            <col className="w-[6%]" />
+            <col className="w-[6%]" />
+            <col className="w-[15%]" />
+            <col className="w-[10%]" />
+            <col className="w-[10%]" />
+            <col className="w-[10%]" />
+          </colgroup>
           <TableHeader className="bg-gray-50/50">
-            <TableRow className="hover:bg-transparent border-b border-gray-200">
-              <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">
+            <TableRow className="border-b border-gray-200 hover:bg-transparent">
+              <TableHead className="px-6 py-4 h-auto text-xs font-semibold uppercase tracking-wider text-gray-500">
                 Contract Name
               </TableHead>
-              <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">
+              <TableHead className="px-6 py-4 h-auto text-xs font-semibold uppercase tracking-wider text-gray-500">
                 Status
               </TableHead>
-              <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">
+              <TableHead className="px-6 py-4 h-auto text-xs font-semibold uppercase tracking-wider text-gray-500">
                 Clauses
               </TableHead>
-              <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">
+              <TableHead className="px-6 py-4 h-auto text-xs font-semibold uppercase tracking-wider text-gray-500">
                 Flags
               </TableHead>
+
               {visibleColumns.dealparties && (
-                <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">
+                <TableHead className="px-6 py-4 h-auto text-xs font-semibold uppercase tracking-wider text-gray-500">
                   Dealparties
                 </TableHead>
               )}
               {visibleColumns.companies && (
-                <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">
+                <TableHead className="px-6 py-4 h-auto text-xs font-semibold uppercase tracking-wider text-gray-500">
                   Companies Involved
                 </TableHead>
               )}
               {visibleColumns.dealroom && (
-                <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">
+                <TableHead className="px-6 py-4 h-auto text-xs font-semibold uppercase tracking-wider text-gray-500">
                   Dealroom
                 </TableHead>
               )}
               {visibleColumns.playbook && (
-                <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 px-6 py-4 h-auto">
+                <TableHead className="px-6 py-4 h-auto text-xs font-semibold uppercase tracking-wider text-gray-500">
                   Playbook
                 </TableHead>
               )}
             </TableRow>
           </TableHeader>
+
           <TableBody>
             {groupedItems
               ? Object.entries(groupedItems).map(([status, groupItems]) => (
-                  <>
-                    <TableRow
-                      key={`group-${status}`}
-                      className="bg-gray-50/80 hover:bg-gray-50/80"
-                    >
-                      <TableCell
-                        colSpan={
-                          4 +
-                          Object.values(visibleColumns).filter(Boolean).length
-                        }
-                        className="px-6 py-2 font-medium text-sm text-gray-700"
-                      >
-                        {status} ({groupItems.length})
-                      </TableCell>
-                    </TableRow>
-                    {groupItems.map(renderRow)}
-                  </>
-                ))
+                <React.Fragment key={status}>
+                  <TableRow className="bg-gray-50/80 hover:bg-gray-50/80">
+                    <TableCell colSpan={totalColumns} className="px-6 py-2 text-sm font-medium text-gray-700">
+                      {status} ({groupItems.length})
+                    </TableCell>
+                  </TableRow>
+
+                  {groupItems.map(renderRow)}
+                </React.Fragment>
+              ))
               : items.map(renderRow)}
           </TableBody>
         </Table>
       </div>
+
     </>
   );
 };

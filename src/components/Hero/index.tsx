@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import Image from "next/image";
 
 const Hero = () => {
   return (
     <>
       <section
         id="home"
-        className="relative z-10 overflow-hidden bg-white pb-16 pt-[120px] dark:bg-gray-dark md:pb-[120px] md:pt-[150px] xl:pb-[160px] xl:pt-[180px] 2xl:pb-[200px] 2xl:pt-[210px]"
+        className="relative md:h-screen h-auto  z-10 overflow-hidden bg-white pb-16 pt-[120px] dark:bg-gray-dark md:pb-[120px] md:pt-[150px] xl:pb-[160px] xl:pt-[180px] 2xl:pb-[200px] 2xl:pt-[210px]"
       >
         <div className="container">
           <div className="-mx-4 flex flex-wrap">
@@ -15,15 +16,15 @@ const Hero = () => {
                 <h1 className="mb-5 text-3xl font-medium leading-tight text-black dark:text-white sm:text-4xl sm:leading-tight md:text-6xl md:leading-tight">
                   One tool to decode and simplify contracts
                 </h1>
-                <p className="mb-12 text-base leading-relaxed! text-body-color dark:text-body-color-dark sm:text-lg md:text-xl">
+                <p className="mb-10 text-base leading-relaxed! text-body-color dark:text-body-color-dark sm:text-lg md:text-xl">
                   Counselr translates label, brand, and sponsorship agreements
-                  into plain language so your team can negotiate with clarity
+                  into plain language so you can negotiate with clarity
                   and confidence.
                 </p>
                 <div className="flex  items-center justify-center  flex-row space-x-4 sm:space-y-0">
                   <Link
                     href="/dashboard/analyze"
-                    className="rounded-md bg-primary px-8 py-4 text-base font-semibold text-white duration-300 ease-in-out hover:bg-primary/80"
+                    className="rounded-md bg-primary px-8 py-3 text-base font-semibold text-white duration-300 ease-in-out hover:bg-primary/80"
                   >
                     Start analysis
                   </Link>
@@ -33,22 +34,30 @@ const Hero = () => {
                       forceRedirectUrl="/dashboard"
                       signUpForceRedirectUrl="/dashboard"
                     >
-                      <button className="inline-block rounded-md bg-black px-8 py-4 text-base font-semibold text-white duration-300 ease-in-out hover:bg-black/90 dark:bg-white/10 dark:text-white dark:hover:bg-white/5">
-                        Sign In
-                      </button>
+
+                      Sign In
                     </SignInButton>
                   </SignedOut>
                   <SignedIn>
                     <Link
                       href="/dashboard"
-                      className="rounded-md bg-black px-8 py-4 text-base font-semibold text-white duration-300 ease-in-out hover:bg-black/90 dark:bg-white/10 dark:text-white dark:hover:bg-white/5"
+                      className="rounded-md bg-black px-8 py-3 text-base font-semibold text-white duration-300 ease-in-out hover:bg-black/90 dark:bg-white/10 dark:text-white dark:hover:bg-white/5"
                     >
                       Dashboard
                     </Link>
                   </SignedIn>
                 </div>
+
+
               </div>
             </div>
+
+          </div>
+
+        </div>
+        <div className="relative mx-auto  mt-10 max-w-[1200px] w-full bg-white rounded-xl shadow-lg border p-4 md:absolute md:left-1/2 md:top-[600px] md:-translate-x-1/2 md:mt-0 z-10 px-4">
+          <div className="relative aspect-[1200/600] w-full">
+            <Image src="/dash1.jpeg" fill alt=" hero" />
           </div>
         </div>
         <div className="absolute right-0 top-0 z-[-1] opacity-30 lg:opacity-100">
@@ -264,6 +273,7 @@ const Hero = () => {
             </defs>
           </svg>
         </div>
+
       </section>
     </>
   );
