@@ -1,16 +1,97 @@
 "use client";
-import { useState } from "react";
-import SectionTitle from "../shared/SectionTitle";
-import OfferList from "./OfferList";
-import PricingBox from "./PricingBox";
 
-const PRICES = {
-  monthly: process.env.STRIPE_PRICE_PREMIUM_MONTHLY!,
-  yearly: process.env.STRIPE_PRICE_PREMIUM_YEARLY!,
+import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
+import SectionTitle from "~/components/shared/SectionTitle";
+import PricingNewBox from "~/components/Pricing/PricingNewBox";
+import OfferList from "~/components/Pricing/OfferList";
+import { BillingPlan, PRICING } from "~/components/Pricing/pricing.config";
+import { useState } from "react";
+import toast from "react-hot-toast";
+
+type PricingClientProps = {
+  currentPlan: "free" | "premium" | "enterprise";
 };
 
-const Pricing = () => {
+const PLAN_ORDER = {
+  free: 0,
+  premium: 1,
+  enterprise: 2,
+};
+
+const PricingClient = ({ currentPlan }: PricingClientProps) => {
+  const getPlanState = (
+    currentPlan: keyof typeof PLAN_ORDER,
+    targetPlan: keyof typeof PLAN_ORDER
+  ) => {
+    if (currentPlan === targetPlan) return "current";
+    if (PLAN_ORDER[targetPlan] < PLAN_ORDER[currentPlan]) return "downgrade";
+    return "upgrade";
+  };
+
   const [isMonthly, setIsMonthly] = useState(true);
+  const [loadingPlan, setLoadingPlan] = useState<BillingPlan | null>(null);
+
+  const router = useRouter();
+  const { isSignedIn } = useAuth();
+
+  const handleSelectPlan = (plan: BillingPlan) => {
+    // Enterprise → contact page
+    if (plan === "enterprise") {
+      router.push("/contact");
+      return;
+    }
+
+    // Free → dashboard
+    if (plan === "free") {
+      router.push("/dashboard");
+      return;
+    }
+
+    // Logged out → save intent + auth
+    if (!isSignedIn) {
+      localStorage.setItem(
+        "postAuthAction",
+        JSON.stringify({
+          type: "checkout",
+          plan,
+        })
+      );
+      router.push("/sign-up");
+      return;
+    }
+
+    // Logged in → start checkout
+    startCheckout(plan);
+  };
+  const startCheckout = async (plan: BillingPlan) => {
+    if (loadingPlan) return;
+
+    setLoadingPlan(plan);
+
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data?.url) {
+        throw new Error("Checkout failed");
+      }
+
+      window.location.href = data.url;
+    } catch (err) {
+      toast("Unable to start checkout");
+      setLoadingPlan(null);
+    }
+  };
+
+  const freeState = getPlanState(currentPlan, "free");
+  const premiumState = getPlanState(currentPlan, "premium");
+  const enterpriseState = getPlanState(currentPlan, "enterprise");
 
   return (
     <section id="pricing" className="relative z-10 py-16 md:py-20 lg:py-28">
@@ -63,45 +144,48 @@ const Pricing = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
-          <PricingBox
+          <PricingNewBox
             packageName="Free"
-            price={isMonthly ? "0" : "0"}
-            duration={isMonthly ? "month" : "year"}
-            subtitle="Perfect for understanding what’s inside your contract before you sign.
-            
-            "
+            price="0"
+            duration="mo"
+            subtitle="Perfect for trying out our AI contract analysis"
+            actionState={freeState}
+            onSelect={() => handleSelectPlan("free")}
           >
-            <OfferList text="3 contract analyses per month" status="active" />
+            <OfferList text="1 contract analyses per month" status="active" />
             <OfferList text="Basic risk detection" status="active" />
             <OfferList text="PDF upload support" status="active" />
             <OfferList text="Email Support" status="active" />
             <OfferList text="Standard processing speed" status="inactive" />
-          </PricingBox>
-          <PricingBox
+          </PricingNewBox>
+          <PricingNewBox
             packageName="Plus"
-            price={isMonthly ? "20" : "200"}
-            duration={isMonthly ? "month" : "yearr"}
-            subtitle="Ideal for Creative professionals including models, influencers/content creators, and performers."
+            price={isMonthly ? "3" : "30"}
+            duration={isMonthly ? "mo" : "yr"}
+            actionState={premiumState}
+            loading={loadingPlan === (isMonthly ? "monthly" : "yearly")}
+            onSelect={() => handleSelectPlan(isMonthly ? "monthly" : "yearly")}
           >
-            <OfferList text="Unlimited contract analyses" status="active" />
+            <OfferList text="5 contract analyses per month" status="active" />
             <OfferList text="Advanced risk detection" status="active" />
-            <OfferList text="Counselr Chat" status="active" />
+            <OfferList text="Multiple file format support" status="active" />
             <OfferList text="Priority email support" status="active" />
             <OfferList text="Fast processing speed" status="active" />
-            <OfferList text="PDF & Docx upload support" status="active" />
-          </PricingBox>
-          <PricingBox
+          </PricingNewBox>
+          <PricingNewBox
             packageName="Enterprise"
             custom
-            subtitle="If this Plans don't fit.Lets create one that suits your needs."
+            actionState={enterpriseState}
+            subtitle="For large organizations with advanced needs"
+            onSelect={() => handleSelectPlan("enterprise")}
           >
             <OfferList text="Unlimited contract analyses" status="active" />
-            <OfferList text="Custom AI model training" status="active" />
+            <OfferList text="White-labeled solution" status="active" />
             <OfferList text="24/7 phone & email support" status="active" />
             <OfferList text="Lightning-fast processing" status="active" />
             <OfferList text="Custom AI model training" status="active" />
             <OfferList text="SDK" status="active" />
-          </PricingBox>
+          </PricingNewBox>
         </div>
       </div>
 
@@ -163,4 +247,4 @@ const Pricing = () => {
   );
 };
 
-export default Pricing;
+export default PricingClient;
