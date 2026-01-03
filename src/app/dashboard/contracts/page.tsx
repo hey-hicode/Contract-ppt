@@ -194,7 +194,7 @@ const Contracts = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F9FC]  space-y-6" onClick={() => setShowColumnMenu(false)}>
+    <div className="min-h-screen bg-[#F7F9FC] p-4 space-y-6" onClick={() => setShowColumnMenu(false)}>
       {/* Header */}
       <div className="flex items-center  p-4 justify-between">
         <p className="text-sm text-gray-500 font-medium">
@@ -221,11 +221,11 @@ const Contracts = () => {
                 placeholder="Search contracts.."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-10 bg-white border-gray-200 focus-visible:ring-1 focus-visible:ring-gray-300"
+                className="pl-9 h-10 bg-white border-gray-200 focus-visible:ring-1 placeholder:text-sm focus-visible:ring-gray-300"
               />
             </div>
             <Select value={filterRisk} onValueChange={setFilterRisk}>
-              <SelectTrigger className="w-auto min-w-[120px] h-10 px-3 gap-2 text-gray-600 border-gray-200 bg-white hover:bg-gray-50">
+              <SelectTrigger className="w-auto min-w-[120px] h-10 px-3 text-xs gap-2 text-gray-600 border-gray-200 bg-white hover:bg-gray-50">
                 <Filter className="w-4 h-4" />
                 <SelectValue placeholder="Filters" />
               </SelectTrigger>
@@ -244,7 +244,7 @@ const Contracts = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className={`h-8 px-3 gap-1.5 ${viewMode === 'table' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}
+                className={`h-8 px-3 gap-1.5 text-xs ${viewMode === 'table' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}
                 onClick={() => setViewMode('table')}
               >
                 <TableIcon className="w-3.5 h-3.5" />
@@ -253,7 +253,7 @@ const Contracts = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className={`h-8 px-3 gap-1.5 ${viewMode === 'kanban' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}
+                className={`h-8 px-3 gap-1.5 text-xs ${viewMode === 'kanban' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}
                 onClick={() => setViewMode('kanban')}
               >
                 <LayoutGrid className="w-3.5 h-3.5" />
@@ -263,7 +263,7 @@ const Contracts = () => {
 
             <Button
               variant="outline"
-              className="h-10 px-3 gap-2 text-gray-600 border-gray-200 bg-white hover:bg-gray-50"
+              className="h-10 px-3 gap-2 text-gray-600 text-xs border-gray-200 bg-white hover:bg-gray-50"
               onClick={() => setSortBy(prev => prev === "date" ? "status" : "date")}
             >
               Sort by <span className="font-medium text-gray-900 ml-1">{sortBy === "date" ? "Date" : "Status"}</span>
