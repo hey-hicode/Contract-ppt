@@ -3,7 +3,13 @@ import React, { useMemo, useState } from "react";
 import { Mail, MessageCircle, Save, Lock } from "lucide-react";
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "../ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "../ui/dialog";
 import { trackFeatureUsage } from "~/lib/analytics";
 import { ContractChat } from "../Chat/ContractChat";
 import { Input } from "../ui/input";
@@ -37,7 +43,10 @@ interface ActionSheetsProps {
 function generateEmailContent(data: EmailData) {
   const { title, summary, redFlags = [], recommendations = [] } = data;
   const talkingPoints = redFlags
-    .map((f, i) => `${i + 1}. ${f.title}${f.description ? ` — ${f.description}` : ""}`)
+    .map(
+      (f, i) =>
+        `${i + 1}. ${f.title}${f.description ? ` — ${f.description}` : ""}`
+    )
     .join("\n");
   const nextSteps = recommendations.map((r, i) => `${i + 1}. ${r}`).join("\n");
   return `Subject: Contract Review Discussion: ${title}
@@ -46,7 +55,9 @@ Hi,
 
 I've reviewed my contract "${title}" and I'd love to discuss a few points.
 
-${summary ? `Quick summary:\n${summary}\n\n` : ""}Talking points:\n${talkingPoints || "- No specific issues noted"}
+${summary ? `Quick summary:\n${summary}\n\n` : ""}Talking points:\n${
+    talkingPoints || "- No specific issues noted"
+  }
 
 Possible next steps:\n${nextSteps || "- Open to your suggestions"}
 
@@ -64,17 +75,29 @@ function openMailClient(to: string, content: string) {
     subject = firstLine.replace(/^[Ss]ubject:\s*/, "").trim();
     body = content.split("\n").slice(1).join("\n");
   }
-  const mailtoLink = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const mailtoLink = `mailto:${encodeURIComponent(
+    to
+  )}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   window.location.href = mailtoLink;
 }
 
-export default function ActionSheets({ chatEnabled, analysisId, documentText, emailData, onSave, saving }: ActionSheetsProps) {
+export default function ActionSheets({
+  chatEnabled,
+  analysisId,
+  documentText,
+  emailData,
+  onSave,
+  saving,
+}: ActionSheetsProps) {
   const [emailOpen, setEmailOpen] = useState(false);
   const [savePromptOpen, setSavePromptOpen] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState("");
   const [emailContent, setEmailContent] = useState("");
 
-  const initialEmail = useMemo(() => generateEmailContent(emailData), [emailData]);
+  const initialEmail = useMemo(
+    () => generateEmailContent(emailData),
+    [emailData]
+  );
 
   // Keep content in sync when data changes
   React.useEffect(() => {
@@ -144,9 +167,12 @@ export default function ActionSheets({ chatEnabled, analysisId, documentText, em
                 <Lock className="h-8 w-8 text-amber-600" />
               </div>
             </div>
-            <DialogTitle className="text-center font-semibold text-2xl">Save Analysis Required</DialogTitle>
+            <DialogTitle className="text-center font-semibold text-2xl">
+              Save Analysis Required
+            </DialogTitle>
             <DialogDescription className="text-center mx-auto my-3 text-base max-w-sm flex items-center justify-center text-slate-600">
-              You need to save this analysis before you can start chatting with the AI about your contract.
+              You need to save this analysis before you can start chatting with
+              the AI about your contract.
             </DialogDescription>
           </DialogHeader>
           <div className="grid md:grid-cols-2 w-full sm:flex-row gap-2 sm:gap-3">
@@ -180,7 +206,10 @@ export default function ActionSheets({ chatEnabled, analysisId, documentText, em
 
       {/* Email offcanvas */}
       <Sheet open={emailOpen} onOpenChange={setEmailOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-lg flex p-4 flex-col max-h-[100vh] overflow-hidden">
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-lg flex p-4 flex-col max-h-[100vh] overflow-hidden"
+        >
           <SheetHeader>
             <SheetTitle>Draft Email</SheetTitle>
           </SheetHeader>
@@ -196,8 +225,19 @@ export default function ActionSheets({ chatEnabled, analysisId, documentText, em
               onChange={(e) => setEmailContent(e.target.value)}
             />
             <div className="flex gap-2">
-              <Button onClick={() => setEmailContent(initialEmail)} variant="outline">Regenerate</Button>
-              <Button onClick={handleSendEmail} className="text-white" disabled={!recipientEmail}>Open in Mail App</Button>
+              <Button
+                onClick={() => setEmailContent(initialEmail)}
+                variant="outline"
+              >
+                Regenerate
+              </Button>
+              <Button
+                onClick={handleSendEmail}
+                className="text-white"
+                disabled={!recipientEmail}
+              >
+                Open in Mail App
+              </Button>
             </div>
           </div>
         </SheetContent>

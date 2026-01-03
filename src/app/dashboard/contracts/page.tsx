@@ -10,7 +10,6 @@ import {
   ArrowUpDown,
   X,
   MoreVertical,
-  Check,
   Table as TableIcon,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
@@ -173,7 +172,7 @@ const Contracts = () => {
   };
 
   // Map ContractItem to ContractTableItem
-  const tableItems = filteredContracts.map(c => ({
+  const tableItems = filteredContracts.map((c) => ({
     id: c.id,
     source_title: c.name,
     overall_risk: c.riskLevel.toLowerCase() as "low" | "medium" | "high" | null,
@@ -190,7 +189,7 @@ const Contracts = () => {
   }));
 
   const toggleColumn = (key: keyof typeof visibleColumns) => {
-    setVisibleColumns(prev => ({ ...prev, [key]: !prev[key] }));
+    setVisibleColumns((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   return (
@@ -201,13 +200,20 @@ const Contracts = () => {
           Showing {filteredContracts.length} of {contracts.length} Contracts
         </p>
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" className="h-9 w-9 bg-white border-gray-200 text-gray-500 hover:text-gray-700">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-9 w-9 bg-white border-gray-200 text-gray-500 hover:text-gray-700"
+          >
             <MoreVertical className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon" className="h-9 w-9 bg-white border-gray-200 text-gray-500 hover:text-gray-700">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-9 w-9 bg-white border-gray-200 text-gray-500 hover:text-gray-700"
+          >
             <UploadCloud className="h-4 w-4" />
           </Button>
-
         </div>
       </div>
 
@@ -231,8 +237,12 @@ const Contracts = () => {
               </SelectTrigger>
               <SelectContent className="bg-white">
                 <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="Negotiating">Negotiating (High Risk)</SelectItem>
-                <SelectItem value="Reviewing">Reviewing (Medium Risk)</SelectItem>
+                <SelectItem value="Negotiating">
+                  Negotiating (High Risk)
+                </SelectItem>
+                <SelectItem value="Reviewing">
+                  Reviewing (Medium Risk)
+                </SelectItem>
                 <SelectItem value="Signing">Signing (Low Risk)</SelectItem>
               </SelectContent>
             </Select>
@@ -266,7 +276,10 @@ const Contracts = () => {
               className="h-10 px-3 gap-2 text-gray-600 text-xs border-gray-200 bg-white hover:bg-gray-50"
               onClick={() => setSortBy(prev => prev === "date" ? "status" : "date")}
             >
-              Sort by <span className="font-medium text-gray-900 ml-1">{sortBy === "date" ? "Date" : "Status"}</span>
+              Sort by{" "}
+              <span className="font-medium text-gray-900 ml-1">
+                {sortBy === "date" ? "Date" : "Status"}
+              </span>
               <ArrowUpDown className="w-3 h-3 ml-1" />
             </Button>
           </div>
@@ -274,23 +287,31 @@ const Contracts = () => {
 
         {/* Active Filters Mock */}
         <div className="flex items-center gap-2 flex-wrap">
-          {filterRisk !== 'all' && (
+          {filterRisk !== "all" && (
             <div className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-600 border border-gray-200">
-              Risk: {filterRisk} <X className="w-3 h-3 cursor-pointer hover:text-gray-900" onClick={() => setFilterRisk('all')} />
+              Risk: {filterRisk}{" "}
+              <X
+                className="w-3 h-3 cursor-pointer hover:text-gray-900"
+                onClick={() => setFilterRisk("all")}
+              />
             </div>
           )}
           {searchQuery && (
             <div className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-600 border border-gray-200">
-              Search: {searchQuery} <X className="w-3 h-3 cursor-pointer hover:text-gray-900" onClick={() => setSearchQuery('')} />
+              Search: {searchQuery}{" "}
+              <X
+                className="w-3 h-3 cursor-pointer hover:text-gray-900"
+                onClick={() => setSearchQuery("")}
+              />
             </div>
           )}
 
-          {(filterRisk !== 'all' || searchQuery) && (
+          {(filterRisk !== "all" || searchQuery) && (
             <button
               className="text-xs font-semibold text-blue-600 hover:text-blue-700 ml-2 uppercase tracking-wide"
               onClick={() => {
-                setFilterRisk('all');
-                setSearchQuery('');
+                setFilterRisk("all");
+                setSearchQuery("");
               }}
             >
               Clear Filters
@@ -302,7 +323,9 @@ const Contracts = () => {
       {loading && (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-          <span className="ml-3 text-gray-500 font-medium">Loading contracts...</span>
+          <span className="ml-3 text-gray-500 font-medium">
+            Loading contracts...
+          </span>
         </div>
       )}
 
@@ -314,7 +337,7 @@ const Contracts = () => {
 
       {!loading && !error && (
         <>
-          {viewMode === 'kanban' ? (
+          {viewMode === "kanban" ? (
             <ContractKanban
               items={tableItems}
               onView={handleViewContract}
@@ -341,7 +364,10 @@ const Contracts = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setContractToDelete(null)} className="rounded-lg">
+            <AlertDialogCancel
+              onClick={() => setContractToDelete(null)}
+              className="rounded-lg"
+            >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction

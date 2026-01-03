@@ -1,5 +1,5 @@
 "use client";
-import { FileText, MoreVertical, Eye } from "lucide-react";
+import { FileText, MoreVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
@@ -59,7 +59,17 @@ const getAvatarColor = (index: number) => {
   return avatarColors[index % avatarColors.length];
 };
 
-const ContractTable = ({ items, onView, visibleColumns = { dealparties: true, companies: true, dealroom: true, playbook: true }, grouping = "none" }: ContractTableProps) => {
+const ContractTable = ({
+  items,
+  onView,
+  visibleColumns = {
+    dealparties: true,
+    companies: true,
+    dealroom: true,
+    playbook: true,
+  },
+  grouping = "none",
+}: ContractTableProps) => {
   const router = useRouter();
   const totalColumns = 4 +
     (visibleColumns.dealparties ? 1 : 0) +
@@ -77,21 +87,40 @@ const ContractTable = ({ items, onView, visibleColumns = { dealparties: true, co
   };
 
   const getStatusDisplay = (risk: string | null) => {
-    if (!risk) return { label: "Drafting", className: "bg-blue-50 text-blue-700 border-blue-200" };
+    if (!risk)
+      return {
+        label: "Drafting",
+        className: "bg-blue-50 text-blue-700 border-blue-200",
+      };
 
     const riskLower = risk.toLowerCase();
-    if (riskLower === "high") return { label: "high", className: "bg-red-100 text-red-700 border-red-200" };
-    if (riskLower === "medium") return { label: "medium", className: "bg-orange-100 text-orange-700 border-orange-200" };
-    if (riskLower === "low") return { label: "low", className: "bg-green-100 text-green-700 border-green-200" };
+    if (riskLower === "high")
+      return {
+        label: "high",
+        className: "bg-red-100 text-red-700 border-red-200",
+      };
+    if (riskLower === "medium")
+      return {
+        label: "medium",
+        className: "bg-orange-100 text-orange-700 border-orange-200",
+      };
+    if (riskLower === "low")
+      return {
+        label: "low",
+        className: "bg-green-100 text-green-700 border-green-200",
+      };
 
-    return { label: "Drafting", className: "bg-blue-50 text-blue-700 border-blue-200" };
+    return {
+      label: "Drafting",
+      className: "bg-blue-50 text-blue-700 border-blue-200",
+    };
   };
 
   // Grouping Logic
   const groupedItems = (() => {
     if (grouping === "status") {
       const groups: Record<string, ContractTableItem[]> = {};
-      items.forEach(item => {
+      items.forEach((item) => {
         const status = getStatusDisplay(item.overall_risk).label;
         if (!groups[status]) groups[status] = [];
         groups[status].push(item);
@@ -126,7 +155,10 @@ const ContractTable = ({ items, onView, visibleColumns = { dealparties: true, co
         <TableCell className="px-6 py-4">
           <div className="flex items-center justify-between gap-3 max-w-[300px]">
             <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-10 h-10 rounded-md bg-blue-50 flex items-center justify-center shrink-0 cursor-pointer" onClick={() => handleView(contract.id)}>
+              <div
+                className="w-10 h-10 rounded-md bg-blue-50 flex items-center justify-center shrink-0 cursor-pointer"
+                onClick={() => handleView(contract.id)}
+              >
                 <FileText className="w-6 h-6 text-blue-600" />
               </div>
               <span className="text-gray-900 font-medium truncate underline decoration-gray-300 underline-offset-4 cursor-pointer inline-block max-w-[150px] hover:decoration-gray-900 transition-all" onClick={() => handleView(contract.id)}>
@@ -137,7 +169,10 @@ const ContractTable = ({ items, onView, visibleColumns = { dealparties: true, co
           </div>
         </TableCell>
         <TableCell className="px-6 py-4">
-          <Badge variant="outline" className={`${status.className} rounded-full px-3 py-0.5 font-normal border`}>
+          <Badge
+            variant="outline"
+            className={`${status.className} rounded-full px-3 py-0.5 font-normal border`}
+          >
             {status.label}
           </Badge>
         </TableCell>
@@ -155,7 +190,9 @@ const ContractTable = ({ items, onView, visibleColumns = { dealparties: true, co
                   {contract.dealParties.map((party, i) => (
                     <div
                       key={i}
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium ${getAvatarColor(i)}`}
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium ${getAvatarColor(
+                        i
+                      )}`}
                       title={party}
                     >
                       <div className="w-4 h-4 rounded-full bg-white/50 flex items-center justify-center text-[8px] font-bold">
@@ -175,7 +212,9 @@ const ContractTable = ({ items, onView, visibleColumns = { dealparties: true, co
           <TableCell className="px-6 py-4">
             <span className="text-sm text-gray-600 truncate max-w-[120px] inline-block" title={contract.companiesInvolved?.join(", ")}>
               {contract.companiesInvolved?.[0] || "-"}
-              {contract.companiesInvolved && contract.companiesInvolved.length > 1 && ` +${contract.companiesInvolved.length - 1}`}
+              {contract.companiesInvolved &&
+                contract.companiesInvolved.length > 1 &&
+                ` +${contract.companiesInvolved.length - 1}`}
             </span>
           </TableCell>
         )}
@@ -188,7 +227,9 @@ const ContractTable = ({ items, onView, visibleColumns = { dealparties: true, co
         )}
         {visibleColumns.playbook && (
           <TableCell className="px-6 py-4">
-            <span className="text-sm text-gray-600">{contract.playbook || "General"}</span>
+            <span className="text-sm text-gray-600">
+              {contract.playbook || "General"}
+            </span>
           </TableCell>
         )}
       </TableRow>
@@ -209,14 +250,17 @@ const ContractTable = ({ items, onView, visibleColumns = { dealparties: true, co
                     {contract.source_title || "Untitled Contract"}
                   </h3>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    {new Date(contract.created_at).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric'
+                    {new Date(contract.created_at).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
                     })}
                   </p>
                 </div>
-                <Badge variant="outline" className={`${status.className} rounded-full px-2 py-0.5 text-xs font-normal border ml-2`}>
+                <Badge
+                  variant="outline"
+                  className={`${status.className} rounded-full px-2 py-0.5 text-xs font-normal border ml-2`}
+                >
                   {status.label}
                 </Badge>
               </div>
@@ -226,7 +270,9 @@ const ContractTable = ({ items, onView, visibleColumns = { dealparties: true, co
                     {contract.dealParties.map((party, i) => (
                       <div
                         key={i}
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium ${getAvatarColor(i)}`}
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium ${getAvatarColor(
+                          i
+                        )}`}
                         title={party}
                       >
                         <div className="w-4 h-4 rounded-full bg-white/50 flex items-center justify-center text-[8px] font-bold">
