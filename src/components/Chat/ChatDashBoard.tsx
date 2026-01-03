@@ -27,7 +27,6 @@ export default function ChatDashboard() {
     null
   );
 
-  const [newChatMessages, setNewChatMessages] = React.useState<Message[]>([]);
   const [input, setInput] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [threads, setThreads] = React.useState<Thread[]>([]);
@@ -57,7 +56,7 @@ export default function ChatDashboard() {
 
   React.useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [newChatMessages, savedMessages]);
+  }, [draftMessages, savedMessages]);
 
   const handleSend = async () => {
     const text = input.trim();
@@ -150,7 +149,7 @@ export default function ChatDashboard() {
     t.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const currentMessages = selectedThread ? savedMessages : newChatMessages;
+  const currentMessages = selectedThread ? savedMessages : draftMessages;
   const hasMessages = currentMessages.length > 0;
 
   return (
@@ -207,7 +206,7 @@ export default function ChatDashboard() {
               key={t.id}
               onClick={() => {
                 setSelectedThread(t.id);
-                setNewChatMessages([]);
+                setDraftMessages([]);
               }}
               className={`group relative cursor-pointer p-3 mb-1 rounded-xl transition-all ${
                 selectedThread === t.id
