@@ -33,6 +33,23 @@ const Hero = () => {
                       mode="modal"
                       forceRedirectUrl="/dashboard"
                       signUpForceRedirectUrl="/dashboard"
+                      appearance={{
+                        elements: {
+                          button: {
+                            borderRadius: "8px",
+                            padding: "8px 12px",
+                            fontSize: "14px",
+                            fontWeight: "600",
+                            color: "#fff",
+                            backgroundColor: "#4A6CF7",
+                            border: "none",
+                            cursor: "pointer",
+                            transition: "all 0.2s ease-in-out",
+
+                          },
+                        },
+                      }}
+
                     >
 
                       Sign In

@@ -12,6 +12,7 @@ import {
   User,
   Bot,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 type Thread = { id: string; title: string; created_at: string };
 type Message = {
@@ -153,120 +154,122 @@ export default function ChatDashboard() {
   const hasMessages = currentMessages.length > 0;
 
   return (
-    <div className="flex h-[85vh] bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-none">
+    <div className="flex h-[88vh] bg-white border border-gray-200 rounded-lg overflow-hidden shadow-none relative">
       {/* Sidebar */}
-      <div className="w-80 bg-slate-50/50 border-r border-slate-200 flex flex-col">
+      <div className="w-80 bg-white border-r border-gray-200 flex flex-col z-20">
         {/* Sidebar Header */}
-        <div className="p-6">
-          <button
+        <div className="p-4 border-b border-gray-100/60">
+          <motion.button
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
             onClick={handleNewChat}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary/80 transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-md font-semibold text-sm hover:opacity-90 transition-all shadow-none"
           >
             <Plus size={18} strokeWidth={2.5} />
-            New Conversation
-          </button>
+            <span>New Chat</span>
+          </motion.button>
         </div>
 
         {/* Search */}
-        <div className="px-6 pb-4">
+        <div className="p-4 bg-gray-50/30">
           <div className="relative group">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"
-              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors duration-200"
+              size={14}
             />
             <input
               type="text"
-              placeholder="Search chats..."
+              placeholder="Search conversations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-primary/20 focus:border-primary/50 transition-all placeholder:text-gray-400 font-normal"
             />
           </div>
         </div>
 
         {/* Thread List */}
-        <div className="flex-1 overflow-y-auto px-3 pb-4">
-          <div className="px-3 mb-2">
-            <h2 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              Recent Chats
+        <div className="flex-1 overflow-y-auto px-2 pb-4 pt-2 custom-scrollbar">
+          <div className="px-3 mb-2 flex items-center justify-between">
+            <h2 className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+              Recent Activity
             </h2>
           </div>
-          {filteredThreads.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-              <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-3">
-                <MessageSquare size={20} className="text-slate-400" />
-              </div>
-              <p className="text-xs text-slate-500 font-medium">
-                {searchQuery ? "No matches found" : "Start your first chat"}
-              </p>
-            </div>
-          )}
-          {filteredThreads.map((t) => (
-            <div
-              key={t.id}
-              onClick={() => {
-                setSelectedThread(t.id);
-                setDraftMessages([]);
-              }}
-              className={`group relative cursor-pointer p-3 mb-1 rounded-xl transition-all ${
-                selectedThread === t.id
-                  ? "bg-white shadow-sm border border-slate-200"
-                  : "hover:bg-slate-100/80 border border-transparent"
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <div
-                  className={`mt-1 p-1.5 rounded-lg ${
-                    selectedThread === t.id
-                      ? "bg-blue-50 text-blue-600"
-                      : "bg-slate-200 text-slate-500"
-                  }`}
-                >
-                  <MessageSquare size={14} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div
-                    className={`font-semibold text-sm truncate ${
-                      selectedThread === t.id
-                        ? "text-blue-600"
-                        : "text-slate-700"
+
+          <AnimatePresence mode="popLayout">
+            {filteredThreads.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex flex-col items-center justify-center py-10 px-4 text-center"
+              >
+                <MessageSquare size={20} className="text-gray-300 mb-2" />
+                <p className="text-xs text-gray-400">
+                  {searchQuery ? "No matches found" : "No recent chats"}
+                </p>
+              </motion.div>
+            ) : (
+              filteredThreads.map((t) => (
+                <motion.div
+                  layout
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  key={t.id}
+                  onClick={() => {
+                    setSelectedThread(t.id);
+                    setDraftMessages([]);
+                  }}
+                  className={`group relative flex items-center gap-3 p-3 mb-1 rounded-md cursor-pointer transition-all border ${selectedThread === t.id
+                    ? "bg-gray-100/50 border-gray-200"
+                    : "bg-transparent border-transparent hover:bg-gray-50"
                     }`}
-                  >
-                    {t.title}
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-1 font-medium">
-                    <Clock size={10} />
-                    {new Date(t.created_at).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </div>
-                </div>
-                <button
-                  onClick={(e) => handleDeleteThread(t.id, e)}
-                  className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-50 rounded-lg transition-all"
                 >
-                  <Trash2
-                    size={14}
-                    className="text-red-400 hover:text-red-500"
-                  />
-                </button>
-              </div>
-              {selectedThread === t.id && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-600 rounded-r-full" />
-              )}
-            </div>
-          ))}
+                  <div className={`p-1.5 rounded-md ${selectedThread === t.id ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-400 group-hover:text-gray-500'}`}>
+                    <MessageSquare size={16} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div
+                      className={`font-semibold text-xs truncate ${selectedThread === t.id
+                        ? "text-gray-900"
+                        : "text-gray-600 group-hover:text-gray-900"
+                        }`}
+                    >
+                      {t.title}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[10px] text-gray-400 mt-0.5">
+                      <Clock size={10} />
+                      {new Date(t.created_at).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </div>
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={(e) => handleDeleteThread(t.id, e)}
+                    className={`p-1 hover:bg-red-50 rounded-md transition-all ${selectedThread === t.id || "opacity-0 group-hover:opacity-100"}`}
+                  >
+                    <Trash2 size={14} className="text-red-400 hover:text-red-500" />
+                  </motion.button>
+
+                  {selectedThread === t.id && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary rounded-r-full" />
+                  )}
+                </motion.div>
+              ))
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col bg-white">
-        {/* Chat Header */}
-        <div className="h-[73px] border-b border-slate-200 px-8 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-10">
+      <div className="flex-1 flex flex-col bg-[#F7F9FC]">
+        {/* Header */}
+        <header className="h-[64px] border-b border-gray-200 px-8 flex items-center justify-between bg-white z-10 shadow-xs">
           <div className="flex items-center gap-4 flex-1 min-w-0">
-            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 shrink-0">
-              <MessageSquare size={20} strokeWidth={2.5} />
+            <div className="w-9 h-9 bg-gray-50 border border-gray-200 rounded-md flex items-center justify-center text-primary shrink-0">
+              <Bot size={18} strokeWidth={2} />
             </div>
             <div className="flex-1 min-w-0">
               {!selectedThread && editingTitle ? (
@@ -276,12 +279,12 @@ export default function ChatDashboard() {
                   onChange={(e) => setTitleInput(e.target.value)}
                   onBlur={() => setEditingTitle(false)}
                   onKeyDown={(e) => e.key === "Enter" && setEditingTitle(false)}
-                  className="w-full text-lg font-bold text-slate-900 border-b-2 border-blue-500 outline-none bg-transparent"
+                  className="w-full text-base font-bold text-gray-900 border-b border-primary outline-none bg-transparent"
                   autoFocus
                 />
               ) : (
                 <div className="flex items-center gap-2 group">
-                  <h1 className="text-lg font-bold text-slate-900 truncate">
+                  <h1 className="text-base font-bold text-gray-900 truncate">
                     {selectedThread
                       ? threads.find((t) => t.id === selectedThread)?.title
                       : titleInput}
@@ -289,144 +292,192 @@ export default function ChatDashboard() {
                   {!selectedThread && (
                     <button
                       onClick={() => setEditingTitle(true)}
-                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-100 rounded-lg transition-all"
+                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-100 rounded-md transition-all"
                     >
-                      <Edit2 size={14} className="text-slate-400" />
+                      <Edit2 size={12} className="text-gray-400" />
                     </button>
                   )}
                 </div>
               )}
-              <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 font-bold uppercase tracking-wider">
-                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                AI Assistant Active
+              <div className="flex items-center gap-1.5 text-[9px] font-bold text-emerald-600 uppercase tracking-widest">
+                <span className="flex h-1.5 w-1.5 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                </span>
+                Active Analyst
               </div>
             </div>
           </div>
+
           <div className="flex items-center gap-3">
             {!selectedThread && hasMessages && (
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={handleSaveChat}
                 disabled={saving}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all disabled:opacity-50 shadow-sm hover:shadow-md active:scale-[0.98]"
+                className="flex items-center gap-2 px-3.5 py-1.5 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-md text-xs font-semibold transition-all disabled:opacity-50"
               >
-                <Save size={16} />
-                {saving ? "Saving..." : "Save Conversation"}
-              </button>
+                {saving ? (
+                  <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Save size={14} />
+                )}
+                <span>Save Analysis</span>
+              </motion.button>
+            )}
+            <div className="h-4 w-px bg-gray-200 mx-1" />
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] text-gray-400 font-medium">Model</span>
+              <span className="text-xs text-gray-700 font-bold">Counselr v2.0</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar">
+          <div className="max-w-4xl mx-auto">
+            {!hasMessages ? (
+              <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+                <div className="w-16 h-16 bg-white border border-gray-200 rounded-xl flex items-center justify-center text-primary mb-6 shadow-xs">
+                  <Bot size={32} strokeWidth={1.5} />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  Legal Analysis Assistant
+                </h2>
+                <p className="text-gray-500 text-sm mb-10 max-w-sm mx-auto leading-relaxed">
+                  Ask me to review specific clauses, identify liabilities, or summarize key terms from your contracts.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl">
+                  {[
+                    "Spot risks in this NDA",
+                    "Summarize termination rights",
+                    "Explain payment obligations",
+                    "Check for non-compete issues",
+                  ].map((prompt) => (
+                    <button
+                      key={prompt}
+                      onClick={() => setInput(prompt)}
+                      className="group flex items-center gap-3 p-3.5 bg-white border border-gray-200 rounded-lg text-left hover:border-primary/50 hover:bg-primary/5 transition-all text-xs font-semibold text-gray-700 hover:text-primary"
+                    >
+                      <MessageSquare size={14} className="text-gray-400 group-hover:text-primary" />
+                      {prompt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {currentMessages.map((m, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`flex gap-4 ${m.role === "user" ? "flex-row-reverse" : "flex-row"}`}
+                  >
+                    <div className={`w-9 h-9 rounded-md flex items-center justify-center shrink-0 border ${m.role === "user"
+                      ? "bg-primary text-white border-primary shadow-sm"
+                      : "bg-white text-primary border-gray-200 shadow-xs"
+                      }`}>
+                      {m.role === "user" ? <User size={18} strokeWidth={2.5} /> : <Bot size={18} strokeWidth={2.5} />}
+                    </div>
+
+                    <div className={`max-w-[80%] space-y-1.5 ${m.role === "user" ? "items-end" : "items-start"}`}>
+                      <div
+                        className={`px-5 py-3 rounded-lg text-sm leading-relaxed font-medium transition-all ${m.role === "user"
+                          ? "bg-primary text-white shadow-sm"
+                          : "bg-white text-gray-800 border border-gray-200 shadow-xs"
+                          }`}
+                      >
+                        <div className="whitespace-pre-wrap">{m.content}</div>
+                      </div>
+                      <div className={`flex items-center gap-1.5 px-1 text-[9px] font-bold uppercase tracking-widest text-gray-400 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                        {m.role === "user" ? "Client" : "Assistant"}
+                        <span>•</span>
+                        <span>{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+
+                {loading && (
+                  <div className="flex gap-4">
+                    <div className="w-9 h-9 rounded-md bg-white border border-gray-200 flex items-center justify-center shrink-0 text-primary shadow-xs">
+                      <Bot size={18} strokeWidth={2.5} />
+                    </div>
+                    <div className="bg-white border border-gray-200 px-5 py-3 rounded-lg shadow-xs">
+                      <div className="flex gap-1">
+                        <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1 }} className="w-1.5 h-1.5 bg-gray-400 rounded-full" />
+                        <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-1.5 h-1.5 bg-gray-400 rounded-full" />
+                        <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-1.5 h-1.5 bg-gray-400 rounded-full" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
             )}
           </div>
         </div>
 
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto px-8 py-8 space-y-8">
-          {!hasMessages ? (
-            <div className="flex flex-col items-center justify-center h-full text-center max-w-2xl mx-auto">
-              <h2 className="text-3xl font-semibold text-slate-900 mb-3 tracking-tight">
-                How can I help with your contracts today?
-              </h2>
-              <p className="text-slate-500 text-base mb-10 leading-relaxed">
-                Ask me to analyze clauses, identify risks, or summarize complex
-                legal terms in plain English.
-              </p>
-
-              <div className="grid grid-cols-2 gap-3 w-full">
-                {[
-                  "Analyze this NDA for risks",
-                  "Summarize the termination clause",
-                  "What are the payment terms?",
-                  "Identify any hidden liabilities",
-                ].map((prompt) => (
-                  <button
-                    key={prompt}
-                    onClick={() => setInput(prompt)}
-                    className="py-2 px-4 text-left bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-all active:scale-[0.98]"
-                  >
-                    {prompt}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="max-w-4xl mx-auto space-y-8">
-              {currentMessages.map((m, i) => (
-                <div
-                  key={i}
-                  className={`flex gap-4 ${
-                    m.role === "user" ? "flex-row-reverse" : "flex-row"
-                  }`}
-                >
-                  <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${
-                      m.role === "user"
-                        ? "bg-blue-600 text-white"
-                        : "bg-white border border-slate-200 text-slate-600"
-                    }`}
-                  >
-                    {m.role === "user" ? <User size={20} /> : <Bot size={20} />}
-                  </div>
-                  <div
-                    className={`max-w-[80%] px-6 py-4 rounded-2xl shadow-sm ${
-                      m.role === "user"
-                        ? "bg-blue-600 text-white rounded-tr-none"
-                        : "bg-slate-50 text-slate-800 border border-slate-200 rounded-tl-none"
-                    }`}
-                  >
-                    <div className="text-[15px] leading-relaxed whitespace-pre-wrap font-medium">
-                      {m.content}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {loading && (
-                <div className="flex gap-4 flex-row">
-                  <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0 shadow-sm text-slate-600">
-                    <Bot size={20} />
-                  </div>
-                  <div className="bg-slate-50 border border-slate-200 px-6 py-4 rounded-2xl rounded-tl-none shadow-sm">
-                    <div className="flex gap-1.5 items-center h-5">
-                      <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                      <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                      <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" />
-                    </div>
-                  </div>
-                </div>
-              )}
-              <div ref={chatEndRef} />
-            </div>
-          )}
-        </div>
-
         {/* Input Area */}
         {!selectedThread && (
-          <div className="bg-white  border-slate-200 ">
-            <div className="">
-              <div className="relative flex p-2 gap-3 bg-slate-50 border border-slate-200  focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all shadow-none">
+          <div className="px-8 pb-6 bg-transparent">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex items-end gap-3 p-2 bg-white border border-gray-200 rounded-lg shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/20 transition-all">
                 <textarea
                   ref={inputRef}
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
+                  onChange={(e) => {
+                    setInput(e.target.value);
+                    e.target.style.height = 'auto';
+                    e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
                       handleSend();
                     }
                   }}
-                  placeholder="Ask me anything about your contracts..."
+                  placeholder="Review this contract for any hidden liabilities..."
                   rows={1}
-                  className="flex-1 bg-transparent px-4 py-2 text-[15px] outline-none resize-none  "
+                  className="flex-1 bg-transparent px-3 py-2 text-sm font-medium outline-none resize-none max-h-[200px] text-gray-800 placeholder:text-gray-400"
                 />
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={handleSend}
                   disabled={loading || !input.trim()}
-                  className=" px-6 bg-blue-600 text-white text-sm rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] shadow-none"
+                  className="h-9 px-4 bg-primary text-white rounded-md flex items-center justify-center shrink-0 hover:bg-primary/90 transition-all disabled:opacity-50 text-xs font-bold"
                 >
-                  <Send size={18} strokeWidth={2.5} />
-                  <span className="text-sm">Send</span>
-                </button>
+                  <Send size={14} className="mr-2" strokeWidth={3} />
+                  Send
+                </motion.button>
               </div>
+              <p className="mt-2 text-center text-[9px] font-bold uppercase tracking-widest text-gray-400">
+                AI can make mistakes. Please verify important analytical results.
+              </p>
             </div>
           </div>
         )}
       </div>
+
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #E2E8F0;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #CBD5E1;
+        }
+      `}</style>
     </div>
   );
 }

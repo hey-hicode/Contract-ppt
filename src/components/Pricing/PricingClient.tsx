@@ -107,11 +107,10 @@ const PricingClient = ({ currentPlan }: PricingClientProps) => {
           <div className="mb-8 flex justify-center md:mb-12 lg:mb-16">
             <span
               onClick={() => setIsMonthly(true)}
-              className={`${
-                isMonthly
+              className={`${isMonthly
                   ? "pointer-events-none text-primary"
                   : "text-dark dark:text-white"
-              } mr-4 cursor-pointer text-base font-semibold`}
+                } mr-4 cursor-pointer text-base font-semibold`}
             >
               Monthly
             </span>
@@ -122,9 +121,8 @@ const PricingClient = ({ currentPlan }: PricingClientProps) => {
               <div className="relative">
                 <div className="h-5 w-14 rounded-full bg-[#1D2144] shadow-inner"></div>
                 <div
-                  className={`${
-                    isMonthly ? "" : "translate-x-full"
-                  } shadow-switch-1 absolute left-0 top-[-4px] flex h-7 w-7 items-center justify-center rounded-full bg-primary transition`}
+                  className={`${isMonthly ? "" : "translate-x-full"
+                    } shadow-switch-1 absolute left-0 top-[-4px] flex h-7 w-7 items-center justify-center rounded-full bg-primary transition`}
                 >
                   <span className="active h-4 w-4 rounded-full bg-white"></span>
                 </div>
@@ -132,11 +130,10 @@ const PricingClient = ({ currentPlan }: PricingClientProps) => {
             </div>
             <span
               onClick={() => setIsMonthly(false)}
-              className={`${
-                isMonthly
+              className={`${isMonthly
                   ? "text-dark dark:text-white"
                   : "pointer-events-none text-primary"
-              } ml-4 cursor-pointer text-base font-semibold`}
+                } ml-4 cursor-pointer text-base font-semibold`}
             >
               Yearly
             </span>
