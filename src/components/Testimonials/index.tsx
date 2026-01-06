@@ -1,6 +1,8 @@
+"use client";
 import SectionTitle from "../shared/SectionTitle";
 import SingleTestimonial from "./SingleTestimonial";
 import Marquee from "../shared/Marquee";
+import { motion } from "framer-motion";
 
 
 const linkedinTestimonials = [
@@ -152,7 +154,13 @@ const Testimonials = () => {
           center
         />
 
-        <div className="relative">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="relative"
+        >
           <Marquee pauseOnHover className="[--duration:40s] [mask-image:linear-gradient(to_right,transparent,black,transparent)]">
             {twitterTestimonials.map((testimonial) => (
               <SingleTestimonial key={testimonial.handle} testimonial={testimonial} />
@@ -163,7 +171,7 @@ const Testimonials = () => {
               <SingleTestimonial key={testimonial.username} testimonial={testimonial} />
             ))}
           </Marquee>
-        </div>
+        </motion.div>
       </div>
       <div className="absolute right-0 top-5 z-[-1]">
         <svg

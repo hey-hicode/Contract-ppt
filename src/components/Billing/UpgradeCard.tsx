@@ -1,72 +1,42 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "~/components/ui/button";
-import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Button } from "~/components/ui/button";
+import { Bot, Sparkles } from "lucide-react";
 
 export default function UpgradeCard() {
-  // const [loading, setLoading] = useState(false);
-  // const [error, setError] = useState<string | null>(null);
-
-  // const handleUpgrade = async () => {
-  //   if (loading) return;
-
-  //   setLoading(true);
-  //   setError(null);
-
-  //   try {
-  //     const res = await fetch("/api/stripe/checkout", {
-  //       method: "POST",
-  //     });
-
-  //     if (!res.ok) {
-  //       const text = await res.text();
-  //       throw new Error(text || "Failed to start checkout");
-  //     }
-
-  //     const data = await res.json();
-
-  //     if (!data?.url) {
-  //       throw new Error("Invalid checkout session");
-  //     }
-
-  //     window.location.href = data.url;
-  //   } catch (err) {
-  //     console.error("Upgrade error:", err);
-  //     setError("Unable to start checkout. Please try again.");
-  //     setLoading(false);
-  //   }
-  // };
-
   const router = useRouter();
 
   return (
-    <div className="p-8 border rounded-2xl bg-white text-center max-w-xl mx-auto">
-      <h2 className="text-2xl font-bold">Premium feature 🔒</h2>
+    <div className="w-full max-w-xl p-10 bg-white/90 border border-gray-200/50 rounded-xl shadow-[.5] relative overflow-hidden backdrop-blur-xl text-center mx-4">
+      {/* Decorative elements */}
+      <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl opacity-50" />
+      <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl opacity-50" />
 
-      <p className="mt-2 text-slate-600">
-        Upgrade to premium to unlock AI chat, advanced contract analysis, and
-        unlimited conversations.
-      </p>
+      <div className="relative z-10 py-10">
 
-      <Button
-        onClick={() => router.push("/pricing")}
-        // disabled={loading}
-        className="mt-6 px-8 text-white"
-      >
-        {/* {loading ? (
-          <span className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Redirecting…
-          </span>
-        ) : (
-          "Upgrade to Premium"
-        )} */}
-        Upgrade to Premium
-      </Button>
 
-      {/* {error && <p className="mt-3 text-sm text-red-600">{error}</p>} */}
+
+        <h2 className="text-3xl font-semibold text-gray-900 mb-4 tracking-tight">
+          Unlock AI Legal Analyst 🔒
+        </h2>
+
+        <p className="text-gray-600 mb-10 text-sm leading-relaxed max-w-sm mx-auto font-medium">
+          Upgrade to premium to unlock real-time AI chat, deep contract
+          analysis, and unlimited legal consultations.
+        </p>
+
+        <Button
+          onClick={() => router.push("/pricing")}
+          className="w-full h-12 bg-primary  max-w-sm hover:bg-primary/90 text-white font-medium text-sm rounded-xl shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+        >
+          Upgrade to Premium
+        </Button>
+
+        <p className="mt-6 text-xs text-gray-400 font-medium">
+          Cancel anytime. Starting from $3/month.
+        </p>
+      </div>
     </div>
   );
 }

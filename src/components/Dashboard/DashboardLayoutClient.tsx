@@ -91,7 +91,12 @@ export default function DashboardLayoutClient({
         <div className="min-h-screen bg-[#F7F9FC] dark:bg-black text-black dark:text-white">
             <div className="flex">
                 {/* Desktop Sidebar */}
-                <aside className="hidden lg:sticky lg:top-0 lg:flex lg:flex-col lg:w-[15%] lg:shrink-0 lg:h-screen border-r border-white/10 bg-white dark:bg-gray-dark px-4">
+                <motion.aside
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                    className="hidden lg:sticky lg:top-0 lg:flex lg:flex-col lg:w-[15%] lg:shrink-0 lg:h-screen border-r border-white/10 bg-white dark:bg-gray-dark px-4"
+                >
                     <Image
                         src="/images/logo/Counselor.png"
                         alt="logo"
@@ -124,7 +129,7 @@ export default function DashboardLayoutClient({
                     </nav>
 
                     <PlanCard />
-                </aside>
+                </motion.aside>
 
                 {/* Main Content */}
                 <main className="flex-1 min-w-0">

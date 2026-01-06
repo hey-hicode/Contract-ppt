@@ -62,6 +62,8 @@ interface ContractItem {
   playbook?: string;
 }
 
+import { motion, AnimatePresence } from "framer-motion";
+
 const Contracts = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterRisk, setFilterRisk] = useState("all");
@@ -193,9 +195,19 @@ const Contracts = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F9FC] p-4 space-y-6" onClick={() => setShowColumnMenu(false)}>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-[#F7F9FC] p-4 space-y-6"
+      onClick={() => setShowColumnMenu(false)}
+    >
       {/* Header */}
-      <div className="flex items-center  p-4 justify-between">
+      <motion.div
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.1 }}
+        className="flex items-center p-4 justify-between"
+      >
         <p className="text-sm text-gray-500 font-medium">
           Showing {filteredContracts.length} of {contracts.length} Contracts
         </p>
@@ -215,10 +227,15 @@ const Contracts = () => {
             <UploadCloud className="h-4 w-4" />
           </Button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Filter Bar */}
-      <div className="bg-white rounded-md p-4 shadow-none border border-gray-100 space-y-4">
+      <motion.div
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="bg-white rounded-md p-4 shadow-none border border-gray-100 space-y-4"
+      >
         <div className="flex flex-col md:flex-row gap-4 justify-between">
           <div className="flex items-center gap-3 flex-1">
             <div className="relative flex-1 max-w-md">
@@ -287,27 +304,41 @@ const Contracts = () => {
 
         {/* Active Filters Mock */}
         <div className="flex items-center gap-2 flex-wrap">
-          {filterRisk !== "all" && (
-            <div className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-600 border border-gray-200">
-              Risk: {filterRisk}{" "}
-              <X
-                className="w-3 h-3 cursor-pointer hover:text-gray-900"
-                onClick={() => setFilterRisk("all")}
-              />
-            </div>
-          )}
-          {searchQuery && (
-            <div className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-600 border border-gray-200">
-              Search: {searchQuery}{" "}
-              <X
-                className="w-3 h-3 cursor-pointer hover:text-gray-900"
-                onClick={() => setSearchQuery("")}
-              />
-            </div>
-          )}
+          <AnimatePresence>
+            {filterRisk !== "all" && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-600 border border-gray-200"
+              >
+                Risk: {filterRisk}{" "}
+                <X
+                  className="w-3 h-3 cursor-pointer hover:text-gray-900"
+                  onClick={() => setFilterRisk("all")}
+                />
+              </motion.div>
+            )}
+            {searchQuery && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-gray-100 text-xs font-medium text-gray-600 border border-gray-200"
+              >
+                Search: {searchQuery}{" "}
+                <X
+                  className="w-3 h-3 cursor-pointer hover:text-gray-900"
+                  onClick={() => setSearchQuery("")}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {(filterRisk !== "all" || searchQuery) && (
-            <button
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               className="text-xs font-semibold text-blue-600 hover:text-blue-700 ml-2 uppercase tracking-wide"
               onClick={() => {
                 setFilterRisk("all");
@@ -315,10 +346,10 @@ const Contracts = () => {
               }}
             >
               Clear Filters
-            </button>
+            </motion.button>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {loading && (
         <div className="flex items-center justify-center py-12">
@@ -336,7 +367,11 @@ const Contracts = () => {
       )}
 
       {!loading && !error && (
-        <>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
           {viewMode === "kanban" ? (
             <ContractKanban
               items={tableItems}
@@ -351,7 +386,7 @@ const Contracts = () => {
               grouping={grouping}
             />
           )}
-        </>
+        </motion.div>
       )}
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -387,7 +422,7 @@ const Contracts = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </motion.div>
   );
 };
 
