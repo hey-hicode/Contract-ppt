@@ -1,10 +1,18 @@
+"use client";
 import { Feature } from "~/types/feature";
+import { motion } from "framer-motion";
 
 const SingleFeature = ({ feature }: { feature: Feature }) => {
   const { icon, title, paragraph } = feature;
   return (
-    <div className="w-full">
-      <div className="wow fadeInUp" data-wow-delay=".15s">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5 }}
+      className="w-full"
+    >
+      <div>
         <div className="bg-primary/10 text-primary mb-10 flex h-[70px] w-[70px] items-center justify-center rounded-md">
           {icon}
         </div>
@@ -15,7 +23,7 @@ const SingleFeature = ({ feature }: { feature: Feature }) => {
           {paragraph}
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

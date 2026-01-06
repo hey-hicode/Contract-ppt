@@ -43,9 +43,10 @@ export default function RootLayout({
         <body className={`bg-[#FCFCFC] dark:bg-black`}>
           <Toaster
             position="top-right"
+
             toastOptions={{
               className:
-                "border  bg-white text-sm t  ",
+                "border  bg-white z-[9999] text-sm t  ",
             }}
           />
           <AppChrome>{children}</AppChrome>

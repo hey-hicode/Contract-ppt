@@ -8,6 +8,7 @@ import OfferList from "~/components/Pricing/OfferList";
 import { BillingPlan, PRICING } from "~/components/Pricing/pricing.config";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { motion } from "framer-motion";
 
 type PricingClientProps = {
   currentPlan: "free" | "premium" | "enterprise";
@@ -94,7 +95,7 @@ const PricingClient = ({ currentPlan }: PricingClientProps) => {
   const enterpriseState = getPlanState(currentPlan, "enterprise");
 
   return (
-    <section id="pricing" className="relative z-10 py-16 md:py-20 lg:py-28">
+    <section id="pricing" className="relative z-10 py-16 md:py-20 lg:py-36">
       <div className="container">
         <SectionTitle
           title="Simple and Affordable Pricing"
@@ -108,8 +109,8 @@ const PricingClient = ({ currentPlan }: PricingClientProps) => {
             <span
               onClick={() => setIsMonthly(true)}
               className={`${isMonthly
-                  ? "pointer-events-none text-primary"
-                  : "text-dark dark:text-white"
+                ? "pointer-events-none text-primary"
+                : "text-dark dark:text-white"
                 } mr-4 cursor-pointer text-base font-semibold`}
             >
               Monthly
@@ -131,8 +132,8 @@ const PricingClient = ({ currentPlan }: PricingClientProps) => {
             <span
               onClick={() => setIsMonthly(false)}
               className={`${isMonthly
-                  ? "text-dark dark:text-white"
-                  : "pointer-events-none text-primary"
+                ? "text-dark dark:text-white"
+                : "pointer-events-none text-primary"
                 } ml-4 cursor-pointer text-base font-semibold`}
             >
               Yearly
@@ -140,50 +141,81 @@ const PricingClient = ({ currentPlan }: PricingClientProps) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
-          <PricingNewBox
-            packageName="Free"
-            price="0"
-            duration="mo"
-            subtitle="Perfect for trying out our AI contract analysis"
-            actionState={freeState}
-            onSelect={() => handleSelectPlan("free")}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, staggerChildren: 0.1 }}
+          className="grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-2 lg:grid-cols-3"
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <OfferList text="1 contract analyses per month" status="active" />
-            <OfferList text="Basic risk detection" status="active" />
-            <OfferList text="PDF upload support" status="active" />
-            <OfferList text="Email Support" status="active" />
-            <OfferList text="Standard processing speed" status="inactive" />
-          </PricingNewBox>
-          <PricingNewBox
-            packageName="Plus"
-            price={isMonthly ? "3" : "30"}
-            duration={isMonthly ? "mo" : "yr"}
-            actionState={premiumState}
-            loading={loadingPlan === (isMonthly ? "monthly" : "yearly")}
-            onSelect={() => handleSelectPlan(isMonthly ? "monthly" : "yearly")}
+            <PricingNewBox
+              packageName="Free"
+              price="0"
+              duration={isMonthly ? "month" : "year"}
+              subtitle="Perfect for understanding what’s inside your contract before you sign."
+              actionState={freeState}
+              onSelect={() => handleSelectPlan("free")}
+            >
+              <OfferList text="3 contract analyses per month" status="active" />
+              <OfferList text="Basic risk detection" status="active" />
+              <OfferList text="PDF upload support" status="active" />
+              <OfferList text="Email Support" status="active" />
+              <OfferList text="Standard processing speed" status="inactive" />
+            </PricingNewBox>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <OfferList text="5 contract analyses per month" status="active" />
-            <OfferList text="Advanced risk detection" status="active" />
-            <OfferList text="Multiple file format support" status="active" />
-            <OfferList text="Priority email support" status="active" />
-            <OfferList text="Fast processing speed" status="active" />
-          </PricingNewBox>
-          <PricingNewBox
-            packageName="Enterprise"
-            custom
-            actionState={enterpriseState}
-            subtitle="For large organizations with advanced needs"
-            onSelect={() => handleSelectPlan("enterprise")}
+            <PricingNewBox
+              packageName="Plus"
+              price={isMonthly ? "20" : "200"}
+              duration={isMonthly ? "month" : "yearr"}
+              subtitle="Ideal for Creative professionals including models, influencers/content creators, and performers."
+              actionState={premiumState}
+              loading={loadingPlan === (isMonthly ? "monthly" : "yearly")}
+              onSelect={() => handleSelectPlan(isMonthly ? "monthly" : "yearly")}
+            >
+              <OfferList text="Unlimited contract analyses" status="active" />
+              <OfferList text="Advanced risk detection" status="active" />
+              <OfferList text="Counselr Chat" status="active" />
+              <OfferList text="Priority email support" status="active" />
+              <OfferList text="Fast processing speed" status="active" />
+              <OfferList text="PDF & Docx upload support" status="active" />
+            </PricingNewBox>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <OfferList text="Unlimited contract analyses" status="active" />
-            <OfferList text="White-labeled solution" status="active" />
-            <OfferList text="24/7 phone & email support" status="active" />
-            <OfferList text="Lightning-fast processing" status="active" />
-            <OfferList text="Custom AI model training" status="active" />
-            <OfferList text="SDK" status="active" />
-          </PricingNewBox>
-        </div>
+            <PricingNewBox
+              packageName="Enterprise"
+
+              subtitle="If this Plans don't fit.Lets create one that suits your needs."
+              custom
+              actionState={enterpriseState}
+
+              onSelect={() => handleSelectPlan("enterprise")}
+            >
+              <OfferList text="Unlimited contract analyses" status="active" />
+              <OfferList text="Custom AI model training" status="active" />
+              <OfferList text="24/7 phone & email support" status="active" />
+              <OfferList text="Lightning-fast processing" status="active" />
+              <OfferList text="Custom AI model training" status="active" />
+              <OfferList text="SDK" status="active" />
+            </PricingNewBox>
+          </motion.div>
+        </motion.div>
       </div>
 
       <div className="absolute bottom-0 left-0 z-[-1]">

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import SectionTitle from "../shared/SectionTitle";
 import VideoModal from "../video-modal";
+import { motion } from "framer-motion";
 
 export default function Video() {
   const [isOpen, setOpen] = useState(false);
@@ -15,12 +16,18 @@ export default function Video() {
           <SectionTitle
             width="700px"
             title="We are ready to help"
-            paragraph=" Counselr decodes complex agreements into clear rights, financial obligations, and risk,helping businesses negotiate with confidence"
+            paragraph=" Counselr decodes complex agreements into clear rights, financial obligations, and risk, helping businesses negotiate with confidence"
             center
             mb="80px"
           />
         </div>
-        <div className="relative overflow-hidden">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="relative overflow-hidden"
+        >
           <div className="-mx-4 flex flex-wrap">
             <div className="w-full px-4">
               <div className="mx-auto max-w-[770px] overflow-hidden rounded-md">
@@ -32,7 +39,9 @@ export default function Video() {
                     fill
                   />
                   <div className="absolute top-0 right-0 flex h-full w-full items-center justify-center">
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
                       aria-label="video play button"
                       onClick={() => setOpen(true)}
                       className="text-primary flex h-[70px] w-[70px] items-center justify-center rounded-full bg-white/75 transition hover:bg-white"
@@ -45,7 +54,7 @@ export default function Video() {
                       >
                         <path d="M15.5 8.13397C16.1667 8.51888 16.1667 9.48112 15.5 9.86602L2 17.6603C1.33333 18.0452 0.499999 17.564 0.499999 16.7942L0.5 1.20577C0.5 0.43597 1.33333 -0.0451549 2 0.339745L15.5 8.13397Z" />
                       </svg>
-                    </button>
+                    </motion.button>
                   </div>
                 </div>
               </div>
@@ -56,7 +65,7 @@ export default function Video() {
             {/* <div className="absolute bottom-0 left-0 right-0 z-[-1] "> */}
             {/* <img src="/images/video/shape.svg" alt="shape" className="w-full" /> */}
           </div>
-        </div>
+        </motion.div>
       </section>
 
       <VideoModal
