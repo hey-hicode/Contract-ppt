@@ -437,7 +437,9 @@ function StepSummary({ data }: { data: OnboardingData }) {
       <div className="text-center mb-8">
         <Sparkles className="w-16 h-16 text-blue-600 mx-auto mb-4" />
         <h1 className="text-2xl font-bold">All set!</h1>
-        <p className="text-gray-600 mt-4">Here's what we learned about you:</p>
+        <p className="text-gray-600 mt-4">
+          Here&apos;s what we learned about you:
+        </p>
       </div>
 
       <div className="space-y-6 bg-white p-8 rounded-2xl shadow-sm border">
