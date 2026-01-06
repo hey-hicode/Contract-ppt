@@ -42,7 +42,7 @@ const Header = () => {
     <>
       <header
         className={`header top-0 left-0  backdrop-blur-sm z-40 flex w-full items-center ${sticky
-          ? "dark:bg-gray-dark dark:shadow-sticky-dark shadow-sticky fixed z-9999 bg-white/80 border-0 backdrop-blur-xs transition"
+          ? "dark:bg-gray-dark dark:shadow-sticky-dark shadow-sticky fixed  bg-white/80 border-0 backdrop-blur-xs transition"
           : "absolute bg-transparent"
           }`}
       >
