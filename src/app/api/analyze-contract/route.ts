@@ -7,6 +7,8 @@ import {
   getOrCreateUserPlan,
   incrementUsage,
 } from "~/lib/freemium";
+import { supabase } from "~/lib/supabaseClient";
+import { buildContractAnalysisPrompt } from "~/lib/prompts/contractAnalysisPrompt";
 
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
@@ -21,8 +23,8 @@ type OpenRouterChoice = {
   message?: {
     role?: string;
     content?:
-    | string
-    | Array<{ type: string; text?: string } | { content?: string }>;
+      | string
+      | Array<{ type: string; text?: string } | { content?: string }>;
   };
 };
 
@@ -51,69 +53,16 @@ type OpenRouterResponse = {
 
 const DEFAULT_MODEL = "anthropic/claude-3.5-sonnet:beta";
 
-const SYSTEM_PROMPT = `
-You are a legal contract analyst, lawyer, and attorney representing creators, freelancers, and influencers.
-Analyze the contract text and return ONLY a JSON object in the exact format below:
-
-{
-  "redFlags": [
-    {
-      "type": "critical|warning|minor",
-      "title": "Title of issue",
-      "description": "Concise explanation of why this is problematic",
-      "clause": "Exact text from the contract",
-      "recommendation": "Clear guidance on how to address or mitigate this issue"
-    }
-  ],
-  "overallRisk": "low|medium|high",
-  "summary": "3–4 sentence overview of the contract highlighting key risks and concerns",
-  "recommendations": ["Recommendation 1", "Recommendation 2"],
-  "dealParties": ["Party A", "Party B"],
-  "companiesInvolved": ["Company X", "Company Y"],
-  "dealRoom": "Inferred context (e.g., Sales, HR, M&A, Procurement, Legal)",
-  "playbook": "Inferred standard (e.g., Standard NDA, Vendor Agreement, Employment Contract, SaaS Agreement)"
-}
-
-Rules:
-- Include a maximum of 10 redFlags.
-- Keep descriptions concise and explanatory.
-- Return ONLY valid JSON. No markdown, no extra text.
-- Extract "dealParties" as the main signing entities.
-- Extract "companiesInvolved" as all corporate entities mentioned.
-- Infer "dealRoom" based on the department likely handling this (Sales, HR, etc.).
-- Infer "playbook" based on the contract type.
-
-Evaluate the contract for:
-- Rights and obligations balance
-- Compensation, payment timing, and deductions
-- Deliverables, scope, revisions, and acceptance criteria
-- Intellectual property ownership and assignment
-- Usage rights, sublicensing, and modification rights
-- Territory, platform, and audience scope
-- Duration, term, and post-termination rights
-- Confidentiality scope, exclusions, and duration
-- Exclusivity, non-compete, and conflict restrictions
-- Indemnification, liability allocation, and caps
-- Termination rights, notice, and consequences
-- Renewal and auto-renewal terms
-- FTC, advertising, and disclosure compliance
-- Moral rights and attribution/credit
-- Approval rights and content control
-- Data protection, privacy, and user data ownership
-- Warranties and representations
-- Dispute resolution, governing law, and jurisdiction
-- Force majeure and change-of-control clauses
-- Payment clawbacks, refunds, and chargebacks
-- Audit, reporting, and transparency obligations
-`;
-
-
 /* --------------------------
    Helper: resilient content normalizer
    -------------------------- */
 type MaybeText = { text?: string; content?: string };
 function isMaybeText(obj: unknown): obj is MaybeText {
-  return !!obj && typeof obj === "object" && ("text" in (obj as MaybeText) || "content" in (obj as MaybeText));
+  return (
+    !!obj &&
+    typeof obj === "object" &&
+    ("text" in (obj as MaybeText) || "content" in (obj as MaybeText))
+  );
 }
 
 const normalizeContentToText = (content: unknown): string => {
@@ -124,9 +73,7 @@ const normalizeContentToText = (content: unknown): string => {
       .map((item) => {
         if (typeof item === "string") return item;
         if (item === null || typeof item !== "object") return "";
-        return isMaybeText(item)
-          ? item.text ?? item.content ?? ""
-          : "";
+        return isMaybeText(item) ? item.text ?? item.content ?? "" : "";
       })
       .join("")
       .trim();
@@ -323,6 +270,21 @@ export async function POST(req: NextRequest) {
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const { data: userProfile } = await supabase
+    .from("user_profiles")
+    .select("role, goals, contract_types, risk_tolerance")
+    .eq("clerk_id", userId)
+    .single();
+
+  const userContext = userProfile
+    ? {
+        role: userProfile.role,
+        goals: userProfile.goals,
+        contractTypes: userProfile.contract_types,
+        riskTolerance: userProfile.risk_tolerance,
+      }
+    : undefined;
   // 1️⃣ Load or create plan
   const plan = await getOrCreateUserPlan(userId);
 
@@ -379,10 +341,13 @@ export async function POST(req: NextRequest) {
   if (heuristic.verdict === "uncertain") {
     // classifier code omitted for brevity - reuse classifyWithModel if you want
   }
+  const systemPrompt = buildContractAnalysisPrompt(userContext);
 
   // Build analysis prompt
   const userPrompt = `
 Document: ${documentName ?? "Unnamed contract"}
+
+
 
 ${instructions ?? ""}
 
@@ -408,7 +373,7 @@ ${text}
         messages: [
           {
             role: "system",
-            content: SYSTEM_PROMPT,
+            content: systemPrompt,
           },
           {
             role: "user",

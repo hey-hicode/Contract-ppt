@@ -4,11 +4,6 @@ import SectionTitle from "../shared/SectionTitle";
 import OfferList from "./OfferList";
 import PricingBox from "./PricingBox";
 
-const PRICES = {
-  monthly: process.env.STRIPE_PRICE_PREMIUM_MONTHLY!,
-  yearly: process.env.STRIPE_PRICE_PREMIUM_YEARLY!,
-};
-
 const Pricing = () => {
   const [isMonthly, setIsMonthly] = useState(true);
 

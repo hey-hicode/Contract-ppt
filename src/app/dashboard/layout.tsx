@@ -1,29 +1,27 @@
 import { auth } from "@clerk/nextjs/server";
-import { createClient } from "@supabase/supabase-js";
-import { Database } from "~/types/supabase";
+import { redirect } from "next/navigation";
 import DashboardLayoutClient from "~/components/Dashboard/DashboardLayoutClient";
-
-const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { supabase } from "~/lib/supabaseClient";
 
 type UserPlanRow = {
   plan: "free" | "premium";
   free_quota: number;
   used_quota: number;
 };
+type UserProfileRow = {
+  onboarding_complete: boolean;
+};
 
 async function getUserPlan(userId: string) {
-  const { data: plan, error: planErr } = await supabase
+  const { data, error } = await supabase
     .from("user_plans")
     .select("plan, free_quota, used_quota")
     .eq("clerk_user_id", userId)
     .single<UserPlanRow>();
 
-  if (planErr || !plan) {
-    console.error("Supabase plan error:", planErr);
-    // Return default/fallback plan if error
+  if (error || !data) {
+    console.error("Supabase plan error:", error);
+
     return {
       plan: "free" as const,
       free_quota: 5,
@@ -33,12 +31,12 @@ async function getUserPlan(userId: string) {
   }
 
   const remainingCredits =
-    plan.plan === "premium"
+    data.plan === "premium"
       ? Infinity
-      : Math.max(plan.free_quota - plan.used_quota, 0);
+      : Math.max(data.free_quota - data.used_quota, 0);
 
   return {
-    ...plan,
+    ...data,
     remainingCredits,
   };
 }
@@ -50,11 +48,24 @@ export default async function DashboardLayout({
 }) {
   const { userId } = await auth();
 
-  // If no user, we can't fetch plan, but middleware should handle auth.
-  // We'll pass a default or empty state if userId is missing (though unlikely here).
-  const userPlan = userId
-    ? await getUserPlan(userId)
-    : { plan: "free" as const, free_quota: 5, used_quota: 0, remainingCredits: 5 };
+  // 🔒 HARD AUTH GUARD
+  if (!userId) {
+    redirect("/");
+  }
+
+  // 🔍 Onboarding check
+  const { data: profile, error } = await supabase
+    .from("user_profiles")
+    .select("onboarding_complete")
+    .eq("clerk_id", userId)
+    .single<UserProfileRow>();
+
+  if (error || !profile || !profile.onboarding_complete) {
+    redirect("/onboarding");
+  }
+
+  // 💳 Plan check
+  const userPlan = await getUserPlan(userId);
 
   return (
     <DashboardLayoutClient userPlan={userPlan}>
