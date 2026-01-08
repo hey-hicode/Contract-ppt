@@ -34,7 +34,7 @@ export default function UpgradeCard() {
         </Button>
 
         <p className="mt-6 text-xs text-gray-400 font-medium">
-          Cancel anytime. Starting from $3/month.
+          Cancel anytime. Starting from $20/month.
         </p>
       </div>
     </div>

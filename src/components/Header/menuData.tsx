@@ -1,4 +1,5 @@
 import { Menu } from "~/types/menu";
+import { Home, Info, BookOpen, Phone } from "lucide-react";
 
 export const menuData: Menu[] = [
   {
@@ -6,24 +7,28 @@ export const menuData: Menu[] = [
     title: "Home",
     path: "/",
     newTab: false,
+    icon: Home,
   },
   {
     id: 2,
     title: "About",
     path: "#about",
     newTab: false,
+    icon: Info,
   },
   {
     id: 33,
     title: "Blog",
     path: "/blog",
     newTab: false,
+    icon: BookOpen,
   },
   {
     id: 3,
     title: "Support",
     path: "/contact",
     newTab: false,
+    icon: Phone,
   },
   // {
   //   id: 4,
