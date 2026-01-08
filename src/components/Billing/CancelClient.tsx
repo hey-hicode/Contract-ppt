@@ -27,15 +27,7 @@ export default function BillingCancelClient({
 
         <div className="mt-6 flex flex-col gap-3">
           {!isPremium && (
-            <Button
-              onClick={async () => {
-                const res = await fetch("/api/stripe/checkout", {
-                  method: "POST",
-                });
-                const data = await res.json();
-                window.location.href = data.url;
-              }}
-            >
+            <Button onClick={() => router.push("/pricing")}>
               Try upgrading again
             </Button>
           )}

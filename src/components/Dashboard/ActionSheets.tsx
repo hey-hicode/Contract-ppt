@@ -1,6 +1,6 @@
 "use client";
 import React, { useMemo, useState } from "react";
-import { Mail, MessageCircle, Save, Lock } from "lucide-react";
+import { Mail, Save, Lock, Bot } from "lucide-react";
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
 import {
@@ -143,7 +143,7 @@ export default function ActionSheets({
             onClick={handleChatClick}
             title="Chat about this contract"
           >
-            <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
+            <Bot />
           </Button>
         )}
 
