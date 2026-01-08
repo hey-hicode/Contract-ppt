@@ -61,12 +61,15 @@ export default function AnalyzerResultsPage() {
   const router = useRouter();
   const analysis = data?.analysis ?? null;
 
-  const generateEmailContent = useCallback((analysis: AnalysisResult) => {
-    const subject = `Legal Review: Contract Analysis Report - ${data?.sourceTitle || "Untitled"
+  const generateEmailContent = useCallback(
+    (analysis: AnalysisResult) => {
+      const subject = `Legal Review: Contract Analysis Report - ${
+        data?.sourceTitle || "Untitled"
       }`;
-    const content = `Dear [Recipient Name],
+      const content = `Dear [Recipient Name],
 
-I have reviewed the contract "${data?.sourceTitle || "Untitled"
+I have reviewed the contract "${
+        data?.sourceTitle || "Untitled"
       }" and would like to share the following analysis.
 
 EXECUTIVE SUMMARY
@@ -81,23 +84,25 @@ Total Issues Identified: ${analysis.redFlags?.length}
 KEY RECOMMENDATIONS
 ------------------
 ${analysis.recommendations
-        .slice(0, 5)
-        .map((rec, index) => `${index + 1}. ${rec}`)
-        .join("\n")}
+  .slice(0, 5)
+  .map((rec, index) => `${index + 1}. ${rec}`)
+  .join("\n")}
 
 CRITICAL ISSUES
 ------------------
 ${analysis.redFlags
-        .filter((flag) => flag.type === "critical")
-        .map((flag, index) => `${index + 1}. ${flag.title}: ${flag.description}`)
-        .join("\n")}
+  .filter((flag) => flag.type === "critical")
+  .map((flag, index) => `${index + 1}. ${flag.title}: ${flag.description}`)
+  .join("\n")}
 
 Please let me know if you would like to discuss these findings in more detail.
 
 Best regards,
 [Your Name]`;
-    return { subject, content };
-  }, [data?.sourceTitle]);
+      return { subject, content };
+    },
+    [data?.sourceTitle]
+  );
 
   useEffect(() => {
     try {
@@ -156,8 +161,6 @@ Best regards,
         return "text-slate-700 bg-slate-50 border-slate-200";
     }
   };
-
-
 
   const handleSendEmail = () => {
     trackFeatureUsage("email_sent");
@@ -225,7 +228,9 @@ Best regards,
       trackFeatureUsage("analysis_saved");
     } catch (err) {
       console.error("save error:", err);
-      setErrorMsg(err instanceof Error ? err.message : "Failed to save analysis");
+      setErrorMsg(
+        err instanceof Error ? err.message : "Failed to save analysis"
+      );
     } finally {
       setSaving(false);
     }
@@ -312,7 +317,7 @@ Best regards,
               <div className="flex flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
                 <div
                   className={cn(
-                    "px-3 sm:px-4 py-2 rounded-md font-bold border flex items-center justify-center gap-2 font-medium text-center",
+                    "px-3 sm:px-4 py-2 rounded-md border flex items-center justify-center gap-2 font-medium text-center",
                     getRiskColor(analysis!.overallRisk)
                   )}
                 >
@@ -349,9 +354,7 @@ Best regards,
                   {saving ? (
                     <span className="animate-pulse">Saving...</span>
                   ) : savedId ? (
-                    <>
-                      Saved
-                    </>
+                    <>Saved</>
                   ) : (
                     <>Save</>
                   )}
@@ -360,7 +363,9 @@ Best regards,
                   size="lg"
                   className="text-white w-full sm:w-auto"
                   onClick={() => {
-                    const el = document.getElementById("analysis-report-content");
+                    const el = document.getElementById(
+                      "analysis-report-content"
+                    );
                     if (el) {
                       trackFeatureUsage("report_downloaded");
                       void downloadElementAsPdf(
@@ -399,8 +404,8 @@ Best regards,
                   analysis!.overallRisk === "high"
                     ? "text-red-500"
                     : analysis!.overallRisk === "medium"
-                      ? "text-amber-500"
-                      : "text-emerald-500"
+                    ? "text-amber-500"
+                    : "text-emerald-500"
                 )}
               />
             </CardHeader>
@@ -534,8 +539,8 @@ Best regards,
                         flag.type === "critical"
                           ? "border-l-red-500"
                           : flag.type === "warning"
-                            ? "border-l-amber-500"
-                            : "border-l-blue-500"
+                          ? "border-l-amber-500"
+                          : "border-l-blue-500"
                       )}
                     >
                       <CardHeader className="pb-2">
@@ -552,8 +557,8 @@ Best regards,
                               flag.type === "critical"
                                 ? "text-red-700 border-red-200 bg-red-50"
                                 : flag.type === "warning"
-                                  ? "text-amber-700 border-amber-200 bg-amber-50"
-                                  : "text-blue-700 border-blue-200 bg-blue-50"
+                                ? "text-amber-700 border-amber-200 bg-amber-50"
+                                : "text-blue-700 border-blue-200 bg-blue-50"
                             )}
                           >
                             {flag.type}

@@ -1,11 +1,10 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { extractText } from "unpdf";
+import mammoth from "mammoth";
 
-export const config = {
-  api: {
-    bodyParser: false, // Disable Next.js body parser for file uploads
-  },
-};
+export const dynamic = "force-dynamic";
+
+const MIN_TEXT_LENGTH = 50;
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,56 +18,101 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (file.type !== "application/pdf") {
+    const mime = file.type;
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    let text = "";
+
+    /* ------------------------
+       PDF
+       ------------------------ */
+    if (mime === "application/pdf") {
+      try {
+        const { text: extractedText } = await extractText(
+          new Uint8Array(buffer)
+        );
+        text = String(extractedText || "");
+      } catch (err) {
+        return NextResponse.json(
+          {
+            error: "Failed to extract text from PDF.",
+            code: "PDF_EXTRACTION_FAILED",
+          },
+          { status: 500 }
+        );
+      }
+    } else if (
+
+    /* ------------------------
+       DOCX
+       ------------------------ */
+      mime ===
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ) {
+      try {
+        const result = await mammoth.extractRawText({ buffer });
+        text = result.value || "";
+      } catch (err) {
+        return NextResponse.json(
+          {
+            error: "Failed to extract text from DOCX.",
+            code: "DOCX_EXTRACTION_FAILED",
+          },
+          { status: 500 }
+        );
+      }
+    } else if (mime === "text/plain" || mime === "text/markdown") {
+
+    /* ------------------------
+       TXT / MD
+       ------------------------ */
+      text = buffer.toString("utf-8");
+    } else {
+
+    /* ------------------------
+       Unsupported
+       ------------------------ */
       return NextResponse.json(
-        { error: "Only PDF files are supported.", code: "INVALID_FILE_TYPE" },
+        {
+          error:
+            "Unsupported file type. Please upload a PDF, DOCX, or TXT file.",
+          code: "UNSUPPORTED_FILE_TYPE",
+          supported: ["pdf", "docx", "txt", "md"],
+        },
         { status: 400 }
       );
     }
 
-    const arrayBuffer = await file.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
-
-    let text = "";
-    try {
-      const { text: extractedText } = await extractText(uint8Array);
-      text = String(extractedText || "");
-    } catch (extractionError: unknown) {
-      console.error("PDF text extraction failed:", extractionError);
-      return NextResponse.json(
-        {
-          error: "Failed to extract text from PDF.",
-          details:
-            extractionError instanceof Error
-              ? extractionError.message
-              : String(extractionError),
-          code: "EXTRACTION_FAILED",
-        },
-        { status: 500 }
-      );
-    }
-
-    if (!text || text.trim().length < 50) {
-      // Arbitrary minimum text length
+    /* ------------------------
+       Validation
+       ------------------------ */
+    if (!text || text.trim().length < MIN_TEXT_LENGTH) {
       return NextResponse.json(
         {
           error:
-            "No sufficient text could be extracted from the PDF. Please ensure it is not an image-only PDF or try copying the text manually.",
+            "No sufficient text could be extracted. The document may be image-based or empty.",
           code: "INSUFFICIENT_TEXT",
         },
         { status: 422 }
       );
     }
 
-    return NextResponse.json({ text }, { status: 200 });
+    return NextResponse.json(
+      {
+        text,
+        meta: {
+          fileType: mime,
+          chars: text.length,
+        },
+      },
+      { status: 200 }
+    );
   } catch (error: unknown) {
-    console.error("File upload API error:", error);
+    console.error("Upload error:", error);
     return NextResponse.json(
       {
         error:
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred during file upload.",
+          error instanceof Error ? error.message : "Unexpected upload error.",
       },
       { status: 500 }
     );
