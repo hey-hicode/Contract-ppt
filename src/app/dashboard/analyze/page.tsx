@@ -1,6 +1,5 @@
 "use client";
 
-
 import { useCallback, useEffect, useState } from "react";
 import {
   CheckCircle2,
@@ -21,8 +20,6 @@ import { Textarea } from "~/components/ui/textarea";
 import { useRouter } from "next/navigation";
 
 type UploadPhase = "idle" | "uploading" | "processing" | "completed" | "error";
-
-
 
 type ContractAnalysis = {
   summary: string;
@@ -116,7 +113,6 @@ export default function AnalyzePage() {
   const [isCopying, setIsCopying] = useState(false);
   const [analysisPhase, setAnalysisPhase] = useState<AnalysisPhase>("idle");
   const [, setAnalysisError] = useState<string | null>(null);
-
 
   const [selectedModel, setSelectedModel] = useState(
     "anthropic/claude-3.5-sonnet:beta"
@@ -246,7 +242,6 @@ export default function AnalyzePage() {
         title?: string;
       };
 
-
       setAnalysisPhase("ready");
       setSelectedModel(data.model);
       toast.success("Analysis complete.");
@@ -329,7 +324,6 @@ export default function AnalyzePage() {
         >
           <StatusIcon className={cn("size-4", spin && "animate-spin")} />
           <span className="hidden md:flex">{label}</span>
-
         </div>
       </header>
 
@@ -354,8 +348,6 @@ export default function AnalyzePage() {
               onProcessing={handleProcessing}
               onUploadComplete={handleUploadComplete}
               onUploadError={handleUploadError}
-              onFileRemoved={handleFileRemoved}
-
             />
           </section>
 
@@ -402,8 +394,8 @@ export default function AnalyzePage() {
                       {uploadPhase === "completed"
                         ? "Parsed"
                         : uploadPhase === "error"
-                          ? "Issue detected"
-                          : "Processing"}
+                        ? "Issue detected"
+                        : "Processing"}
                     </span>
                   </div>
                 </div>
@@ -427,8 +419,8 @@ export default function AnalyzePage() {
                     {parsedText
                       ? "Use this output in diligence checklists, summaries, and OpenRouter prompts."
                       : uploadPhase === "error"
-                        ? "We were unable to parse the file. Upload a new PDF and try again."
-                        : "The parsed result will be displayed here when ready."}
+                      ? "We were unable to parse the file. Upload a new PDF and try again."
+                      : "The parsed result will be displayed here when ready."}
                   </p>
                 </div>
                 <div className="flex gap-2 md:justify-end items-center">
@@ -446,8 +438,6 @@ export default function AnalyzePage() {
                     )}
                     Copy text
                   </Button>
-
-
 
                   {/* ANALYZE BUTTON */}
                   <Button

@@ -13,7 +13,7 @@ export default function AppChrome({ children }: { children: React.ReactNode }) {
     <>
       {!hideChrome && <Header />}
       <main className="flex-1">{children}</main>
-      {!hideChrome && <Footer />}
+      {/* {!hideChrome && <Footer />} */}
       {!hideChrome && <ScrollUp />}
     </>
   );
