@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { SignInButton, SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
@@ -44,12 +44,33 @@ const Hero = () => {
                   transition={{ delay: 0.6, duration: 0.8 }}
                   className="flex items-center justify-center flex-row space-x-4 sm:space-y-0"
                 >
-                  <Link
-                    href="/dashboard/analyze"
-                    className="rounded-md bg-primary px-8 py-3 text-base font-semibold text-white duration-300 ease-in-out hover:bg-primary/80"
+                  <SignUpButton
+                    mode="modal"
+                    forceRedirectUrl="/dashboard"
+                    appearance={{
+                      elements: {
+                        button: {
+                          borderRadius: "8px",
+                          padding: "8px 12px",
+                          fontSize: "14px",
+                          fontWeight: "600",
+                          color: "#fff",
+                          backgroundColor: "#4A6CF7",
+                          border: "none",
+                          cursor: "pointer",
+                          transition: "all 0.2s ease-in-out",
+                        },
+                      },
+                    }}
                   >
-                    Start analysis
-                  </Link>
+                    <Link
+                      href="/dashboard/analyze"
+                      className="rounded-md bg-primary px-8 py-3 text-base font-semibold text-white duration-300 ease-in-out hover:bg-primary/80"
+                    >
+                      Start analysis
+                    </Link>
+                  </SignUpButton>
+
                   <SignedOut>
                     <SignInButton
                       mode="modal"
@@ -73,6 +94,7 @@ const Hero = () => {
                     >
                       Sign In
                     </SignInButton>
+
                   </SignedOut>
                   <SignedIn>
                     <Link
