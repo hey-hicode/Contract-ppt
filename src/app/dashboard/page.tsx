@@ -180,7 +180,7 @@ export default async function DashboardPage() {
         {/* Welcome Banner */}
         <StaggerItem>
           <div
-            className="w-full flex flex-col mb-4 md:flex-row justify-between items-center px-4 sm:px-5 py-6 sm:py-8 lg:px-12 lg:py-9 bg-no-repeat lg:h-[200px] bg-cover bg-center l"
+            className="w-full flex flex-col mb-4 md:flex-row justify-between items-start md:items-center px-4 sm:px-5 py-6 sm:py-8 lg:px-12 lg:py-9 bg-no-repeat lg:h-[200px] bg-cover bg-center l"
             style={{ backgroundImage: "url('/icons/background.svg')" }}
           >
             <div className="mb-4 sm:mb-0">
@@ -193,7 +193,7 @@ export default async function DashboardPage() {
             </div>
             <Link
               href="/dashboard/analyze"
-              className="rounded-xl bg-white px-6 py-3 text-sm font-semibold text-primary shadow-sm transition-colors "
+              className="rounded-xl bg-white px-6 py-3 text-sm w-fit font-semibold text-primary shadow-sm transition-colors "
             >
               Upload Contract
             </Link>

@@ -27,12 +27,12 @@ const Header = () => {
   return (
     <>
       <header
-        className={`header fixed top-0 left-0 w-full z-40 transition-all duration-300 ${sticky
-            ? "bg-white/95 dark:bg-[#1d2430]/95 backdrop-blur-md shadow-md py-3"
-            : "bg-transparent py-5"
+        className={`header fixed top-6 left-1/2 -translate-x-1/2 w-[95%]  max-w-[1000px] z-50 transition-all duration-300 ${sticky
+          ? "py-2"
+          : "py-4"
           }`}
       >
-        <div className="container mx-auto px-4">
+        <div className={`mx-auto px-6 py-2 md:py-3 md:h-20 rounded-full transition-all duration-300 true-glass ${sticky ? "shadow-xl" : "shadow-lg"}`}>
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex-shrink-0">
@@ -41,46 +41,57 @@ const Header = () => {
                   src="/images/logo/Counselor.png"
                   alt="logo"
                   width={140}
-                  height={32}
-                  className="w-auto h-8"
+                  height={40}
+                  className=" "
                 />
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-10">
-              {menuData.map((item) => (
+            {/* Desktop Navigation Links */}
+            <nav className="hidden lg:flex items-center gap-8">
+              {menuData.map((menuItem) => (
                 <Link
-                  key={item.id}
-                  href={item.path || "#"}
-                  className={`text-base font-semibold transition-colors hover:text-primary ${usePathName === item.path
-                      ? "text-primary dark:text-white"
-                      : "text-dark dark:text-white/70"
+                  key={menuItem.id}
+                  href={menuItem.path || "#"}
+                  className={`text-sm font-medium transition-all hover:text-primary ${usePathName === menuItem.path
+                    ? "text-primary"
+                    : "text-dark dark:text-white/80"
                     }`}
                 >
-                  {item.title}
+                  {menuItem.title}
                 </Link>
               ))}
+            </nav>
 
+            {/* Desktop Action Buttons */}
+            <div className="hidden lg:flex items-center gap-6">
               <SignedOut>
                 <SignUpButton mode="modal">
-                  <button className="bg-primary hover:bg-primary/90 text-white px-7 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-95">
-                    Sign Up
+                  <button className="bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-2xl font-bold transition-all active:scale-95 text-sm shadow-md shadow-primary/20">
+                    Get Started
                   </button>
                 </SignUpButton>
+                <Link href="/signin" className="text-sm font-semibold text-dark dark:text-white/70 hover:text-primary transition-colors">
+                  Sign In
+                </Link>
               </SignedOut>
 
               <SignedIn>
+                <Link href="/dashboard" className="text-sm font-semibold text-dark dark:text-white/70 hover:text-primary transition-colors">
+                  Dashboard
+                </Link>
                 <UserButton appearance={{ elements: { avatarBox: "h-9 w-9 shadow-md" } }} />
               </SignedIn>
-            </nav>
+
+
+            </div>
 
             {/* Mobile Toggle */}
             <button
               onClick={navbarToggleHandler}
-              className="lg:hidden p-2 text-dark dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors"
+              className="lg:hidden p-2 text-dark dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors"
             >
-              <Menu size={28} />
+              <Menu size={24} />
             </button>
           </div>
         </div>
@@ -105,17 +116,19 @@ const Header = () => {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="absolute top-0 left-0 h-full w-[280px] bg-white dark:bg-[#1d2430] shadow-2xl flex flex-col overflow-hidden"
+              className="absolute top-0 left-0 h-full w-[280px] bg-white dark:bg-dark shadow-2xl flex flex-col overflow-hidden"
             >
               {/* Drawer Header */}
-              <div className="p-6 flex items-center justify-between border-b border-gray-100 dark:border-white/10 bg-white dark:bg-[#1d2430]">
-                <Image
-                  src="/images/logo/Counselor.png"
-                  alt="logo"
-                  width={120}
-                  height={30}
-                  className="w-auto h-7"
-                />
+              <div className="p-6 flex items-center justify-between border-b border-gray-100 dark:border-white/10 bg-white dark:bg-dark">
+                <Link href="/" className="block">
+                  <Image
+                    src="/images/logo/Counselor.png"
+                    alt="logo"
+                    width={120}
+                    height={30}
+                    className=""
+                  />
+                </Link>
                 <button
                   onClick={navbarToggleHandler}
                   className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
@@ -125,10 +138,8 @@ const Header = () => {
               </div>
 
               {/* Drawer Content */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-white dark:bg-[#1d2430]">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-2">
-                  Navigation
-                </p>
+              <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-white dark:bg-dark">
+
                 <div className="space-y-1">
                   {menuData.map((item) => {
                     const IconComp = item.icon;
@@ -138,8 +149,8 @@ const Header = () => {
                         href={item.path || "#"}
                         onClick={navbarToggleHandler}
                         className={`flex items-center gap-4 px-4 py-3 rounded-2xl font-medium transition-all ${usePathName === item.path
-                            ? "bg-primary/10 text-primary"
-                            : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                          ? "bg-primary/10 text-primary"
+                          : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                           }`}
                       >
                         {IconComp && <IconComp size={20} />}
@@ -155,7 +166,7 @@ const Header = () => {
                 <SignedOut>
                   <SignUpButton mode="modal">
                     <button className="w-full bg-primary text-white py-4 rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95">
-                      Get Started Free
+                      Get Started
                     </button>
                   </SignUpButton>
                 </SignedOut>

@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Display:wght@100;200;300;400;500;600;700;800;900&display=swap')
-layer(base);
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Display:wght@100;200;300;400;500;600;700;800;900&display=swap') layer(base);
 
 @import 'tailwindcss';
 
@@ -73,6 +72,7 @@ layer(base);
   color utility to any element that depends on these defaults.
 */
 @layer base {
+
   *,
   ::after,
   ::before,
@@ -111,13 +111,13 @@ layer(base);
 }
 
 @utility dot {
-  input#togglePlan:checked ~ & {
+  input#togglePlan:checked~& {
     @apply translate-x-full;
   }
 }
 
 @utility box {
-  input#checkboxLabel:checked ~ & span {
+  input#checkboxLabel:checked~& span {
     @apply opacity-100;
   }
 }
@@ -129,7 +129,7 @@ layer(base);
 }
 
 @layer components {
-  input[type="checkbox"]:checked ~ label span svg {
+  input[type="checkbox"]:checked~label span svg {
     @apply inline-flex;
   }
 }
@@ -151,6 +151,17 @@ layer(base);
   animation: marquee var(--duration) linear infinite;
 }
 
-@utility animate-marquee-vertical {
-  animation: marquee-vertical var(--duration) linear infinite;
+@utility true-glass {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(12px) invert(100%) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(12px) invert(100%) saturate(150%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.dark .true-glass {
+  background: rgba(0, 0, 0, 0.1) !important;
+  backdrop-filter: blur(12px) invert(100%) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(12px) invert(100%) saturate(150%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
