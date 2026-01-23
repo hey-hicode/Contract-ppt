@@ -32,7 +32,7 @@ const Header = () => {
           : "py-4"
           }`}
       >
-        <div className={`mx-auto px-6 py-2 md:py-3 md:h-20 rounded-full transition-all duration-300 true-glass ${sticky ? "shadow-xl" : "shadow-lg"}`}>
+        <div className={`mx-auto px-6 py-2 md:py-3 md:h-20 rounded-full transition-all backdrop-blur-sm duration-300 true-glass ${sticky ? "shadow-xl" : "shadow-lg"}`}>
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex-shrink-0">
@@ -70,18 +70,18 @@ const Header = () => {
                   <button className="bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-2xl font-bold transition-all active:scale-95 text-sm shadow-md shadow-primary/20">
                     Get Started
                   </button>
+
                 </SignUpButton>
-                <Link href="/signin" className="text-sm font-semibold text-dark dark:text-white/70 hover:text-primary transition-colors">
-                  Sign In
-                </Link>
+                <UserButton
+                  appearance={{
+                    elements: {
+                      avatarBox:
+                        "h-9 w-9 ring-2 ring-white dark:ring-white/10 shadow-md",
+                    },
+                  }}
+                />
               </SignedOut>
 
-              <SignedIn>
-                <Link href="/dashboard" className="text-sm font-semibold text-dark dark:text-white/70 hover:text-primary transition-colors">
-                  Dashboard
-                </Link>
-                <UserButton appearance={{ elements: { avatarBox: "h-9 w-9 shadow-md" } }} />
-              </SignedIn>
 
 
             </div>

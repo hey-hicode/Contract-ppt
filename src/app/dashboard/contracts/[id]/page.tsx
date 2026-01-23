@@ -14,10 +14,26 @@ import {
   Download,
   CheckCircle,
   AlertTriangle,
+  FileText,
 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { downloadElementAsPdf } from "~/utils/downloadPdfFromElement";
 import ActionSheets from "~/components/Dashboard/ActionSheets";
+
+const avatarColors = [
+  "bg-blue-200 text-blue-700",
+  "bg-purple-200 text-purple-700",
+  "bg-pink-200 text-pink-700",
+  "bg-green-200 text-green-700",
+  "bg-yellow-200 text-yellow-700",
+  "bg-indigo-200 text-indigo-700",
+  "bg-red-200 text-red-700",
+  "bg-teal-200 text-teal-700",
+];
+
+const getAvatarColor = (index: number) => {
+  return avatarColors[index % avatarColors.length];
+};
 
 type RedFlag = {
   type: "critical" | "warning" | "minor";
@@ -35,6 +51,10 @@ type Analysis = {
   summary?: string | null;
   redFlags?: RedFlag[];
   recommendations?: string[];
+  dealParties?: string[];
+  companiesInvolved?: string[];
+  dealRoom?: string | null;
+  playbook?: string | null;
   raw?: unknown;
 };
 
@@ -73,10 +93,10 @@ export default function ContractDetailPage() {
   const title = data?.sourceTitle ?? "Contract";
   const dateStr = data?.createdAt
     ? new Date(data.createdAt).toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
     : undefined;
 
   // Email and chat handled by reusable ActionSheets
@@ -178,8 +198,8 @@ export default function ContractDetailPage() {
                         (data.overallRisk ?? "low") === "high"
                           ? "text-red-500"
                           : (data.overallRisk ?? "low") === "medium"
-                          ? "text-amber-500"
-                          : "text-emerald-500"
+                            ? "text-amber-500"
+                            : "text-emerald-500"
                       )}
                     />
                   </CardHeader>
@@ -311,8 +331,8 @@ export default function ContractDetailPage() {
                               flag.type === "critical"
                                 ? "border-l-red-500"
                                 : flag.type === "warning"
-                                ? "border-l-amber-500"
-                                : "border-l-blue-500"
+                                  ? "border-l-amber-500"
+                                  : "border-l-blue-500"
                             )}
                           >
                             <CardHeader className="pb-2">
@@ -329,8 +349,8 @@ export default function ContractDetailPage() {
                                     flag.type === "critical"
                                       ? "text-red-700 border-red-200 bg-red-50"
                                       : flag.type === "warning"
-                                      ? "text-amber-700 border-amber-200 bg-amber-50"
-                                      : "text-blue-700 border-blue-200 bg-blue-50"
+                                        ? "text-amber-700 border-amber-200 bg-amber-50"
+                                        : "text-blue-700 border-blue-200 bg-blue-50"
                                   )}
                                 >
                                   {flag.type}
@@ -409,6 +429,79 @@ export default function ContractDetailPage() {
                       ))}
                     </TabsContent>
                   </Tabs>
+
+                  {/* Deal Metadata Section */}
+                  <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {((data.dealParties?.length ?? 0) > 0 || (data.companiesInvolved?.length ?? 0) > 0) && (
+                      <Card className="!shadow-none bg-slate-50/50">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-primary" />
+                            Deal Parties & Companies
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          {(data.dealParties?.length ?? 0) > 0 && (
+                            <div>
+                              <p className="text-xs font-medium text-slate-500 uppercase mb-1">Parties</p>
+                              <div className="flex flex-wrap gap-2">
+                                {data.dealParties?.map((party, i) => (
+                                  <Badge
+                                    key={i}
+                                    variant="secondary"
+                                    className={cn("bg-white border-none", getAvatarColor(i))}
+                                  >
+                                    {party}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {(data.companiesInvolved?.length ?? 0) > 0 && (
+                            <div>
+                              <p className="text-xs font-medium text-slate-500 uppercase mb-1">Companies</p>
+                              <div className="flex flex-wrap gap-2">
+                                {data.companiesInvolved?.map((company, i) => (
+                                  <Badge
+                                    key={i}
+                                    variant="secondary"
+                                    className={cn("bg-white border-none", getAvatarColor(i + (data.dealParties?.length ?? 0)))}
+                                  >
+                                    {company}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {(data.dealRoom || data.playbook) && (
+                      <Card className="!shadow-none bg-slate-50/50">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                            <Shield className="h-4 w-4 text-primary" />
+                            Classification
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          {data.dealRoom && (
+                            <div>
+                              <p className="text-xs font-medium text-slate-500 uppercase mb-1">Deal Room</p>
+                              <p className="text-sm text-slate-700">{data.dealRoom}</p>
+                            </div>
+                          )}
+                          {data.playbook && (
+                            <div>
+                              <p className="text-xs font-medium text-slate-500 uppercase mb-1">Playbook</p>
+                              <p className="text-sm text-slate-700">{data.playbook}</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
                 </div>
               </div>
 
