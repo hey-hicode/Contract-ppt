@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Header from "~/components/Header";
-import Footer from "~/components/Footer";
+// import Footer from "~/components/Footer";
 import ScrollUp from "~/components/shared/ScrollUp";
 
 export default function AppChrome({ children }: { children: React.ReactNode }) {

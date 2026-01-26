@@ -42,28 +42,36 @@ interface ActionSheetsProps {
 
 function generateEmailContent(data: EmailData) {
   const { title, summary, redFlags = [], recommendations = [] } = data;
+
   const talkingPoints = redFlags
     .map(
       (f, i) =>
-        `${i + 1}. ${f.title}${f.description ? ` — ${f.description}` : ""}`
+        `${i + 1}. ${f.title}${f.description ? ` — ${f.description}` : ""}`,
     )
     .join("\n");
+
   const nextSteps = recommendations.map((r, i) => `${i + 1}. ${r}`).join("\n");
-  return `Subject: Contract Review Discussion: ${title}
+
+  return `Subject: Contract Review — ${title}
 
 Hi,
 
-I've reviewed my contract "${title}" and I'd love to discuss a few points.
+I’ve reviewed the contract titled "${title}" and wanted to follow up on a few points before moving forward.
 
-${summary ? `Quick summary:\n${summary}\n\n` : ""}Talking points:\n${
-    talkingPoints || "- No specific issues noted"
-  }
+${summary ? `Here’s a brief overview from my review:\n${summary}\n\n` : ""}The main items I’d like to discuss are:
 
-Possible next steps:\n${nextSteps || "- Open to your suggestions"}
+${talkingPoints || "- No major issues stood out, but I’d still like to align on a few details."}
 
-If you're available, I'd appreciate a brief call to walk through these.
+${
+  nextSteps
+    ? `Based on this, a few potential next steps could be:\n${nextSteps}`
+    : "I’m open to your thoughts on how best to proceed."
+}
 
-Thanks,`;
+If you’re available, I’d appreciate a quick conversation to walk through these and make sure we’re aligned.
+
+Best regards,
+`;
 }
 
 function openMailClient(to: string, content: string) {
@@ -76,7 +84,7 @@ function openMailClient(to: string, content: string) {
     body = content.split("\n").slice(1).join("\n");
   }
   const mailtoLink = `mailto:${encodeURIComponent(
-    to
+    to,
   )}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   window.location.href = mailtoLink;
 }
@@ -93,10 +101,11 @@ export default function ActionSheets({
   const [savePromptOpen, setSavePromptOpen] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState("");
   const [emailContent, setEmailContent] = useState("");
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   const initialEmail = useMemo(
     () => generateEmailContent(emailData),
-    [emailData]
+    [emailData],
   );
 
   // Keep content in sync when data changes
@@ -104,10 +113,66 @@ export default function ActionSheets({
     setEmailContent(initialEmail);
   }, [initialEmail]);
 
-  const handleSendEmail = () => {
-    trackFeatureUsage("email_sent");
-    if (!recipientEmail) return;
-    openMailClient(recipientEmail, emailContent || initialEmail);
+  // const handleSendEmail = () => {
+  //   trackFeatureUsage("email_sent");
+  //   if (!recipientEmail) return;
+  //   openMailClient(recipientEmail, emailContent || initialEmail);
+  // };
+
+  function extractSubject(content: string): string {
+    if (!content) return "Contract Review";
+
+    const lines = content.split("\n");
+    const firstLine = lines[0]?.trim() || "";
+
+    if (/^subject:/i.test(firstLine)) {
+      return firstLine.replace(/^subject:\s*/i, "").trim() || "Contract Review";
+    }
+
+    // Fallback: derive from first non-empty line
+    return "Contract Review";
+  }
+
+  function extractBody(content: string): string {
+    if (!content) return "";
+
+    const lines = content.split("\n");
+
+    // Remove Subject line if present
+    if (/^subject:/i.test(lines[0]?.trim())) {
+      return lines.slice(1).join("\n").trim();
+    }
+
+    return content.trim();
+  }
+
+  const handleSendEmail = async () => {
+    if (!recipientEmail || isSendingEmail) return;
+
+    try {
+      setIsSendingEmail(true);
+      trackFeatureUsage("email_sent");
+
+      const res = await fetch("/api/email/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: recipientEmail,
+          subject: extractSubject(emailContent),
+          body: extractBody(emailContent),
+          analysisId,
+        }),
+      });
+
+      if (!res.ok) {
+        // toast error
+        return;
+      }
+
+      // success feedback
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   const handleChatClick = () => {
@@ -234,9 +299,16 @@ export default function ActionSheets({
               <Button
                 onClick={handleSendEmail}
                 className="text-white"
-                disabled={!recipientEmail}
+                disabled={!recipientEmail || isSendingEmail}
               >
-                Open in Mail App
+                {isSendingEmail ? (
+                  <>
+                    <div className="h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Sending…
+                  </>
+                ) : (
+                  "Send Email"
+                )}
               </Button>
             </div>
           </div>
