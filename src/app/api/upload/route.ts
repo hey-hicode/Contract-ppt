@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { extractText } from "unpdf";
 import mammoth from "mammoth";
+import { ocrPdf } from "~/utils/ocrPdf";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 const MIN_TEXT_LENGTH = 50;
 
@@ -14,7 +16,7 @@ export async function POST(req: NextRequest) {
     if (!file) {
       return NextResponse.json(
         { error: "No file uploaded.", code: "NO_FILE" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -29,49 +31,55 @@ export async function POST(req: NextRequest) {
     if (mime === "application/pdf") {
       try {
         const { text: extractedText } = await extractText(
-          new Uint8Array(buffer)
+          new Uint8Array(buffer),
         );
         text = String(extractedText || "");
-      } catch (err) {
-        return NextResponse.json(
-          {
-            error: "Failed to extract text from PDF.",
-            code: "PDF_EXTRACTION_FAILED",
-          },
-          { status: 500 }
-        );
+      } catch {
+        text = "";
+      }
+
+      // ✅ OCR fallback (THIS is the correct place)
+      if (!text || text.trim().length < MIN_TEXT_LENGTH) {
+        try {
+          text = await ocrPdf(buffer);
+        } catch {
+          return NextResponse.json(
+            {
+              error: "OCR failed. The document may be unreadable.",
+              code: "OCR_FAILED",
+            },
+            { status: 422 },
+          );
+        }
       }
     } else if (
-
-    /* ------------------------
-       DOCX
-       ------------------------ */
       mime ===
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     ) {
+      /* ------------------------
+         DOCX
+         ------------------------ */
       try {
         const result = await mammoth.extractRawText({ buffer });
         text = result.value || "";
-      } catch (err) {
+      } catch {
         return NextResponse.json(
           {
             error: "Failed to extract text from DOCX.",
             code: "DOCX_EXTRACTION_FAILED",
           },
-          { status: 500 }
+          { status: 500 },
         );
       }
     } else if (mime === "text/plain" || mime === "text/markdown") {
-
-    /* ------------------------
-       TXT / MD
-       ------------------------ */
+      /* ------------------------
+         TXT / MD
+         ------------------------ */
       text = buffer.toString("utf-8");
     } else {
-
-    /* ------------------------
-       Unsupported
-       ------------------------ */
+      /* ------------------------
+         Unsupported
+         ------------------------ */
       return NextResponse.json(
         {
           error:
@@ -79,12 +87,12 @@ export async function POST(req: NextRequest) {
           code: "UNSUPPORTED_FILE_TYPE",
           supported: ["pdf", "docx", "txt", "md"],
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     /* ------------------------
-       Validation
+       Final validation
        ------------------------ */
     if (!text || text.trim().length < MIN_TEXT_LENGTH) {
       return NextResponse.json(
@@ -93,7 +101,7 @@ export async function POST(req: NextRequest) {
             "No sufficient text could be extracted. The document may be image-based or empty.",
           code: "INSUFFICIENT_TEXT",
         },
-        { status: 422 }
+        { status: 422 },
       );
     }
 
@@ -103,18 +111,22 @@ export async function POST(req: NextRequest) {
         meta: {
           fileType: mime,
           chars: text.length,
+          extractionMethod:
+            mime === "application/pdf" && text.length >= MIN_TEXT_LENGTH
+              ? "native+ocr"
+              : "native",
         },
       },
-      { status: 200 }
+      { status: 200 },
     );
-  } catch (error: unknown) {
+  } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
       {
         error:
           error instanceof Error ? error.message : "Unexpected upload error.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
