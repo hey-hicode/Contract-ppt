@@ -7,8 +7,9 @@ export const RemotionRoot: React.FC = () => {
         <>
             <Composition
                 id="ContractSummary"
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 component={ContractSummary as any}
-                durationInFrames={450} // 15 seconds at 30 fps
+                durationInFrames={660}
                 fps={30}
                 width={1280}
                 height={720}

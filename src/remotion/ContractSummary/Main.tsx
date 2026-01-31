@@ -1,4 +1,4 @@
-import { AbsoluteFill, Series, interpolate, useCurrentFrame, useVideoConfig, spring, Sequence } from "remotion";
+import { AbsoluteFill, Series, interpolate, useCurrentFrame, useVideoConfig, spring } from "remotion";
 import React from "react";
 import { loadFont } from "@remotion/google-fonts/Outfit";
 
@@ -10,7 +10,7 @@ interface RedFlag {
     description: string;
 }
 
-interface Props {
+export interface Props {
     title: string;
     summary: string;
     overallRisk: "low" | "medium" | "high";
@@ -56,32 +56,7 @@ const Slide: React.FC<{ children: React.ReactNode; bg?: string }> = ({ children,
     );
 };
 
-const RiskBadge: React.FC<{ risk: string }> = ({ risk }) => {
-    const colors = {
-        high: { color: "#ef4444", bg: "rgba(239, 68, 68, 0.15)", border: "#ef4444" },
-        medium: { color: "#f59e0b", bg: "rgba(245, 158, 11, 0.15)", border: "#f59e0b" },
-        low: { color: "#10b981", bg: "rgba(16, 185, 129, 0.15)", border: "#10b981" },
-    };
-    const c = colors[risk as keyof typeof colors] || colors.low;
 
-    return (
-        <div style={{
-            display: "inline-block",
-            padding: "10px 30px",
-            borderRadius: "10px",
-            backgroundColor: c.bg,
-            color: c.color,
-            border: `2px solid ${c.border}`,
-            fontSize: "28px",
-            fontWeight: "900",
-            textTransform: "uppercase",
-            letterSpacing: "4px",
-            backdropFilter: "blur(10px)",
-        }}>
-            {risk} Risk
-        </div>
-    );
-};
 
 // Sonner-style toast notification for red flags
 const SonnerCard: React.FC<{ flag: RedFlag; delay: number }> = ({ flag, delay }) => {
@@ -225,7 +200,6 @@ const RecommendationCard: React.FC<{ text: string; delay: number }> = ({ text, d
 export const ContractSummary: React.FC<Props> = ({
     title,
     summary,
-    overallRisk,
     redFlags = [],
     recommendations = [],
 }) => {

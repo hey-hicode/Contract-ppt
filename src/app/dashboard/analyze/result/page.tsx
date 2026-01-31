@@ -23,7 +23,7 @@ import { downloadElementAsPdf } from "~/utils/downloadPdfFromElement";
 import { cn } from "~/lib/utils";
 import ActionSheets from "~/components/Dashboard/ActionSheets";
 import { VideoSummary } from "~/components/Dashboard/VideoSummary";
-import { Video, Play } from "lucide-react";
+import { Video } from "lucide-react";
 
 const avatarColors = [
   "bg-blue-200 text-blue-700",
@@ -71,7 +71,7 @@ export default function AnalyzerResultsPage() {
   const [loading, setLoading] = useState(true);
   const [emailContent, setEmailContent] = useState<string>("");
   const [emailSubject, setEmailSubject] = useState<string>("");
-  const [recipientEmail, setRecipientEmail] = useState<string>("");
+  const [recipientEmail] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
