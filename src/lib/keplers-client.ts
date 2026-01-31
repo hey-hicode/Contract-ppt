@@ -1,11 +1,18 @@
-import axios from "axios";
+import axios, { AxiosInstance } from "axios";
 
 export default class KeplersMailClient {
-  private client;
+  private client: AxiosInstance;
+
+  private handleAxiosError(error: unknown, fallback: string): never {
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data?.message ?? fallback);
+    }
+    throw new Error(fallback);
+  }
 
   constructor(apiKey: string) {
     this.client = axios.create({
-      baseURL: "https://api.keplars.com",
+      baseURL: process.env.KEPLERS_BASE_URL ?? "https://api.keplars.com",
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
@@ -19,10 +26,14 @@ export default class KeplersMailClient {
     subject: string;
     body: string;
     is_html?: boolean;
-    meta?: Record<string, any>;
+    meta?: Record<string, string>;
   }) {
-    const res = await this.client.post("/api/v1/send-email/queue", emailData);
-    return res.data;
+    try {
+      const res = await this.client.post("/api/v1/send-email/queue", emailData);
+      return res.data;
+    } catch (error: unknown) {
+      this.handleAxiosError(error, "Failed to send email");
+    }
   }
 
   async sendInstantEmail(emailData: {
@@ -31,7 +42,14 @@ export default class KeplersMailClient {
     body: string;
     is_html?: boolean;
   }) {
-    const res = await this.client.post("/api/v1/send-email/instant", emailData);
-    return res.data;
+    try {
+      const res = await this.client.post(
+        "/api/v1/send-email/instant",
+        emailData,
+      );
+      return res.data;
+    } catch (error: unknown) {
+      this.handleAxiosError(error, "Failed to send email");
+    }
   }
 }
