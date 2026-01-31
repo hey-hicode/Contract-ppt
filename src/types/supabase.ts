@@ -9,6 +9,10 @@ export type Database = {
           summary: string | null;
           red_flags: unknown[] | null;
           recommendations: string[] | null;
+          deal_parties: string[] | null;
+          companies_involved: string[] | null;
+          deal_room: string | null;
+          playbook: string | null;
           created_at: string;
         };
         Insert: {
@@ -18,6 +22,10 @@ export type Database = {
           summary?: string | null;
           red_flags?: unknown[] | null;
           recommendations?: string[] | null;
+          deal_parties?: string[] | null;
+          companies_involved?: string[] | null;
+          deal_room?: string | null;
+          playbook?: string | null;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["analyses"]["Insert"]>;

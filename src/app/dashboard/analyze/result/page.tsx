@@ -23,6 +23,21 @@ import { downloadElementAsPdf } from "~/utils/downloadPdfFromElement";
 import { cn } from "~/lib/utils";
 import ActionSheets from "~/components/Dashboard/ActionSheets";
 
+const avatarColors = [
+  "bg-blue-200 text-blue-700",
+  "bg-purple-200 text-purple-700",
+  "bg-pink-200 text-pink-700",
+  "bg-green-200 text-green-700",
+  "bg-yellow-200 text-yellow-700",
+  "bg-indigo-200 text-indigo-700",
+  "bg-red-200 text-red-700",
+  "bg-teal-200 text-teal-700",
+];
+
+const getAvatarColor = (index: number) => {
+  return avatarColors[index % avatarColors.length];
+};
+
 interface RedFlag {
   type: "critical" | "warning" | "minor";
   title: string;
@@ -36,8 +51,8 @@ interface AnalysisResult {
   overallRisk: "low" | "medium" | "high";
   summary: string;
   recommendations: string[];
-  dealParties?: string[];
-  companiesInvolved?: string[];
+  dealParties: string[];
+  companiesInvolved: string[];
   dealRoom?: string;
   playbook?: string;
 }
@@ -63,14 +78,12 @@ export default function AnalyzerResultsPage() {
 
   const generateEmailContent = useCallback(
     (analysis: AnalysisResult) => {
-      const subject = `Legal Review: Contract Analysis Report - ${
-        data?.sourceTitle || "Untitled"
-      }`;
+      const subject = `Legal Review: Contract Analysis Report - ${data?.sourceTitle || "Untitled"
+        }`;
       const content = `Dear [Recipient Name],
 
-I have reviewed the contract "${
-        data?.sourceTitle || "Untitled"
-      }" and would like to share the following analysis.
+I have reviewed the contract "${data?.sourceTitle || "Untitled"
+        }" and would like to share the following analysis.
 
 EXECUTIVE SUMMARY
 ------------------
@@ -84,16 +97,16 @@ Total Issues Identified: ${analysis.redFlags?.length}
 KEY RECOMMENDATIONS
 ------------------
 ${analysis.recommendations
-  .slice(0, 5)
-  .map((rec, index) => `${index + 1}. ${rec}`)
-  .join("\n")}
+          .slice(0, 5)
+          .map((rec, index) => `${index + 1}. ${rec}`)
+          .join("\n")}
 
 CRITICAL ISSUES
 ------------------
 ${analysis.redFlags
-  .filter((flag) => flag.type === "critical")
-  .map((flag, index) => `${index + 1}. ${flag.title}: ${flag.description}`)
-  .join("\n")}
+          .filter((flag) => flag.type === "critical")
+          .map((flag, index) => `${index + 1}. ${flag.title}: ${flag.description}`)
+          .join("\n")}
 
 Please let me know if you would like to discuss these findings in more detail.
 
@@ -404,8 +417,8 @@ Best regards,
                   analysis!.overallRisk === "high"
                     ? "text-red-500"
                     : analysis!.overallRisk === "medium"
-                    ? "text-amber-500"
-                    : "text-emerald-500"
+                      ? "text-amber-500"
+                      : "text-emerald-500"
                 )}
               />
             </CardHeader>
@@ -539,8 +552,8 @@ Best regards,
                         flag.type === "critical"
                           ? "border-l-red-500"
                           : flag.type === "warning"
-                          ? "border-l-amber-500"
-                          : "border-l-blue-500"
+                            ? "border-l-amber-500"
+                            : "border-l-blue-500"
                       )}
                     >
                       <CardHeader className="pb-2">
@@ -557,8 +570,8 @@ Best regards,
                               flag.type === "critical"
                                 ? "text-red-700 border-red-200 bg-red-50"
                                 : flag.type === "warning"
-                                ? "text-amber-700 border-amber-200 bg-amber-50"
-                                : "text-blue-700 border-blue-200 bg-blue-50"
+                                  ? "text-amber-700 border-amber-200 bg-amber-50"
+                                  : "text-blue-700 border-blue-200 bg-blue-50"
                             )}
                           >
                             {flag.type}
@@ -633,6 +646,80 @@ Best regards,
                 ))}
               </TabsContent>
             </Tabs>
+
+            {/* Deal Metadata Section */}
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+              {(analysis.dealParties?.length > 0 || analysis.companiesInvolved?.length > 0) && (
+                <Card className="!shadow-none bg-slate-50/50">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
+
+                      Deal Parties & Companies
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {analysis.dealParties?.length > 0 && (
+                      <div>
+                        <p className="text-sm font-semibold text-slate-500 uppercase mb-1">Parties</p>
+                        <div className="flex flex-wrap gap-2">
+                          {analysis.dealParties?.map((party, i) => (
+                            <Badge
+                              key={i}
+                              variant="secondary"
+                              className={cn("bg-white rounded-md p-2 border-none", getAvatarColor(i))}
+                            >
+                              {party}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {analysis.companiesInvolved?.length > 0 && (
+                      <div>
+                        <p className="text-xs font-medium text-slate-500 uppercase mb-1">Companies</p>
+                        <div className="flex flex-wrap gap-2">
+                          {analysis.companiesInvolved?.map((company, i) => (
+                            <Badge
+                              key={i}
+                              variant="secondary"
+                              className={cn("bg-white rounded-md p-2 border-none", getAvatarColor(i + (analysis.dealParties?.length ?? 0)))}
+                            >
+                              {company}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {(analysis.dealRoom || analysis.playbook) && (
+                <Card className="!shadow-none bg-slate-50/50">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
+
+
+                      Classification
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {analysis.dealRoom && (
+                      <div>
+                        <p className="text-sm font-medium text-slate-500 uppercase mb-1">Deal Room</p>
+                        <p className="text-sm text-slate-700">{analysis.dealRoom}</p>
+                      </div>
+                    )}
+                    {analysis.playbook && (
+                      <div>
+                        <p className="text-sm font-medium text-slate-500 uppercase mb-1">Playbook</p>
+                        <p className="text-sm text-slate-700">{analysis.playbook}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -21,10 +21,9 @@ import {
   LucideIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 
-/* ============================================================================
-   DOMAIN TYPES
-============================================================================ */
+
 
 type RoleId = "founder" | "freelancer" | "employee" | "investor";
 type GoalId =
@@ -52,9 +51,7 @@ interface OnboardingData {
   riskTolerance: RiskToleranceId | null;
 }
 
-/* ============================================================================
-   CONFIG
-============================================================================ */
+
 
 const ROLES: OptionConfig<RoleId>[] = [
   {
@@ -187,14 +184,16 @@ function ProgressBar({ current, total }: { current: number; total: number }) {
   return (
     <div className="mb-8">
       <div className="flex justify-between text-sm text-gray-600 mb-2">
-        <span>
+        <span className="text-body text-sm font-medium">
           Step {current} of {total}
         </span>
-        <span>{Math.round(percent)}%</span>
+        <span className="text-body text-sm font-medium">
+          {Math.round(percent)}%
+        </span>
       </div>
       <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
         <div
-          className="h-full bg-blue-600 rounded-full transition-all duration-500"
+          className="h-full bg-primary rounded-full transition-all duration-500"
           style={{ width: `${percent}%` }}
         />
       </div>
@@ -216,18 +215,16 @@ function SingleSelectCard<T extends string>({
     <button
       type="button"
       onClick={() => onSelect(option.id)}
-      className={`relative p-4 w-full rounded-xl border-2 transition-all ${
-        selected
-          ? "border-blue-600 bg-blue-50 shadow-md"
-          : "border-gray-200 hover:border-gray-300"
-      }`}
+      className={`relative p-4 w-full rounded-md border transition-all ${selected
+        ? "border-primary bg-blue-50 shadow-md"
+        : "border-gray-200 hover:border-gray-300"
+        }`}
     >
       <div className="flex items-center gap-4">
         {Icon && (
           <div
-            className={`p-2 rounded rounded-br-xl absolute  top-0 left-0 ${
-              selected ? "bg-blue-600" : "bg-gray-100"
-            }`}
+            className={`p-2 rounded rounded-br-xl absolute  top-0 left-0 ${selected ? "bg-primary" : "bg-gray-100"
+              }`}
           >
             <Icon
               className={`w-3 h-3 ${selected ? "text-white" : "text-gray-600"}`}
@@ -235,10 +232,10 @@ function SingleSelectCard<T extends string>({
           </div>
         )}
         <div className="flex-1 text-left ml-3">
-          <p className="font-semibold ">{option.label}</p>
+          <p className="font-semibold text-sm ">{option.label}</p>
           <p className="text-xs text-gray-600 mt-1">{option.description}</p>
         </div>
-        {selected && <Check className="w-6 h-6 text-blue-600" />}
+        {selected && <Check className="w-4 h-4 text-primary" />}
       </div>
     </button>
   );
@@ -258,18 +255,16 @@ function MultiSelectCard<T extends string>({
     <button
       type="button"
       onClick={() => onToggle(option.id)}
-      className={`relative w-full p-4 rounded-xl border-2 transition-all ${
-        selected
-          ? "border-blue-600 bg-blue-50 shadow-md"
-          : "border-gray-200 hover:border-gray-300"
-      }`}
+      className={`relative w-full p-4 rounded-lg border transition-all ${selected
+        ? "border-primary bg-primary/10 shadow-md"
+        : "border-gray-200 hover:border-gray-300"
+        }`}
     >
       <div className="flex items-center gap-4">
         {Icon && (
           <div
-            className={`p-2 rounded rounded-br-xl absolute  top-0 left-0 ${
-              selected ? "bg-blue-600" : "bg-gray-100"
-            }`}
+            className={`p-2 rounded rounded-br-xl absolute  top-0 left-0 ${selected ? "bg-primary" : "bg-gray-100"
+              }`}
           >
             <Icon
               className={`w-3 h-3 ${selected ? "text-white" : "text-gray-600"}`}
@@ -277,18 +272,14 @@ function MultiSelectCard<T extends string>({
           </div>
         )}
         <div className="flex-1 text-left ml-3">
-          <p className="font-semibold">{option.label}</p>
+          <p className="font-semibold text-sm">{option.label}</p>
           <p className="text-xs text-gray-600 mt-1">{option.description}</p>
         </div>
-        {selected && <Check className="w-6 h-6 text-blue-600" />}
+        {selected && <Check className="w-4 h-4 text-blue-600" />}
       </div>
     </button>
   );
 }
-
-/* ============================================================================
-   STEP COMPONENTS
-============================================================================ */
 
 function StepRole({
   value,
@@ -299,8 +290,8 @@ function StepRole({
 }) {
   return (
     <>
-      <h1 className="text-2xl font-bold mb-8">What best describes you?</h1>
-      <div className=" grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+      <h1 className="text-2xl font-medium mb-8">What best describes you?</h1>
+      <div className=" grid grid-cols-1  gap-4 items-center">
         {ROLES.map((role) => (
           <SingleSelectCard
             key={role.id}
@@ -323,8 +314,8 @@ function StepGoals({
 }) {
   return (
     <>
-      <h1 className="text-2xl font-bold mb-8">What are your main goals?</h1>
-      <p className="text-gray-600 mb-6">Select all that apply</p>
+      <h1 className="text-2xl font-medium mb-8">What are your main goals?</h1>
+      {/* <p className="text-gray-600 mb-6">Select all that apply</p> */}
       <div className=" grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
         {GOALS.map((goal) => (
           <MultiSelectCard
@@ -348,10 +339,10 @@ function StepContractTypes({
 }) {
   return (
     <>
-      <h1 className="text-2xl font-bold mb-8">
+      <h1 className="text-2xl font-medium mb-8">
         Which contract types do you work with?
       </h1>
-      <p className="text-gray-600 mb-6">Select all that apply</p>
+      {/* <p className="text-gray-600 mb-6">Select all that apply</p> */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
         {CONTRACT_TYPES.map((type) => (
           <MultiSelectCard
@@ -375,7 +366,7 @@ function StepRiskTolerance({
 }) {
   return (
     <>
-      <h1 className="text-2xl font-bold mb-8">How risk-averse are you?</h1>
+      <h1 className="text-2xl font-medium mb-8">How risk-averse are you?</h1>
       <div className="space-y-4 grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
         {TOLERANCES.map((t) => {
           const Icon = t.icon;
@@ -386,32 +377,29 @@ function StepRiskTolerance({
               key={t.id}
               type="button"
               onClick={() => onChange(t.id)}
-              className={`relative w-full p-4 rounded-xl border-2 transition-all text-left ${
-                selected
-                  ? "border-blue-600 bg-blue-50 shadow-md"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
+              className={`relative w-full p-4 rounded-lg border transition-all text-left ${selected
+                ? "border-primary bg-primary/10 shadow-md"
+                : "border-gray-200 hover:border-gray-300"
+                }`}
             >
               <div className="flex items-center gap-4">
                 {Icon && (
                   <div
-                    className={`p-2 rounded rounded-br-xl absolute  top-0 left-0 ${
-                      selected ? "bg-blue-600" : "bg-gray-100"
-                    }`}
+                    className={`p-2 rounded rounded-br-xl absolute  top-0 left-0 ${selected ? "bg-primary" : "bg-gray-100"
+                      }`}
                   >
                     <Icon
-                      className={`w-3 h-3 ${
-                        selected ? "text-white" : "text-gray-600"
-                      }`}
+                      className={`w-3 h-3 ${selected ? "text-white" : "text-gray-600"
+                        }`}
                     />
                   </div>
                 )}
                 <div className="flex-1 ml-3">
-                  <p className="font-semibold ">{t.label}</p>
+                  <p className="font-semibold text-sm ">{t.label}</p>
                   <p className="text-xs text-gray-600 mt-1">{t.description}</p>
                   {/* <p className="text-sm text-gray-500 mt-3">{t.detail}</p> */}
                 </div>
-                {selected && <Check className="w-6 h-6 text-blue-600" />}
+                {selected && <Check className="w-4 h-4 text-primary" />}
               </div>
             </button>
           );
@@ -421,70 +409,127 @@ function StepRiskTolerance({
   );
 }
 
-function StepSummary({ data }: { data: OnboardingData }) {
-  const roleLabel = ROLES.find((r) => r.id === data.role)?.label || "None";
-  const goalLabels = data.goals
-    .map((g) => GOALS.find((goal) => goal.id === g)?.label)
-    .filter(Boolean);
-  const contractLabels = data.contractTypes
-    .map((c) => CONTRACT_TYPES.find((ct) => ct.id === c)?.label)
-    .filter(Boolean);
-  const toleranceLabel =
-    TOLERANCES.find((t) => t.id === data.riskTolerance)?.label || "None";
-
+function SummarySection({
+  title,
+  onEdit,
+  children,
+}: {
+  title: string;
+  onEdit: () => void;
+  children: React.ReactNode;
+}) {
   return (
-    <>
-      <div className="text-center mb-8">
-        <Sparkles className="w-16 h-16 text-blue-600 mx-auto mb-4" />
-        <h1 className="text-2xl font-bold">All set!</h1>
-        <p className="text-gray-600 mt-4">
-          Here&apos;s what we learned about you:
-        </p>
+    <div className="mb-4 bg-white border border-gray-100 rounded-xl border p-6 shadow-none last:mb-0">
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-base font-bold text-gray-900">{title}</h3>
+        <button
+          onClick={onEdit}
+          className="text-xs font-semibold text-primary cursor-pointer hover:text-primary/80 underline"
+        >
+          Edit
+        </button>
       </div>
-
-      <div className="space-y-6 bg-white p-8 rounded-2xl shadow-sm border">
-        <div>
-          <p className="font-semibold text-gray-700">Your Role</p>
-          <p className="text-lg mt-2">{roleLabel}</p>
-        </div>
-        <div>
-          <p className="font-semibold text-gray-700">Goals</p>
-          <ul className="mt-2 space-y-1">
-            {goalLabels.map((g) => (
-              <li key={g} className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-green-600" />
-                {g}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <p className="font-semibold text-gray-700">Contract Types</p>
-          <ul className="mt-2 space-y-1">
-            {contractLabels.map((c) => (
-              <li key={c} className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-green-600" />
-                {c}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <p className="font-semibold text-gray-700">Risk Tolerance</p>
-          <p className="text-lg mt-2">{toleranceLabel}</p>
-        </div>
-      </div>
-
-      <p className="text-center text-sm text-gray-500 mt-8">
-        You can always update these preferences later in settings.
-      </p>
-    </>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">{children}</div>
+    </div>
   );
 }
 
-/* ============================================================================
-   MAIN COMPONENT
-============================================================================ */
+function SummaryItem({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | React.ReactNode;
+}) {
+  return (
+    <div>
+      <p className="text-xs font-normal text-gray-900 uppercase tracking-wider mb-1.5">
+        {label}
+      </p>
+      <div className="text-xs text-gray-500 font-medium leading-relaxed">
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function StepSummary({
+  data,
+  onEdit,
+}: {
+  data: OnboardingData;
+  onEdit: (step: number) => void;
+}) {
+  const { user } = useUser();
+  const roleLabel = ROLES.find((r) => r.id === data.role)?.label || "None";
+  const goalLabels = data.goals
+    .map((g) => GOALS.find((goal) => goal.id === g)?.label)
+    .filter(Boolean)
+    .join(", ");
+  const contractLabels = data.contractTypes
+    .map((c) => CONTRACT_TYPES.find((ct) => ct.id === c)?.label)
+    .filter(Boolean)
+    .join(", ");
+  const tolerance = TOLERANCES.find((t) => t.id === data.riskTolerance);
+  const toleranceLabel = tolerance?.label || "None";
+  const toleranceDetail = tolerance?.description || "";
+
+  return (
+    <div className="max-w-2xl pt-[50px] mx-auto w-full relative">
+      {/* Decorative Grid Background */}
+      <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[120%] h-64 opacity-[0.03] pointer-events-none z-0">
+        <div
+          className="w-full h-full"
+          style={{
+            backgroundImage: `linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)`,
+            backgroundSize: "40px 40px",
+          }}
+        />
+      </div>
+
+      <div className="text-center mb-12 relative z-10">
+        <h1 className="text-4xl font-extrabold text-gray-900 mb-3 tracking-tight">
+          Review Your Profile {user?.firstName}
+        </h1>
+        <p className="text-base text-gray-500 font-medium">
+          Here is a summary of your profile information
+        </p>
+      </div>
+
+      <div className="relative z-10 space-y-4">
+        <SummarySection title="Company Profile" onEdit={() => onEdit(1)}>
+          <SummaryItem label="Current Role" value={roleLabel} />
+          <SummaryItem
+            label="Industry focus"
+            value="Legal Technology Agency"
+          />
+          <SummaryItem label="Profile Size" value="Standard Utility" />
+        </SummarySection>
+
+        <SummarySection title="Profile Preferences" onEdit={() => onEdit(2)}>
+          <SummaryItem label="Primary Goals" value={goalLabels} />
+          <SummaryItem
+            label="Main focus"
+            value={GOALS.find((g) => g.id === data.goals[0])?.description || ""}
+          />
+          <SummaryItem label="Complexity" value="Standard" />
+        </SummarySection>
+
+        <SummarySection title="Review Depth" onEdit={() => onEdit(3)}>
+          <SummaryItem label="Contract Types" value={contractLabels} />
+          <SummaryItem label="Analysis Type" value="Automated Risk Sweep" />
+          <SummaryItem label="Deep Scan" value="Enabled" />
+        </SummarySection>
+
+        <SummarySection title="System Config" onEdit={() => onEdit(4)}>
+          <SummaryItem label="Risk Tolerance" value={toleranceLabel} />
+          <SummaryItem label="Alert Threshold" value={toleranceDetail} />
+          <SummaryItem label="Notification" value="Real-time Alerts" />
+        </SummarySection>
+      </div>
+    </div>
+  );
+}
 
 const TOTAL_STEPS = 5;
 
@@ -496,7 +541,7 @@ export default function OnboardingFlow() {
     try {
       const raw = localStorage.getItem("onboarding_draft");
       if (raw) return JSON.parse(raw) as OnboardingData;
-    } catch {}
+    } catch { }
     return {
       role: null,
       goals: [],
@@ -581,13 +626,16 @@ export default function OnboardingFlow() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center mt-20 p-6">
-      <div className="w-full max-w-2xl bg-white rounded-3xl p-4 sm:p-10">
+    <div className="min-h-screen bg-gray-50/50 flex flex-col items-center justify-center py-20 px-6">
+      <div
+        className={`w-full max-w-4xl transition-all duration-500 ${step === TOTAL_STEPS ? "bg-transparent" : "bg-white rounded-2xl p-6 sm:p-10 shadow-sm border border-gray-100"
+          }`}
+      >
         {step < TOTAL_STEPS && (
           <ProgressBar current={step} total={TOTAL_STEPS} />
         )}
 
-        <div className="min-h-96 overflow-y-scroll">
+        <div className={step === TOTAL_STEPS ? "" : "min-h-96"}>
           {step === 1 && (
             <StepRole
               value={data.role}
@@ -630,35 +678,46 @@ export default function OnboardingFlow() {
             />
           )}
 
-          {step === 5 && <StepSummary data={data} />}
+          {step === 5 && (
+            <StepSummary data={data} onEdit={(s) => setStep(s)} />
+          )}
         </div>
 
-        <div className="flex justify-between mt-12">
-          <button
-            onClick={back}
-            disabled={step === 1}
-            className={`px-5 py-3 rounded-lg transition ${
-              step === 1
-                ? "text-gray-400 cursor-not-allowed"
-                : "text-gray-700 hover:bg-gray-100"
+        <div
+          className={`flex items-center mt-12 ${step === TOTAL_STEPS ? "justify-center" : "justify-between"
             }`}
-          >
-            <ArrowLeft className="inline w-5 h-5 mr-2" />
-            Back
-          </button>
+        >
+          {step < TOTAL_STEPS && (
+            <button
+              onClick={back}
+              disabled={step === 1}
+              className={`px-6 py-2.5 rounded-xl font-semibold transition flex items-center gap-2 ${step === 1
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-gray-600 hover:bg-gray-100"
+                }`}
+            >
+              <ArrowLeft className="w-5 h-5" />
+              Back
+            </button>
+          )}
 
           <button
             onClick={step === TOTAL_STEPS ? finish : next}
             disabled={!canContinue() || loading}
-            className={`px-8 py-3 rounded-lg font-medium transition ${
-              canContinue() && !loading
-                ? "bg-blue-600 text-white hover:bg-blue-700 shadow-lg"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
-            }`}
+            className={`transition-all duration-300 flex items-center justify-center gap-2 font-bold ${step === TOTAL_STEPS
+              ? "bg-primary hover:bg-primary/90 text-white px-12 py-3.5 rounded-xl shadow-lg shadow-primary/20"
+              : "bg-primary text-white hover:bg-primary/90 px-8 py-2.5 rounded-xl shadow-md"
+              } ${(!canContinue() || loading) && "opacity-50 cursor-not-allowed"}`}
           >
-            {step === TOTAL_STEPS ? "Complete Setup" : "Continue"}
-            {step < TOTAL_STEPS && (
-              <ArrowRight className="inline w-5 h-5 ml-2" />
+            {loading ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : step === TOTAL_STEPS ? (
+              "Submit Profile"
+            ) : (
+              "Continue"
+            )}
+            {step < TOTAL_STEPS && !loading && (
+              <ArrowRight className="w-5 h-5" />
             )}
           </button>
         </div>

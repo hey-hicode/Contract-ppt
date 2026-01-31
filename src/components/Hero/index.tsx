@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { SignInButton, SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
@@ -63,6 +63,7 @@ const Hero = () => {
                       Start analysis
                     </Link>
                   </SignedIn>
+
                   <SignedOut>
                     <SignInButton
                       mode="modal"

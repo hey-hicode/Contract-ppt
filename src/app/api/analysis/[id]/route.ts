@@ -40,6 +40,10 @@ export async function GET(req: NextRequest) {
         summary,
         red_flags,
         recommendations,
+        deal_parties,
+        companies_involved,
+        deal_room,
+        playbook,
         raw,
         created_at
       `
@@ -74,6 +78,10 @@ export async function GET(req: NextRequest) {
       summary: data.summary,
       redFlags: data.red_flags ?? [],
       recommendations: data.recommendations ?? [],
+      dealParties: data.deal_parties ?? [],
+      companiesInvolved: data.companies_involved ?? [],
+      dealRoom: data.deal_room ?? null,
+      playbook: data.playbook ?? null,
       raw: data.raw ?? null,
       createdAt: data.created_at,
     };

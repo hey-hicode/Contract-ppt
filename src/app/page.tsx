@@ -2,12 +2,10 @@
 import { auth } from "@clerk/nextjs/server";
 import { Metadata } from "next";
 import AboutSectionTwo from "~/components/About/AboutSectionTwo";
-import Blog from "~/components/Blog";
 import Brands from "~/components/Brands";
-import Contact from "~/components/Contact";
+import FAQ from "~/components/FAQ";
 import Features from "~/components/Features";
 import Hero from "~/components/Hero";
-import Pricing from "~/components/Pricing";
 import PricingClient from "~/components/Pricing/PricingClient";
 import ScrollUp from "~/components/shared/ScrollUp";
 import Testimonials from "~/components/Testimonials";
@@ -43,6 +41,7 @@ export default async function Home() {
       <Brands />
       <AboutSectionTwo />
       <Testimonials />
+      <FAQ />
       <PricingClient currentPlan={currentPlan} />
       {/* <Pricing /> */}
       {/* <Blog /> */}
