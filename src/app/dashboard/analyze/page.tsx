@@ -108,14 +108,14 @@ export default function AnalyzePage() {
   const [parsedText, setParsedText] = useState("");
   const [uploadPhase, setUploadPhase] = useState<UploadPhase>("idle");
   const [statusMessage, setStatusMessage] = useState(
-    "Upload a contract PDF to start parsing."
+    "Upload a contract PDF to start parsing.",
   );
   const [isCopying, setIsCopying] = useState(false);
   const [analysisPhase, setAnalysisPhase] = useState<AnalysisPhase>("idle");
   const [, setAnalysisError] = useState<string | null>(null);
 
   const [selectedModel, setSelectedModel] = useState(
-    "anthropic/claude-3.5-sonnet:beta"
+    "anthropic/claude-3.5-sonnet:beta",
   );
   const [shouldAutoTriggerAnalysis, setShouldAutoTriggerAnalysis] =
     useState(false);
@@ -145,7 +145,7 @@ export default function AnalyzePage() {
   const handleProcessing = (file: File) => {
     setUploadPhase("processing");
     setStatusMessage(
-      `Processing ${file.name}. This usually takes less than a minute.`
+      `Processing ${file.name}. This usually takes less than a minute.`,
     );
   };
 
@@ -156,7 +156,7 @@ export default function AnalyzePage() {
     setStatusMessage(
       isSignedIn
         ? `Finished parsing ${file.name}. Review the extracted text below.`
-        : `Finished parsing ${file.name}. Sign in to run an AI analysis.`
+        : `Finished parsing ${file.name}. Sign in to run an AI analysis.`,
     );
     setAnalysisPhase("idle");
     if (isSignedIn) {
@@ -255,7 +255,7 @@ export default function AnalyzePage() {
             contractText: parsedText,
             sourceTitle: data.title ?? "",
             model: data.model ?? selectedModel,
-          })
+          }),
         );
       } catch (e) {
         console.warn("Failed to write analysis to sessionStorage", e);
@@ -319,7 +319,7 @@ export default function AnalyzePage() {
         <div
           className={cn(
             "inline-flex items-center w-fit gap-2 rounded-full border px-4 py-1.5 text-xs font-medium tracking-wide shadow-sm backdrop-blur",
-            className
+            className,
           )}
         >
           <StatusIcon className={cn("size-4", spin && "animate-spin")} />
@@ -394,8 +394,8 @@ export default function AnalyzePage() {
                       {uploadPhase === "completed"
                         ? "Parsed"
                         : uploadPhase === "error"
-                        ? "Issue detected"
-                        : "Processing"}
+                          ? "Issue detected"
+                          : "Processing"}
                     </span>
                   </div>
                 </div>
@@ -419,8 +419,8 @@ export default function AnalyzePage() {
                     {parsedText
                       ? "Use this output in diligence checklists, summaries, and OpenRouter prompts."
                       : uploadPhase === "error"
-                      ? "We were unable to parse the file. Upload a new PDF and try again."
-                      : "The parsed result will be displayed here when ready."}
+                        ? "We were unable to parse the file. Upload a new PDF and try again."
+                        : "The parsed result will be displayed here when ready."}
                   </p>
                 </div>
                 <div className="flex gap-2 md:justify-end items-center">
