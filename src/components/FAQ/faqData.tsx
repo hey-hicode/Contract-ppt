@@ -47,6 +47,24 @@ const faqData: FAQItem[] = [
         answer:
             "Yes, we offer a free plan that includes 3 contract analyses per month. This allows you to experience the power of Counselr before committing to a paid plan.",
     },
+    {
+        id: 8,
+        question: "How long does a contract analysis take?",
+        answer:
+            "Most analyses are completed in under 60 seconds. Larger documents (50+ pages) may take up to 2 minutes as our AI performs a deep scan of every clause.",
+    },
+    {
+        id: 9,
+        question: "What should I do if Counselr finds a 'Red Flag'?",
+        answer:
+            "A 'Red Flag' indicates a clause that sits outside of industry standards or carries high risk. We recommend using our 'AI Chat' to ask specific questions about that clause or consulting with a legal professional before signing.",
+    },
+    {
+        id: 10,
+        question: "Does Counselr support multiple languages?",
+        answer:
+            "Currently, Counselr is optimized for English-language contracts. We are actively working on supporting Spanish, French, and German in the coming months.",
+    },
 ];
 
 export default faqData;

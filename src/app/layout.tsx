@@ -23,7 +23,12 @@ export const metadata: Metadata = {
     "Counselr AI",
     "contract risk assessment"
   ],
-  authors: [{ name: "Counselr Team" }],
+  authors: [
+    {
+      name: "King davies",
+      url: "https://twitter.com/shankhungryman",
+    },
+  ],
   creator: "Counselr",
   publisher: "Counselr",
   formatDetection: {
@@ -104,7 +109,7 @@ export default function RootLayout({
                 "@type": "Organization",
                 "name": "Counselr",
                 "url": "https://counselr.io",
-                "logo": "https://counselr.io/icons/counselr/android-chrome-512x512.png",
+                "logo": "https://counselr.io/icons/Counselr/android-chrome-512x512.png",
                 "sameAs": [
                   "https://twitter.com/counselr_io"
                 ]
