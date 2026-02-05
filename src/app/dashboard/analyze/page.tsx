@@ -14,6 +14,8 @@ import toast from "react-hot-toast";
 import { useAuth, useClerk } from "@clerk/nextjs";
 import { Button } from "~/components/ui/button";
 import FileUpload from "~/components/shared/file-uploader";
+import UpgradeCard from "~/components/Billing/UpgradeCard";
+import { Dialog, DialogContent } from "~/components/ui/dialog";
 
 import { cn } from "~/lib/utils";
 import { Textarea } from "~/components/ui/textarea";
@@ -113,6 +115,7 @@ export default function AnalyzePage() {
   const [isCopying, setIsCopying] = useState(false);
   const [analysisPhase, setAnalysisPhase] = useState<AnalysisPhase>("idle");
   const [, setAnalysisError] = useState<string | null>(null);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const [selectedModel, setSelectedModel] = useState(
     "anthropic/claude-3.5-sonnet:beta",
@@ -228,8 +231,14 @@ export default function AnalyzePage() {
 
       if (!response.ok) {
         const errorBody = await response.json().catch(() => null);
+        const errorCode = errorBody?.error;
         const message =
-          errorBody?.error ?? "Unable to analyze this contract right now.";
+          errorCode === "FREE_QUOTA_EXCEEDED"
+            ? "Free credits exhausted. Upgrade to continue."
+            : errorBody?.error ?? "Unable to analyze this contract right now.";
+        if (errorCode === "FREE_QUOTA_EXCEEDED") {
+          setUpgradeOpen(true);
+        }
         setAnalysisPhase("error");
         setAnalysisError(message);
         toast.error(message);
@@ -308,6 +317,11 @@ export default function AnalyzePage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden  text-gray-900 dark:text-white">
+      <Dialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
+        <DialogContent className="sm:max-w-2xl bg-transparent border-0 shadow-none p-0">
+          <UpgradeCard />
+        </DialogContent>
+      </Dialog>
       <header className="flex justify-between gap-6 bg-gray-light rounded-md p-5 flex-row md:items-center">
         <div className="flex items-center gap-4">
           <div>

@@ -285,11 +285,27 @@ export async function POST(req: NextRequest) {
         riskTolerance: userProfile.risk_tolerance,
       }
     : undefined;
-  // 1️⃣ Load or create plan
-  const plan = await getOrCreateUserPlan(userId);
+  // 1️⃣ Load or create plan + 2️⃣ Enforce quota
+  try {
+    const plan = await getOrCreateUserPlan(userId);
+    assertQuota(plan);
+  } catch (err) {
+    if (err instanceof Error && err.message === "FREE_QUOTA_EXCEEDED") {
+      return NextResponse.json(
+        {
+          error: "FREE_QUOTA_EXCEEDED",
+          message: "Free credits exhausted. Upgrade to continue.",
+        },
+        { status: 403 }
+      );
+    }
 
-  // 2️⃣ Enforce quota
-  assertQuota(plan);
+    console.error("User plan/quota check failed:", err);
+    return NextResponse.json(
+      { error: "Failed to validate user plan." },
+      { status: 500 }
+    );
+  }
 
   if (!process.env.OPENROUTER_API_KEY) {
     return NextResponse.json(

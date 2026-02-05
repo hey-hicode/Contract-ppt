@@ -38,6 +38,7 @@
     "react-dom": "19.1.0",
     "react-dropzone": "^14.3.8",
     "react-hot-toast": "^2.6.0",
+    "resend": "^6.9.1",
     "server": "link:@clerk/nextjs/server",
     "stripe": "^20.1.0",
     "svix": "^1.81.0",
