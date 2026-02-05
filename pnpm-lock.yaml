@@ -47,6 +47,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.81.1
         version: 2.81.1
+      '@vercel/analytics':
+        specifier: ^1.6.1
+        version: 1.6.1(next@15.5.9(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
       ai:
         specifier: ^5.0.92
         version: 5.0.92(zod@3.22.3)
@@ -1478,6 +1481,32 @@ packages:
     resolution: {integrity: sha512-lrW200hZdbfRtztbygyaq/6jP6AKE8qQN2KvPcJ+x7wiD038YtnYtZ82IMNJ69GJibV7bwL3y9FgK+5w/pYt6g==}
     cpu: [x64]
     os: [win32]
+
+  '@vercel/analytics@1.6.1':
+    resolution: {integrity: sha512-oH9He/bEM+6oKlv3chWuOOcp8Y6fo6/PSro8hEkgCW3pu9/OiCXiUpRUogDh3Fs3LH2sosDrx8CxeOLBEE+afg==}
+    peerDependencies:
+      '@remix-run/react': ^2
+      '@sveltejs/kit': ^1 || ^2
+      next: '>= 13'
+      react: ^18 || ^19 || ^19.0.0-rc
+      svelte: '>= 4'
+      vue: ^3
+      vue-router: ^4
+    peerDependenciesMeta:
+      '@remix-run/react':
+        optional: true
+      '@sveltejs/kit':
+        optional: true
+      next:
+        optional: true
+      react:
+        optional: true
+      svelte:
+        optional: true
+      vue:
+        optional: true
+      vue-router:
+        optional: true
 
   '@vercel/oidc@3.0.3':
     resolution: {integrity: sha512-yNEQvPcVrK9sIe637+I0jD6leluPxzwJKx/Haw6F4H77CdDsszUn5V3o96LPziXkSNE2B83+Z3mjqGKBK/R6Gg==}
@@ -4386,14 +4415,14 @@ snapshots:
       '@remotion/media-parser': 4.0.414
       '@remotion/studio': 4.0.414(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@remotion/studio-shared': 4.0.414(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      css-loader: 5.2.7(webpack@5.96.1)
+      css-loader: 5.2.7(webpack@5.96.1(esbuild@0.25.0))
       esbuild: 0.25.0
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
       react-refresh: 0.9.0
       remotion: 4.0.414(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       source-map: 0.7.3
-      style-loader: 4.0.0(webpack@5.96.1)
+      style-loader: 4.0.0(webpack@5.96.1(esbuild@0.25.0))
       webpack: 5.96.1(esbuild@0.25.0)
     transitivePeerDependencies:
       - '@swc/core'
@@ -4901,6 +4930,11 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.11.1':
     optional: true
 
+  '@vercel/analytics@1.6.1(next@15.5.9(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)':
+    optionalDependencies:
+      next: 15.5.9(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react: 19.1.0
+
   '@vercel/oidc@3.0.3': {}
 
   '@webassemblyjs/ast@1.14.1':
@@ -5265,7 +5299,7 @@ snapshots:
     dependencies:
       utrie: 1.0.2
 
-  css-loader@5.2.7(webpack@5.96.1):
+  css-loader@5.2.7(webpack@5.96.1(esbuild@0.25.0)):
     dependencies:
       icss-utils: 5.1.0(postcss@8.5.6)
       loader-utils: 2.0.4
@@ -6972,7 +7006,7 @@ snapshots:
     optionalDependencies:
       '@types/node': 20.19.19
 
-  style-loader@4.0.0(webpack@5.96.1):
+  style-loader@4.0.0(webpack@5.96.1(esbuild@0.25.0)):
     dependencies:
       webpack: 5.96.1(esbuild@0.25.0)
 

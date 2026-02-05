@@ -3,6 +3,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import AppChrome from "~/components/layout/app-chrome";
+import { Analytics } from "@vercel/analytics/react";
 
 
 export const metadata: Metadata = {
@@ -49,6 +50,8 @@ export default function RootLayout({
                 "border  bg-white z-[9999] text-sm t  ",
             }}
           />
+          <Analytics />
+
           <AppChrome>{children}</AppChrome>
         </body>
       </html>
