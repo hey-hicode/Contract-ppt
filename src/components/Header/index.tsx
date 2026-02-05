@@ -6,15 +6,25 @@ import { useEffect, useState } from "react";
 import { SignedIn, SignedOut, UserButton, SignUpButton } from "@clerk/nextjs";
 import { Menu, X, LayoutGrid } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import menuData from "./menuData";
+import { useLenis } from "lenis/react";
 
 const Header = () => {
+  const lenis = useLenis();
   const [navbarOpen, setNavbarOpen] = useState(false);
   const navbarToggleHandler = () => setNavbarOpen(!navbarOpen);
 
   const [sticky, setSticky] = useState(false);
   const handleStickyNavbar = () => {
     setSticky(window.scrollY >= 30);
+  };
+
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    lenis?.scrollTo(`#${id.toLowerCase()}`, {
+      offset: -100,
+      duration: 1.5,
+    });
+    if (navbarOpen) setNavbarOpen(false);
   };
 
   useEffect(() => {
@@ -49,16 +59,15 @@ const Header = () => {
 
             {/* Desktop Navigation Links */}
             <nav className="hidden lg:flex items-center gap-8">
-              {menuData.map((menuItem) => (
+              {["Features", "Pricing", "Testimonials"].map((item) => (
                 <Link
-                  key={menuItem.id}
-                  href={menuItem.path || "#"}
-                  className={`text-sm font-medium transition-all hover:text-primary ${usePathName === menuItem.path
-                    ? "text-primary"
-                    : "text-dark dark:text-white/80"
-                    }`}
+                  key={item}
+                  href={`#${item.toLowerCase()}`}
+                  onClick={(e) => scrollToSection(e, item)}
+                  scroll={false}
+                  className="text-sm font-medium transition-all hover:text-primary text-dark dark:text-white/80"
                 >
-                  {menuItem.title}
+                  {item}
                 </Link>
               ))}
             </nav>
@@ -141,23 +150,17 @@ const Header = () => {
               <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-white dark:bg-dark">
 
                 <div className="space-y-1">
-                  {menuData.map((item) => {
-                    const IconComp = item.icon;
-                    return (
-                      <Link
-                        key={item.id}
-                        href={item.path || "#"}
-                        onClick={navbarToggleHandler}
-                        className={`flex items-center gap-4 px-4 py-3 rounded-2xl font-medium transition-all ${usePathName === item.path
-                          ? "bg-primary/10 text-primary"
-                          : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
-                          }`}
-                      >
-                        {IconComp && <IconComp size={20} />}
-                        <span>{item.title}</span>
-                      </Link>
-                    );
-                  })}
+                  {["Features", "Video", "Brands", "About", "Testimonials"].map((item) => (
+                    <Link
+                      key={item}
+                      href={`#${item.toLowerCase()}`}
+                      onClick={(e) => scrollToSection(e, item)}
+                      scroll={false}
+                      className="flex items-center gap-4 px-4 py-3 rounded-2xl font-medium transition-all text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                    >
+                      <span>{item}</span>
+                    </Link>
+                  ))}
                 </div>
               </div>
 
