@@ -26,7 +26,7 @@ const Hero = () => {
                   transition={{ delay: 0.2, duration: 0.8 }}
                   className="mb-5 text-3xl font-medium leading-tight text-black dark:text-white sm:text-4xl sm:leading-tight md:text-6xl md:leading-tight"
                 >
-                  AI Contract Review for Creators & Freelancers
+                  One tool to decode and simplify contracts
                 </motion.h1>
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
@@ -35,8 +35,8 @@ const Hero = () => {
                   className="mb-10 text-base leading-relaxed! text-body-color dark:text-body-color-dark sm:text-lg md:text-xl"
                 >
                   Counselr translates label, brand, and sponsorship agreements
-                  into plain language so you can negotiate with clarity and
-                  confidence.
+                  into plain language so your team can negotiate with clarity
+                  and confidence.
                 </motion.p>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
