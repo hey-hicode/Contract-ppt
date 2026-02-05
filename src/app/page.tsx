@@ -1,4 +1,3 @@
-
 import { auth } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
 import AboutSectionTwo from "~/components/About/AboutSectionTwo";
@@ -27,6 +26,8 @@ export const metadata: Metadata = {
   },
 };
 
+import ScrollReveal from "~/components/shared/ScrollReveal";
+
 export default async function Home() {
   const { userId } = await auth();
 
@@ -45,16 +46,29 @@ export default async function Home() {
     <>
       <ScrollUp />
       <Hero />
-      <Features />
-      <Video />
-      <Brands />
-      <AboutSectionTwo />
-      <Testimonials />
+
+      <ScrollReveal>
+        <Features />
+      </ScrollReveal>
+
+      <ScrollReveal>
+        <Video />
+      </ScrollReveal>
+
+      <ScrollReveal>
+        <Brands />
+      </ScrollReveal>
+
+      <ScrollReveal>
+        <AboutSectionTwo />
+      </ScrollReveal>
+
+      <ScrollReveal>
+        <Testimonials />
+      </ScrollReveal>
+
       <FAQ />
       <PricingClient currentPlan={currentPlan} />
-      {/* <Pricing /> */}
-      {/* <Blog /> */}
-      {/* <Contact /> */}
     </>
   );
 }

@@ -22,6 +22,8 @@ import { trackFeatureUsage } from "~/lib/analytics";
 import { downloadElementAsPdf } from "~/utils/downloadPdfFromElement";
 import { cn } from "~/lib/utils";
 import ActionSheets from "~/components/Dashboard/ActionSheets";
+import { VideoSummary } from "~/components/Dashboard/VideoSummary";
+import { Video } from "lucide-react";
 
 const avatarColors = [
   "bg-blue-200 text-blue-700",
@@ -67,9 +69,6 @@ interface StoredData {
 export default function AnalyzerResultsPage() {
   const [data, setData] = useState<StoredData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [emailContent, setEmailContent] = useState<string>("");
-  const [emailSubject, setEmailSubject] = useState<string>("");
-  const [recipientEmail, setRecipientEmail] = useState<string>("");
   const [userRole, setUserRole] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
@@ -120,50 +119,50 @@ Best regards,
     [data?.sourceTitle],
   );
 
-  useEffect(() => {
-    try {
-      if (typeof window === "undefined") return;
-      const stored = sessionStorage.getItem("contractAnalysis");
-      if (!stored) {
-        setLoading(false);
-        return;
-      }
-      const parsed = JSON.parse(stored) as {
-        analysis?: AnalysisResult;
-        contractText?: string;
-        sourceTitle?: string;
-        model?: string;
-      } | null;
+  // useEffect(() => {
+  //   try {
+  //     if (typeof window === "undefined") return;
+  //     const stored = sessionStorage.getItem("contractAnalysis");
+  //     if (!stored) {
+  //       setLoading(false);
+  //       return;
+  //     }
+  //     const parsed = JSON.parse(stored) as {
+  //       analysis?: AnalysisResult;
+  //       contractText?: string;
+  //       sourceTitle?: string;
+  //       model?: string;
+  //     } | null;
 
-      if (!parsed || typeof parsed !== "object" || !parsed.analysis) {
-        console.warn("Invalid contractAnalysis in sessionStorage, ignoring.");
-        setLoading(false);
-        return;
-      }
+  //     if (!parsed || typeof parsed !== "object" || !parsed.analysis) {
+  //       console.warn("Invalid contractAnalysis in sessionStorage, ignoring.");
+  //       setLoading(false);
+  //       return;
+  //     }
 
-      const parsedData: StoredData = {
-        analysis: parsed.analysis,
-        contractText: parsed.contractText ?? "",
-        sourceTitle: parsed.sourceTitle ?? "",
-        model: parsed.model ?? undefined,
-      };
+  //     const parsedData: StoredData = {
+  //       analysis: parsed.analysis,
+  //       contractText: parsed.contractText ?? "",
+  //       sourceTitle: parsed.sourceTitle ?? "",
+  //       model: parsed.model ?? undefined,
+  //     };
 
-      setData(parsedData);
+  //     setData(parsedData);
 
-      // Pre-generate email draft when data loads
-      if (parsedData?.analysis) {
-        const { subject, content } = generateEmailContent(parsedData.analysis);
-        setEmailSubject(subject);
-        setEmailContent(content);
-      }
+  //     // Pre-generate email draft when data loads
+  //     if (parsedData?.analysis) {
+  //       const { subject, content } = generateEmailContent(parsedData.analysis);
+  //       setEmailSubject(subject);
+  //       setEmailContent(content);
+  //     }
 
-      trackFeatureUsage("results_page_viewed");
-    } catch (err) {
-      console.error("Failed to parse stored analysis:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [generateEmailContent]);
+  //     trackFeatureUsage("results_page_viewed");
+  //   } catch (err) {
+  //     console.error("Failed to parse stored analysis:", err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [generateEmailContent]);
 
   useEffect(() => {
     let active = true;
@@ -550,7 +549,32 @@ Best regards,
                 >
                   Suggestions
                 </TabsTrigger>
+                <TabsTrigger
+                  value="video"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-none px-3 sm:px-6 py-2 text-xs sm:text-sm whitespace-nowrap"
+                >
+                  <Video className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                  Video Brief
+                </TabsTrigger>
               </TabsList>
+
+              <TabsContent
+                value="video"
+                className="space-y-4 animate-in fade-in-50 duration-300"
+              >
+                <div className="max-w-4xl mx-auto">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-xl font-bold text-slate-900">
+                      Counselr Presentation
+                    </h3>
+                  </div>
+                  <VideoSummary analysis={analysis} title={data.sourceTitle} />
+                  <p className="mt-4 text-sm text-slate-500 text-center">
+                    Watch a dynamic summary of your contract analysis. This
+                    video highlights critical risks and key recommendations.
+                  </p>
+                </div>
+              </TabsContent>
 
               <TabsContent
                 value="risks"

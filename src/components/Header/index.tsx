@@ -4,17 +4,27 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SignedIn, SignedOut, UserButton, SignUpButton } from "@clerk/nextjs";
-import { Menu, X, LayoutGrid } from "lucide-react";
+import { Menu, X, LayoutGrid, Zap, DollarSign, Users, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import menuData from "./menuData";
+import { useLenis } from "lenis/react";
 
 const Header = () => {
+  const lenis = useLenis();
   const [navbarOpen, setNavbarOpen] = useState(false);
   const navbarToggleHandler = () => setNavbarOpen(!navbarOpen);
 
   const [sticky, setSticky] = useState(false);
   const handleStickyNavbar = () => {
     setSticky(window.scrollY >= 30);
+  };
+
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    lenis?.scrollTo(`#${id.toLowerCase()}`, {
+      offset: -100,
+      duration: 1.5,
+    });
+    if (navbarOpen) setNavbarOpen(false);
   };
 
   useEffect(() => {
@@ -49,16 +59,15 @@ const Header = () => {
 
             {/* Desktop Navigation Links */}
             <nav className="hidden lg:flex items-center gap-8">
-              {menuData.map((menuItem) => (
+              {["Features", "Pricing", "Testimonials"].map((item) => (
                 <Link
-                  key={menuItem.id}
-                  href={menuItem.path || "#"}
-                  className={`text-sm font-medium transition-all hover:text-primary ${usePathName === menuItem.path
-                    ? "text-primary"
-                    : "text-dark dark:text-white/80"
-                    }`}
+                  key={item}
+                  href={`#${item.toLowerCase()}`}
+                  onClick={(e) => scrollToSection(e, item)}
+                  scroll={false}
+                  className="text-sm font-medium transition-all hover:text-primary text-dark dark:text-white/80"
                 >
-                  {menuItem.title}
+                  {item}
                 </Link>
               ))}
             </nav>
@@ -81,9 +90,6 @@ const Header = () => {
                   }}
                 />
               </SignedOut>
-
-
-
             </div>
 
             {/* Mobile Toggle */}
@@ -107,19 +113,19 @@ const Header = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={navbarToggleHandler}
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60 backdrop-blur-md"
             />
 
             {/* Drawer */}
             <motion.div
-              initial={{ x: "-100%" }}
+              initial={{ x: "100%" }}
               animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="absolute top-0 left-0 h-full w-[280px] bg-white dark:bg-dark shadow-2xl flex flex-col overflow-hidden"
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="absolute top-0 right-0 h-full w-[300px] bg-white/90 dark:bg-black/90 backdrop-blur-xl shadow-2xl flex flex-col overflow-hidden border-l border-white/20"
             >
               {/* Drawer Header */}
-              <div className="p-6 flex items-center justify-between border-b border-gray-100 dark:border-white/10 bg-white dark:bg-dark">
+              <div className="p-8 flex items-center justify-between border-b border-gray-100 dark:border-white/10">
                 <Link href="/" className="block">
                   <Image
                     src="/images/logo/Counselor.png"
@@ -131,31 +137,43 @@ const Header = () => {
                 </Link>
                 <button
                   onClick={navbarToggleHandler}
-                  className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                  className="p-3 rounded-2xl bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
                 >
-                  <X size={24} className="text-gray-600 dark:text-gray-400" />
+                  <X size={20} className="text-gray-600 dark:text-gray-400" />
                 </button>
               </div>
 
               {/* Drawer Content */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-white dark:bg-dark">
-
-                <div className="space-y-1">
-                  {menuData.map((item) => {
-                    const IconComp = item.icon;
+              <div className="flex-1 overflow-y-auto p-8 space-y-6">
+                <div className="space-y-3">
+                  {[
+                    { name: "Features", icon: Zap },
+                    { name: "Video", icon: MessageSquare },
+                    { name: "Brands", icon: LayoutGrid },
+                    { name: "About", icon: Users },
+                    { name: "Testimonials", icon: MessageSquare },
+                    { name: "Pricing", icon: DollarSign },
+                  ].map((item, idx) => {
+                    const Icon = item.icon;
                     return (
-                      <Link
-                        key={item.id}
-                        href={item.path || "#"}
-                        onClick={navbarToggleHandler}
-                        className={`flex items-center gap-4 px-4 py-3 rounded-2xl font-medium transition-all ${usePathName === item.path
-                          ? "bg-primary/10 text-primary"
-                          : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
-                          }`}
+                      <motion.div
+                        key={item.name}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1 + idx * 0.05 }}
                       >
-                        {IconComp && <IconComp size={20} />}
-                        <span>{item.title}</span>
-                      </Link>
+                        <Link
+                          href={`#${item.name.toLowerCase()}`}
+                          onClick={(e) => scrollToSection(e, item.name)}
+                          scroll={false}
+                          className="flex items-center gap-4 px-5 py-4 rounded-3xl font-semibold transition-all text-gray-700 dark:text-gray-200 hover:bg-primary/10 hover:text-primary group"
+                        >
+                          <div className="p-2 rounded-xl bg-gray-100 dark:bg-white/5 group-hover:bg-primary/20 transition-colors">
+                            <Icon size={18} />
+                          </div>
+                          <span className="text-base">{item.name}</span>
+                        </Link>
+                      </motion.div>
                     );
                   })}
                 </div>

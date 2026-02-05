@@ -17,7 +17,6 @@ import {
   Bell,
   BellOff,
   BellRing,
-  Sparkles,
   LucideIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";

@@ -26,7 +26,7 @@ const Hero = () => {
                   transition={{ delay: 0.2, duration: 0.8 }}
                   className="mb-5 text-3xl font-medium leading-tight text-black dark:text-white sm:text-4xl sm:leading-tight md:text-6xl md:leading-tight"
                 >
-                  One tool to decode and simplify contracts
+                  AI Contract Review for Creators & Freelancers
                 </motion.h1>
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}

@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import DashboardLayoutClient from "~/components/Dashboard/DashboardLayoutClient";
 import { supabase } from "~/lib/supabaseClient";
+import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
   title: "Dashboard",
