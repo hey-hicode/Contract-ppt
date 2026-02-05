@@ -1,8 +1,24 @@
+import type { Metadata } from "next";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import DashboardLayoutClient from "~/components/Dashboard/DashboardLayoutClient";
 import { supabase } from "~/lib/supabaseClient";
 import { Analytics } from "@vercel/analytics/react";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  description: "Your contract analysis workspace.",
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+    },
+  },
+};
 
 type UserPlanRow = {
   plan: "free" | "premium";

@@ -29,6 +29,7 @@ interface EmailData {
   overallRisk?: string;
   redFlags?: RedFlagLite[];
   recommendations?: string[];
+  role?: string | null;
 }
 
 interface ActionSheetsProps {
@@ -41,7 +42,59 @@ interface ActionSheetsProps {
 }
 
 function generateEmailContent(data: EmailData) {
-  const { title, summary, redFlags = [], recommendations = [] } = data;
+  const { title, summary, redFlags = [], recommendations = [], role } = data;
+
+  const toneConfig: Record<
+    string,
+    {
+      intro: string;
+      context: string;
+      close: string;
+    }
+  > = {
+    founder: {
+      intro:
+        "I’ve reviewed the contract below and want to make sure it supports how we run the business.",
+      context:
+        "From a company operations perspective, there are a few areas that could create risk or limit flexibility.",
+      close:
+        "If you’re open to it, I’d like to discuss a few adjustments so the terms align with how we operate.",
+    },
+    freelancer: {
+      intro:
+        "I reviewed the contract and wanted to confirm a few points that affect how I deliver and get paid.",
+      context:
+        "From a freelancer’s standpoint, a couple of terms feel one‑sided or unclear.",
+      close:
+        "If you’re available, I’d love to talk through a few edits so expectations are clear for both sides.",
+    },
+    employee: {
+      intro:
+        "I reviewed the contract and want to make sure I fully understand the expectations and protections.",
+      context:
+        "From an employee standpoint, a few sections could use clarification or balance.",
+      close:
+        "If possible, I’d appreciate a quick chat to clarify these items before moving forward.",
+    },
+    investor: {
+      intro:
+        "I reviewed the contract and would like to align on a few items that affect risk and returns.",
+      context:
+        "From an investor perspective, there are terms that could be tightened.",
+      close:
+        "If you’re open, I’d like to discuss a few changes to better align incentives and risk.",
+    },
+  };
+
+  const tone = role ? toneConfig[role] : null;
+  const introLine =
+    tone?.intro ??
+    "I’ve reviewed the contract and wanted to follow up on a few points before moving forward.";
+  const contextLine =
+    tone?.context ?? "There are a few areas that seem worth discussing.";
+  const closeLine =
+    tone?.close ??
+    "If you’re available, I’d appreciate a quick conversation to walk through these.";
 
   const talkingPoints = redFlags
     .map(
@@ -56,7 +109,9 @@ function generateEmailContent(data: EmailData) {
 
 Hi,
 
-I’ve reviewed the contract titled "${title}" and wanted to follow up on a few points before moving forward.
+${introLine}
+
+${contextLine}
 
 ${summary ? `Here’s a brief overview from my review:\n${summary}\n\n` : ""}The main items I’d like to discuss are:
 
@@ -68,26 +123,26 @@ ${
     : "I’m open to your thoughts on how best to proceed."
 }
 
-If you’re available, I’d appreciate a quick conversation to walk through these and make sure we’re aligned.
+${closeLine}
 
 Best regards,
 `;
 }
 
-function openMailClient(to: string, content: string) {
-  // Extract a subject line from the first line if prefixed by "Subject:" for better mailto UX
-  let subject = "Contract Review";
-  let body = content;
-  const firstLine = content.split("\n")[0];
-  if (firstLine.toLowerCase().startsWith("subject:")) {
-    subject = firstLine.replace(/^[Ss]ubject:\s*/, "").trim();
-    body = content.split("\n").slice(1).join("\n");
-  }
-  const mailtoLink = `mailto:${encodeURIComponent(
-    to,
-  )}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.location.href = mailtoLink;
-}
+// function openMailClient(to: string, content: string) {
+//   // Extract a subject line from the first line if prefixed by "Subject:" for better mailto UX
+//   let subject = "Contract Review";
+//   let body = content;
+//   const firstLine = content.split("\n")[0];
+//   if (firstLine.toLowerCase().startsWith("subject:")) {
+//     subject = firstLine.replace(/^[Ss]ubject:\s*/, "").trim();
+//     body = content.split("\n").slice(1).join("\n");
+//   }
+//   const mailtoLink = `mailto:${encodeURIComponent(
+//     to,
+//   )}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+//   window.location.href = mailtoLink;
+// }
 
 export default function ActionSheets({
   chatEnabled,
@@ -153,7 +208,7 @@ export default function ActionSheets({
       setIsSendingEmail(true);
       trackFeatureUsage("email_sent");
 
-      const res = await fetch("/api/email/send", {
+      const res = await fetch("/api/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -287,6 +342,7 @@ export default function ActionSheets({
             <Textarea
               rows={12}
               value={emailContent}
+              disabled={isSendingEmail}
               onChange={(e) => setEmailContent(e.target.value)}
             />
             <div className="flex gap-2">

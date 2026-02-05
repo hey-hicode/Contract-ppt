@@ -1,4 +1,5 @@
 // app/(dashboard)/page.tsx
+import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
@@ -154,6 +155,11 @@ import {
   StaggerWrapper,
   StaggerItem,
 } from "~/components/Dashboard/DashboardMotionWrapper";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  description: "Overview of your recent contract analyses and usage.",
+};
 
 export default async function DashboardPage() {
   let data;

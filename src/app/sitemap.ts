@@ -1,20 +1,21 @@
-import { MetadataRoute } from 'next'
+import type { MetadataRoute } from "next";
+
+const siteUrl = "https://www.counselr.io";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = 'https://counselr.io'
-
-    return [
-        {
-            url: baseUrl,
-            lastModified: new Date(),
-            changeFrequency: 'daily',
-            priority: 1,
-        },
-        {
-            url: `${baseUrl}/pricing`,
-            lastModified: new Date(),
-            changeFrequency: 'weekly',
-            priority: 0.8,
-        },
-    ]
+  const lastModified = new Date();
+  return [
+    {
+      url: `${siteUrl}/`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 1,
+    },
+    {
+      url: `${siteUrl}/pricing`,
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+  ];
 }

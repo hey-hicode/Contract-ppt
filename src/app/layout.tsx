@@ -5,12 +5,11 @@ import { Toaster } from "react-hot-toast";
 import AppChrome from "~/components/layout/app-chrome";
 import { Analytics } from "@vercel/analytics/react";
 
-
 export const metadata: Metadata = {
-  metadataBase: new URL("https://counselr.io"),
+  metadataBase: new URL("https://www.counselr.io"),
   title: {
     default: "Counselr | AI Contract Review for Creators & Freelancers ",
-    template: "%s | Counselr"
+    template: "%s | Counselr",
   },
   description:
     "Protect your creative business with Counselr. Shield yourself from bad clauses in label, brand, and sponsorship deals with instant, expert insights.",
@@ -21,7 +20,7 @@ export const metadata: Metadata = {
     "sponsorship contract analysis",
     "freelance lawyer AI",
     "Counselr AI",
-    "contract risk assessment"
+    "contract risk assessment",
   ],
   authors: [
     {
@@ -38,13 +37,24 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/icons/counselr/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/icons/counselr/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      {
+        url: "/icons/counselr/favicon-32x32.png",
+        sizes: "32x32",
+        type: "image/png",
+      },
+      {
+        url: "/icons/counselr/favicon-16x16.png",
+        sizes: "16x16",
+        type: "image/png",
+      },
       { url: "/icons/counselr/favicon.ico" },
     ],
     apple: "/icons/counselr/apple-touch-icon.png",
   },
   manifest: "/icons/counselr/site.webmanifest",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -107,23 +117,19 @@ export default function RootLayout({
               __html: JSON.stringify({
                 "@context": "https://schema.org",
                 "@type": "Organization",
-                "name": "Counselr",
-                "url": "https://counselr.io",
-                "logo": "https://counselr.io/icons/Counselr/android-chrome-512x512.png",
-                "sameAs": [
-                  "https://twitter.com/counselr_io"
-                ]
-              })
+                name: "Counselr",
+                url: "https://counselr.io",
+                logo: "https://counselr.io/icons/Counselr/android-chrome-512x512.png",
+                sameAs: ["https://twitter.com/counselr_io"],
+              }),
             }}
           />
         </head>
         <body className={`bg-[#FCFCFC] dark:bg-black`}>
           <Toaster
             position="top-right"
-
             toastOptions={{
-              className:
-                "border  bg-white z-[9999] text-sm t  ",
+              className: "border  bg-white z-[9999] text-sm t  ",
             }}
           />
           <Analytics />

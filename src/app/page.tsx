@@ -1,6 +1,5 @@
-
 import { auth } from "@clerk/nextjs/server";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import AboutSectionTwo from "~/components/About/AboutSectionTwo";
 import Brands from "~/components/Brands";
 import FAQ from "~/components/FAQ";
@@ -11,11 +10,21 @@ import ScrollUp from "~/components/shared/ScrollUp";
 import Testimonials from "~/components/Testimonials";
 import Video from "~/components/Video";
 import { supabase } from "~/lib/supabaseClient";
-// export const metadata: Metadata = {
-//   title: "Counselr",
-//   description: "Counselr is a platform that helps creators, freelancers, and influencers analyze their contracts with AI.",
-//   // other metadata
-// };
+
+export const metadata: Metadata = {
+  title: "AI Contract Analyzer for Freelancers",
+  description:
+    "Counselr helps freelancers review contracts fast, uncover hidden clauses, and understand risk without legal fees.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "AI Contract Analyzer for Freelancers",
+    description:
+      "Review contracts fast, uncover hidden clauses, and understand risk without legal fees.",
+    url: "https://www.counselr.io",
+  },
+};
 
 import ScrollReveal from "~/components/shared/ScrollReveal";
 

@@ -69,9 +69,7 @@ interface StoredData {
 export default function AnalyzerResultsPage() {
   const [data, setData] = useState<StoredData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [emailContent, setEmailContent] = useState<string>("");
-  const [emailSubject, setEmailSubject] = useState<string>("");
-  const [recipientEmail] = useState<string>("");
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -80,12 +78,14 @@ export default function AnalyzerResultsPage() {
 
   const generateEmailContent = useCallback(
     (analysis: AnalysisResult) => {
-      const subject = `Legal Review: Contract Analysis Report - ${data?.sourceTitle || "Untitled"
-        }`;
+      const subject = `Legal Review: Contract Analysis Report - ${
+        data?.sourceTitle || "Untitled"
+      }`;
       const content = `Dear [Recipient Name],
 
-I have reviewed the contract "${data?.sourceTitle || "Untitled"
-        }" and would like to share the following analysis.
+I have reviewed the contract "${
+        data?.sourceTitle || "Untitled"
+      }" and would like to share the following analysis.
 
 EXECUTIVE SUMMARY
 ------------------
@@ -99,16 +99,16 @@ Total Issues Identified: ${analysis.redFlags?.length}
 KEY RECOMMENDATIONS
 ------------------
 ${analysis.recommendations
-          .slice(0, 5)
-          .map((rec, index) => `${index + 1}. ${rec}`)
-          .join("\n")}
+  .slice(0, 5)
+  .map((rec, index) => `${index + 1}. ${rec}`)
+  .join("\n")}
 
 CRITICAL ISSUES
 ------------------
 ${analysis.redFlags
-          .filter((flag) => flag.type === "critical")
-          .map((flag, index) => `${index + 1}. ${flag.title}: ${flag.description}`)
-          .join("\n")}
+  .filter((flag) => flag.type === "critical")
+  .map((flag, index) => `${index + 1}. ${flag.title}: ${flag.description}`)
+  .join("\n")}
 
 Please let me know if you would like to discuss these findings in more detail.
 
@@ -116,53 +116,73 @@ Best regards,
 [Your Name]`;
       return { subject, content };
     },
-    [data?.sourceTitle]
+    [data?.sourceTitle],
   );
 
+  // useEffect(() => {
+  //   try {
+  //     if (typeof window === "undefined") return;
+  //     const stored = sessionStorage.getItem("contractAnalysis");
+  //     if (!stored) {
+  //       setLoading(false);
+  //       return;
+  //     }
+  //     const parsed = JSON.parse(stored) as {
+  //       analysis?: AnalysisResult;
+  //       contractText?: string;
+  //       sourceTitle?: string;
+  //       model?: string;
+  //     } | null;
+
+  //     if (!parsed || typeof parsed !== "object" || !parsed.analysis) {
+  //       console.warn("Invalid contractAnalysis in sessionStorage, ignoring.");
+  //       setLoading(false);
+  //       return;
+  //     }
+
+  //     const parsedData: StoredData = {
+  //       analysis: parsed.analysis,
+  //       contractText: parsed.contractText ?? "",
+  //       sourceTitle: parsed.sourceTitle ?? "",
+  //       model: parsed.model ?? undefined,
+  //     };
+
+  //     setData(parsedData);
+
+  //     // Pre-generate email draft when data loads
+  //     if (parsedData?.analysis) {
+  //       const { subject, content } = generateEmailContent(parsedData.analysis);
+  //       setEmailSubject(subject);
+  //       setEmailContent(content);
+  //     }
+
+  //     trackFeatureUsage("results_page_viewed");
+  //   } catch (err) {
+  //     console.error("Failed to parse stored analysis:", err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [generateEmailContent]);
+
   useEffect(() => {
-    try {
-      if (typeof window === "undefined") return;
-      const stored = sessionStorage.getItem("contractAnalysis");
-      if (!stored) {
-        setLoading(false);
-        return;
+    let active = true;
+    const loadRole = async () => {
+      try {
+        const res = await fetch("/api/me/profile");
+        if (!res.ok) return;
+        const payload = (await res.json()) as { role?: string | null };
+        if (active) {
+          setUserRole(payload?.role ?? null);
+        }
+      } catch {
+        // ignore profile load errors
       }
-      const parsed = JSON.parse(stored) as {
-        analysis?: AnalysisResult;
-        contractText?: string;
-        sourceTitle?: string;
-        model?: string;
-      } | null;
-
-      if (!parsed || typeof parsed !== "object" || !parsed.analysis) {
-        console.warn("Invalid contractAnalysis in sessionStorage, ignoring.");
-        setLoading(false);
-        return;
-      }
-
-      const parsedData: StoredData = {
-        analysis: parsed.analysis,
-        contractText: parsed.contractText ?? "",
-        sourceTitle: parsed.sourceTitle ?? "",
-        model: parsed.model ?? undefined,
-      };
-
-      setData(parsedData);
-
-      // Pre-generate email draft when data loads
-      if (parsedData?.analysis) {
-        const { subject, content } = generateEmailContent(parsedData.analysis);
-        setEmailSubject(subject);
-        setEmailContent(content);
-      }
-
-      trackFeatureUsage("results_page_viewed");
-    } catch (err) {
-      console.error("Failed to parse stored analysis:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [generateEmailContent]);
+    };
+    void loadRole();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
@@ -177,30 +197,30 @@ Best regards,
     }
   };
 
-  const handleSendEmail = () => {
-    trackFeatureUsage("email_sent");
-    openMailClient(recipientEmail, emailSubject, emailContent);
-  };
+  // const handleSendEmail = () => {
+  //   trackFeatureUsage("email_sent");
+  //   openMailClient(recipientEmail, emailSubject, emailContent);
+  // };
 
-  function openMailClient(to: string, subject: string, body: string) {
-    const maxLen = 10000;
-    if (body.length > maxLen) {
-      const blob = new Blob([body], { type: "text/plain;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "contract-analysis.txt";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      return;
-    }
-    const mailto = `mailto:${encodeURIComponent(
-      to
-    )}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.open(mailto, "_self");
-  }
+  // function openMailClient(to: string, subject: string, body: string) {
+  //   const maxLen = 10000;
+  //   if (body.length > maxLen) {
+  //     const blob = new Blob([body], { type: "text/plain;charset=utf-8" });
+  //     const url = URL.createObjectURL(blob);
+  //     const a = document.createElement("a");
+  //     a.href = url;
+  //     a.download = "contract-analysis.txt";
+  //     document.body.appendChild(a);
+  //     a.click();
+  //     a.remove();
+  //     URL.revokeObjectURL(url);
+  //     return;
+  //   }
+  //   const mailto = `mailto:${encodeURIComponent(
+  //     to
+  //   )}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  //   window.open(mailto, "_self");
+  // }
 
   async function handleSave() {
     if (!data || !analysis) return;
@@ -244,7 +264,7 @@ Best regards,
     } catch (err) {
       console.error("save error:", err);
       setErrorMsg(
-        err instanceof Error ? err.message : "Failed to save analysis"
+        err instanceof Error ? err.message : "Failed to save analysis",
       );
     } finally {
       setSaving(false);
@@ -333,7 +353,7 @@ Best regards,
                 <div
                   className={cn(
                     "px-3 sm:px-4 py-2 rounded-md border flex items-center justify-center gap-2 font-medium text-center",
-                    getRiskColor(analysis!.overallRisk)
+                    getRiskColor(analysis!.overallRisk),
                   )}
                 >
                   <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -363,7 +383,7 @@ Best regards,
                   disabled={saving || !!savedId}
                   className={cn(
                     "w-full sm:w-auto",
-                    savedId ? "" : "bg-primary animate-pulse text-white"
+                    savedId ? "" : "bg-primary animate-pulse text-white",
                   )}
                 >
                   {saving ? (
@@ -379,13 +399,13 @@ Best regards,
                   className="text-white w-full sm:w-auto"
                   onClick={() => {
                     const el = document.getElementById(
-                      "analysis-report-content"
+                      "analysis-report-content",
                     );
                     if (el) {
                       trackFeatureUsage("report_downloaded");
                       void downloadElementAsPdf(
                         el,
-                        `Analysis - ${data.sourceTitle}.pdf`
+                        `Analysis - ${data.sourceTitle}.pdf`,
                       );
                     }
                   }}
@@ -420,7 +440,7 @@ Best regards,
                     ? "text-red-500"
                     : analysis!.overallRisk === "medium"
                       ? "text-amber-500"
-                      : "text-emerald-500"
+                      : "text-emerald-500",
                 )}
               />
             </CardHeader>
@@ -544,11 +564,14 @@ Best regards,
               >
                 <div className="max-w-4xl mx-auto">
                   <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-xl font-bold text-slate-900">Counselr Presentation</h3>
+                    <h3 className="text-xl font-bold text-slate-900">
+                      Counselr Presentation
+                    </h3>
                   </div>
                   <VideoSummary analysis={analysis} title={data.sourceTitle} />
                   <p className="mt-4 text-sm text-slate-500 text-center">
-                    Watch a dynamic summary of your contract analysis. This video highlights critical risks and key recommendations.
+                    Watch a dynamic summary of your contract analysis. This
+                    video highlights critical risks and key recommendations.
                   </p>
                 </div>
               </TabsContent>
@@ -577,7 +600,7 @@ Best regards,
                           ? "border-l-red-500"
                           : flag.type === "warning"
                             ? "border-l-amber-500"
-                            : "border-l-blue-500"
+                            : "border-l-blue-500",
                       )}
                     >
                       <CardHeader className="pb-2">
@@ -595,7 +618,7 @@ Best regards,
                                 ? "text-red-700 border-red-200 bg-red-50"
                                 : flag.type === "warning"
                                   ? "text-amber-700 border-amber-200 bg-amber-50"
-                                  : "text-blue-700 border-blue-200 bg-blue-50"
+                                  : "text-blue-700 border-blue-200 bg-blue-50",
                             )}
                           >
                             {flag.type}
@@ -673,24 +696,29 @@ Best regards,
 
             {/* Deal Metadata Section */}
             <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-              {(analysis.dealParties?.length > 0 || analysis.companiesInvolved?.length > 0) && (
+              {(analysis.dealParties?.length > 0 ||
+                analysis.companiesInvolved?.length > 0) && (
                 <Card className="!shadow-none bg-slate-50/50">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
-
                       Deal Parties & Companies
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {analysis.dealParties?.length > 0 && (
                       <div>
-                        <p className="text-sm font-semibold text-slate-500 uppercase mb-1">Parties</p>
+                        <p className="text-sm font-semibold text-slate-500 uppercase mb-1">
+                          Parties
+                        </p>
                         <div className="flex flex-wrap gap-2">
                           {analysis.dealParties?.map((party, i) => (
                             <Badge
                               key={i}
                               variant="secondary"
-                              className={cn("bg-white rounded-md p-2 border-none", getAvatarColor(i))}
+                              className={cn(
+                                "bg-white rounded-md p-2 border-none",
+                                getAvatarColor(i),
+                              )}
                             >
                               {party}
                             </Badge>
@@ -700,13 +728,20 @@ Best regards,
                     )}
                     {analysis.companiesInvolved?.length > 0 && (
                       <div>
-                        <p className="text-xs font-medium text-slate-500 uppercase mb-1">Companies</p>
+                        <p className="text-xs font-medium text-slate-500 uppercase mb-1">
+                          Companies
+                        </p>
                         <div className="flex flex-wrap gap-2">
                           {analysis.companiesInvolved?.map((company, i) => (
                             <Badge
                               key={i}
                               variant="secondary"
-                              className={cn("bg-white rounded-md p-2 border-none", getAvatarColor(i + (analysis.dealParties?.length ?? 0)))}
+                              className={cn(
+                                "bg-white rounded-md p-2 border-none",
+                                getAvatarColor(
+                                  i + (analysis.dealParties?.length ?? 0),
+                                ),
+                              )}
                             >
                               {company}
                             </Badge>
@@ -722,22 +757,28 @@ Best regards,
                 <Card className="!shadow-none bg-slate-50/50">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
-
-
                       Classification
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {analysis.dealRoom && (
                       <div>
-                        <p className="text-sm font-medium text-slate-500 uppercase mb-1">Deal Room</p>
-                        <p className="text-sm text-slate-700">{analysis.dealRoom}</p>
+                        <p className="text-sm font-medium text-slate-500 uppercase mb-1">
+                          Deal Room
+                        </p>
+                        <p className="text-sm text-slate-700">
+                          {analysis.dealRoom}
+                        </p>
                       </div>
                     )}
                     {analysis.playbook && (
                       <div>
-                        <p className="text-sm font-medium text-slate-500 uppercase mb-1">Playbook</p>
-                        <p className="text-sm text-slate-700">{analysis.playbook}</p>
+                        <p className="text-sm font-medium text-slate-500 uppercase mb-1">
+                          Playbook
+                        </p>
+                        <p className="text-sm text-slate-700">
+                          {analysis.playbook}
+                        </p>
                       </div>
                     )}
                   </CardContent>
@@ -759,6 +800,7 @@ Best regards,
           overallRisk: analysis?.overallRisk ?? undefined,
           redFlags: analysis?.redFlags ?? [],
           recommendations: analysis?.recommendations ?? [],
+          role: userRole,
         }}
         onSave={handleSave}
         saving={saving}
