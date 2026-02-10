@@ -2,11 +2,44 @@ import { NextRequest, NextResponse } from "next/server";
 import { extractText } from "unpdf";
 import mammoth from "mammoth";
 import { ocrPdf } from "~/utils/ocrPdf";
+import { Mistral } from "@mistralai/mistralai";
+
+const mistral = new Mistral({ apiKey: process.env.MISTRAL_API_KEY });
+
+
+
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const MIN_TEXT_LENGTH = 50;
+
+
+async function mistralOcrPdf(buffer: Buffer) {
+  const base64 = buffer.toString("base64");
+
+  const result = await mistral.ocr.process({
+    model: "mistral-ocr-latest",
+    document: {
+      type: "document_url",
+      // Mistral supports base64 “data:” PDFs via document_url
+      documentUrl: `data:application/pdf;base64,${base64}`,
+    },
+    // optional but often useful:
+    // table_format: "html", // or "markdown"
+    // extract_header: true,
+    // extract_footer: true,
+    includeImageBase64: false,
+  });
+
+  // Most people just join each page’s markdown
+  const text = (result.pages ?? [])
+    .map((p) => p.markdown ?? "")
+    .join("\n\n")
+    .trim();
+
+  return text;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -38,20 +71,29 @@ export async function POST(req: NextRequest) {
         text = "";
       }
 
-      // ✅ OCR fallback (THIS is the correct place)
-      if (!text || text.trim().length < MIN_TEXT_LENGTH) {
-        try {
-          text = await ocrPdf(buffer);
-        } catch {
-          return NextResponse.json(
-            {
-              error: "OCR failed. The document may be unreadable.",
-              code: "OCR_FAILED",
-            },
-            { status: 422 },
-          );
-        }
-      }
+   // ✅ OCR fallback
+if (!text || text.trim().length < MIN_TEXT_LENGTH) {
+  try {
+    // 1) try local OCR first (your current behavior)
+    text = await ocrPdf(buffer);
+
+    // 2) if still weak, try Mistral OCR
+    if (!text || text.trim().length < MIN_TEXT_LENGTH) {
+      text = await mistralOcrPdf(buffer);
+    }
+  } catch {
+    // If local OCR threw, still try Mistral as last resort
+    try {
+      text = await mistralOcrPdf(buffer);
+    } catch {
+      return NextResponse.json(
+        { error: "OCR failed. The document may be unreadable.", code: "OCR_FAILED" },
+        { status: 422 },
+      );
+    }
+  }
+}
+
     } else if (
       mime ===
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
