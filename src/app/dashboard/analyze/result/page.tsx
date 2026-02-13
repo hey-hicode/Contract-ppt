@@ -119,50 +119,39 @@ Best regards,
     [data?.sourceTitle],
   );
 
-  // useEffect(() => {
-  //   try {
-  //     if (typeof window === "undefined") return;
-  //     const stored = sessionStorage.getItem("contractAnalysis");
-  //     if (!stored) {
-  //       setLoading(false);
-  //       return;
-  //     }
-  //     const parsed = JSON.parse(stored) as {
-  //       analysis?: AnalysisResult;
-  //       contractText?: string;
-  //       sourceTitle?: string;
-  //       model?: string;
-  //     } | null;
+  useEffect(() => {
+    try {
+      if (typeof window === "undefined") return;
+      const stored = sessionStorage.getItem("contractAnalysis");
+      if (!stored) return;
 
-  //     if (!parsed || typeof parsed !== "object" || !parsed.analysis) {
-  //       console.warn("Invalid contractAnalysis in sessionStorage, ignoring.");
-  //       setLoading(false);
-  //       return;
-  //     }
+      const parsed = JSON.parse(stored) as {
+        analysis?: AnalysisResult;
+        contractText?: string;
+        sourceTitle?: string;
+        model?: string;
+      } | null;
 
-  //     const parsedData: StoredData = {
-  //       analysis: parsed.analysis,
-  //       contractText: parsed.contractText ?? "",
-  //       sourceTitle: parsed.sourceTitle ?? "",
-  //       model: parsed.model ?? undefined,
-  //     };
+      if (!parsed || typeof parsed !== "object" || !parsed.analysis) {
+        console.warn("Invalid contractAnalysis in sessionStorage, ignoring.");
+        return;
+      }
 
-  //     setData(parsedData);
+      const parsedData: StoredData = {
+        analysis: parsed.analysis,
+        contractText: parsed.contractText ?? "",
+        sourceTitle: parsed.sourceTitle ?? "",
+        model: parsed.model ?? undefined,
+      };
 
-  //     // Pre-generate email draft when data loads
-  //     if (parsedData?.analysis) {
-  //       const { subject, content } = generateEmailContent(parsedData.analysis);
-  //       setEmailSubject(subject);
-  //       setEmailContent(content);
-  //     }
-
-  //     trackFeatureUsage("results_page_viewed");
-  //   } catch (err) {
-  //     console.error("Failed to parse stored analysis:", err);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, [generateEmailContent]);
+      setData(parsedData);
+      trackFeatureUsage("results_page_viewed");
+    } catch (err) {
+      console.error("Failed to parse stored analysis:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     let active = true;
