@@ -23,8 +23,8 @@ type OpenRouterChoice = {
   message?: {
     role?: string;
     content?:
-      | string
-      | Array<{ type: string; text?: string } | { content?: string }>;
+    | string
+    | Array<{ type: string; text?: string } | { content?: string }>;
   };
 };
 
@@ -51,7 +51,15 @@ type OpenRouterResponse = {
   choices?: OpenRouterChoice[];
 };
 
-const DEFAULT_MODEL = "anthropic/claude-3.5-sonnet:beta";
+const ALLOWED_MODELS = [
+  "openai/gpt-4o-mini",
+  "openai/gpt-4o",
+  "anthropic/claude-3.5-sonnet",
+];
+
+
+const DEFAULT_MODEL = process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini";
+
 
 /* --------------------------
    Helper: resilient content normalizer
@@ -279,11 +287,11 @@ export async function POST(req: NextRequest) {
 
   const userContext = userProfile
     ? {
-        role: userProfile.role,
-        goals: userProfile.goals,
-        contractTypes: userProfile.contract_types,
-        riskTolerance: userProfile.risk_tolerance,
-      }
+      role: userProfile.role,
+      goals: userProfile.goals,
+      contractTypes: userProfile.contract_types,
+      riskTolerance: userProfile.risk_tolerance,
+    }
     : undefined;
   // 1️⃣ Load or create plan + 2️⃣ Enforce quota
   try {
@@ -383,7 +391,7 @@ ${text}
           "https://github.com/contractppts/contract-analyzer",
       },
       body: JSON.stringify({
-        model: model ?? DEFAULT_MODEL,
+        model: DEFAULT_MODEL,
         temperature: 0.2,
         response_format: { type: "json_object" },
         messages: [
