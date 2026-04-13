@@ -1,7 +1,9 @@
 // lib/openrouter.ts
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
-export const DEFAULT_MODEL = "anthropic/claude-3.5-sonnet:beta";
+export const DEFAULT_MODEL = process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini";
+
+
 
 type MaybeText = { text?: string; content?: string };
 function isMaybeText(obj: unknown): obj is MaybeText {
